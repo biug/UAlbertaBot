@@ -27,20 +27,29 @@ void ProductionManager::performBuildOrderSearch()
         return;
     }
 
-	BuildOrder & buildOrder = BOSSManager::Instance().getBuildOrder();
+	BuildOrder buildOrder(BWAPI::Broodwar->self()->getRace());
+	auto & pairs = StrategyManager::Instance().getBuildOrderGoal();
+	for (const auto & pair : pairs) {
+		for (int i = 0; i < pair.second; ++i) {
+			buildOrder.add(pair.first);
+		}
+	}
+	setBuildOrder(buildOrder);
 
-    if (buildOrder.size() > 0)
-    {
-	    setBuildOrder(buildOrder);
-        BOSSManager::Instance().reset();
-    }
-    else
-    {
-        if (!BOSSManager::Instance().isSearchInProgress())
-        {
-			BOSSManager::Instance().startNewSearch(StrategyManager::Instance().getBuildOrderGoal());
-        }
-    }
+	//BuildOrder & buildOrder = BOSSManager::Instance().getBuildOrder();
+
+ //   if (buildOrder.size() > 0)
+ //   {
+	//    setBuildOrder(buildOrder);
+ //       BOSSManager::Instance().reset();
+ //   }
+ //   else
+ //   {
+ //       if (!BOSSManager::Instance().isSearchInProgress())
+ //       {
+	//		BOSSManager::Instance().startNewSearch(StrategyManager::Instance().getBuildOrderGoal());
+ //       }
+ //   }
 }
 
 void ProductionManager::update() 
@@ -339,6 +348,7 @@ void ProductionManager::create(BWAPI::Unit producer, BuildOrderItem & item)
         && t.getUnitType() != BWAPI::UnitTypes::Zerg_Lair 
         && t.getUnitType() != BWAPI::UnitTypes::Zerg_Hive
         && t.getUnitType() != BWAPI::UnitTypes::Zerg_Greater_Spire
+		&& t.getUnitType() != BWAPI::UnitTypes::Zerg_Sunken_Colony
         && !t.getUnitType().isAddon())
     {
         // send the building task to the building manager
