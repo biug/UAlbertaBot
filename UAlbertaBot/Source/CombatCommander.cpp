@@ -64,7 +64,7 @@ void CombatCommander::update(const BWAPI::Unitset & combatUnits)
 	{
         updateIdleSquad();
         updateDropSquads();
-        updateScoutDefenseSquad();
+        //updateScoutDefenseSquad();
 		updateDefenseSquads();
 		updateAttackSquads();
 	}

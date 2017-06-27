@@ -339,6 +339,7 @@ void ProductionManager::create(BWAPI::Unit producer, BuildOrderItem & item)
         && t.getUnitType() != BWAPI::UnitTypes::Zerg_Lair 
         && t.getUnitType() != BWAPI::UnitTypes::Zerg_Hive
         && t.getUnitType() != BWAPI::UnitTypes::Zerg_Greater_Spire
+		&& t.getUnitType() != BWAPI::UnitTypes::Zerg_Sunken_Colony
         && !t.getUnitType().isAddon())
     {
         // send the building task to the building manager
