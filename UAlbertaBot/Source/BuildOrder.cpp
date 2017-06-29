@@ -23,7 +23,7 @@ BuildOrder::BuildOrder(const BWAPI::Race & race, const std::vector<MetaType> & m
 
 void BuildOrder::add(const MetaType & t)
 {
-    UAB_ASSERT(t.getRace() == getRace(), "Trying to add difference Race metatype to build order");
+	UAB_ASSERT(t.getRace() == getRace(), "Trying to add difference Race metatype to build order");
 
     _buildOrder.push_back(t);
 }

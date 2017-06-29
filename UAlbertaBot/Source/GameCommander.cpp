@@ -30,9 +30,9 @@ void GameCommander::update()
 	//MapTools::Instance().update();
 	_timerManager.stopTimer(TimerManager::MapTools);
 
-	_timerManager.startTimer(TimerManager::Search);
-	BOSSManager::Instance().update(35 - _timerManager.getTotalElapsed());
-	_timerManager.stopTimer(TimerManager::Search);
+	//_timerManager.startTimer(TimerManager::Search);
+	//BOSSManager::Instance().update(35 - _timerManager.getTotalElapsed());
+	//_timerManager.stopTimer(TimerManager::Search);
 
 	// economy and base managers
 	_timerManager.startTimer(TimerManager::Worker);

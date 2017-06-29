@@ -273,45 +273,40 @@ const MetaPairVector StrategyManager::getZergBuildOrderGoal() const
 	int numHydras       = UnitUtil::GetAllUnitCount(BWAPI::UnitTypes::Zerg_Hydralisk);
     int numScourge      = UnitUtil::GetAllUnitCount(BWAPI::UnitTypes::Zerg_Scourge);
     int numGuardians    = UnitUtil::GetAllUnitCount(BWAPI::UnitTypes::Zerg_Guardian);
+	int numLurkers		= UnitUtil::GetAllUnitCount(BWAPI::UnitTypes::Zerg_Lurker);
 
 	int mutasWanted = numMutas + 6;
 	int hydrasWanted = numHydras + 6;
 
-    if (Config::Strategy::StrategyName == "Zerg_ZerglingRush")
-    {
-        goal.push_back(std::pair<MetaType, int>(BWAPI::UnitTypes::Zerg_Zergling, zerglings + 6));
-    }
-    else if (Config::Strategy::StrategyName == "Zerg_2HatchHydra")
-    {
-        goal.push_back(std::pair<MetaType, int>(BWAPI::UnitTypes::Zerg_Hydralisk, numHydras + 8));
-        goal.push_back(std::pair<MetaType, int>(BWAPI::UpgradeTypes::Grooved_Spines, 1));
-        goal.push_back(std::pair<MetaType, int>(BWAPI::UnitTypes::Zerg_Drone, numDrones + 4));
-    }
-    else if (Config::Strategy::StrategyName == "Zerg_3HatchMuta")
-    {
-        goal.push_back(std::pair<MetaType, int>(BWAPI::UnitTypes::Zerg_Hydralisk, numHydras + 12));
-        goal.push_back(std::pair<MetaType, int>(BWAPI::UnitTypes::Zerg_Drone, numDrones + 4));
-    }
-    else if (Config::Strategy::StrategyName == "Zerg_3HatchScourge")
-    {
-        if (numScourge > 40)
-        {
-            goal.push_back(std::pair<MetaType, int>(BWAPI::UnitTypes::Zerg_Hydralisk, numHydras + 12));
-        }
-        else
-        {
-            goal.push_back(std::pair<MetaType, int>(BWAPI::UnitTypes::Zerg_Scourge, numScourge + 12));
-        }
+	bool canHydras = BWAPI::Broodwar->self()->isUnitAvailable(BWAPI::UnitTypes::Zerg_Hydralisk);
+	bool canLurker = BWAPI::Broodwar->self()->hasResearched(BWAPI::TechTypes::Lurker_Aspect);
+	bool lurkering = BWAPI::Broodwar->self()->isResearchAvailable(BWAPI::TechTypes::Lurker_Aspect);
 
-        
-        goal.push_back(std::pair<MetaType, int>(BWAPI::UnitTypes::Zerg_Drone, numDrones + 4));
+    if (Config::Strategy::StrategyName == "Zerg_9D_Lurker")
+	{
+		if (BWAPI::Broodwar->self()->isResearchAvailable(BWAPI::TechTypes::Lurker_Aspect)) {
+			if (!BWAPI::Broodwar->self()->isResearching(BWAPI::TechTypes::Lurker_Aspect)
+				&& !BWAPI::Broodwar->self()->hasResearched(BWAPI::TechTypes::Lurker_Aspect)) {
+				goal.push_back(std::pair<MetaType, int>(BWAPI::TechTypes::Lurker_Aspect, 1));
+			}
+		}
+		goal.push_back(std::pair<MetaType, int>(BWAPI::UnitTypes::Zerg_Zergling, 2));
+		if (numCC * 17 > numDrones) {
+			goal.push_back(std::pair<MetaType, int>(BWAPI::UnitTypes::Zerg_Drone, 1));
+		}
+		if (canHydras && numHydras < 4) {
+			goal.push_back(std::pair<MetaType, int>(BWAPI::UnitTypes::Zerg_Hydralisk, 1));
+		}
+		if (canLurker && numHydras > 0 && numLurkers < 4) {
+			goal.push_back(std::pair<MetaType, int>(BWAPI::UnitTypes::Zerg_Lurker, 1));
+		}
     }
 
-    if (shouldExpandNow())
-    {
-        goal.push_back(std::pair<MetaType, int>(BWAPI::UnitTypes::Zerg_Hatchery, numCC + 1));
-        goal.push_back(std::pair<MetaType, int>(BWAPI::UnitTypes::Zerg_Drone, numWorkers + 10));
-    }
+    //if (shouldExpandNow())
+    //{
+    //    goal.push_back(std::pair<MetaType, int>(BWAPI::UnitTypes::Zerg_Hatchery, numCC + 1));
+    //    goal.push_back(std::pair<MetaType, int>(BWAPI::UnitTypes::Zerg_Drone, numWorkers + 10));
+    //}
 
 	return goal;
 }
