@@ -74,29 +74,42 @@ void WorkerManager::stopRepairing(BWAPI::Unit worker)
     workerData.setWorkerJob(worker, WorkerData::Idle, nullptr);
 }
 
-void WorkerManager::handleGasWorkers() 
+void WorkerManager::handleGasWorkers()
 {
-	// for each unit we have
-	for (auto & unit : BWAPI::Broodwar->self()->getUnits())
-	{
-		// if that unit is a refinery
-		if (unit->getType().isRefinery() && unit->isCompleted() && !isGasStealRefinery(unit))
+	// if we use 9d, only collect gas for metabolic boost, then minerals
+	if (BWAPI::Broodwar->self()->getRace() == BWAPI::Races::Zerg && Config::Strategy::StrategyName == "Zerg_9D" &&
+		(BWAPI::Broodwar->self()->isUpgrading(BWAPI::UpgradeTypes::Metabolic_Boost) || BWAPI::Broodwar->self()->getUpgradeLevel(BWAPI::UpgradeTypes::Metabolic_Boost) > 0)) {
+		// for each gas unit we have
+		for (auto & unit : BWAPI::Broodwar->self()->getUnits())
 		{
-			// get the number of workers currently assigned to it
-			int numAssigned = workerData.getNumAssignedWorkers(unit);
-
-			// if it's less than we want it to be, fill 'er up
-			for (int i=0; i<(Config::Macro::WorkersPerRefinery-numAssigned); ++i)
+			if (unit->getType().isWorker() && workerData.getWorkerJob(unit) == WorkerData::Gas)
 			{
-				BWAPI::Unit gasWorker = getGasWorker(unit);
-				if (gasWorker)
+				workerData.setWorkerJob(unit, WorkerData::Minerals, unit);
+			}
+		}
+	}
+	else {
+		// for each unit we have
+		for (auto & unit : BWAPI::Broodwar->self()->getUnits())
+		{
+			// if that unit is a refinery
+			if (unit->getType().isRefinery() && unit->isCompleted() && !isGasStealRefinery(unit))
+			{
+				// get the number of workers currently assigned to it
+				int numAssigned = workerData.getNumAssignedWorkers(unit);
+
+				// if it's less than we want it to be, fill 'er up
+				for (int i = 0; i < (Config::Macro::WorkersPerRefinery - numAssigned); ++i)
 				{
-					workerData.setWorkerJob(gasWorker, WorkerData::Gas, unit);
+					BWAPI::Unit gasWorker = getGasWorker(unit);
+					if (gasWorker)
+					{
+						workerData.setWorkerJob(gasWorker, WorkerData::Gas, unit);
+					}
 				}
 			}
 		}
 	}
-
 }
 
 bool WorkerManager::isGasStealRefinery(BWAPI::Unit unit)

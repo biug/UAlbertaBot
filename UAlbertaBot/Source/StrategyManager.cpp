@@ -300,7 +300,15 @@ const MetaPairVector StrategyManager::getZergBuildOrderGoal() const
 		if (canLurker && numHydras > 0 && numLurkers < 4) {
 			goal.push_back(std::pair<MetaType, int>(BWAPI::UnitTypes::Zerg_Lurker, 1));
 		}
-    }
+	}
+	else if (Config::Strategy::StrategyName == "Zerg_9D")
+	{
+		if (BWAPI::Broodwar->self()->minerals() > 300 && numCC < 3) {
+			goal.push_back(std::pair<MetaType, int>(BWAPI::UnitTypes::Zerg_Hatchery, 1));
+			goal.push_back(std::pair<MetaType, int>(BWAPI::UnitTypes::Zerg_Drone, 1));
+		}
+		goal.push_back(std::pair<MetaType, int>(BWAPI::UnitTypes::Zerg_Zergling, 3));
+	}
 
     //if (shouldExpandNow())
     //{
