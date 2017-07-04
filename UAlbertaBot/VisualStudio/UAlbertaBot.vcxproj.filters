@@ -34,6 +34,9 @@
     <Filter Include="util">
       <UniqueIdentifier>{59599488-4576-44ab-8522-7d65a6425e15}</UniqueIdentifier>
     </Filter>
+    <Filter Include="game\action">
+      <UniqueIdentifier>{c440a495-96b9-4971-aa6a-729056cea498}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\Source\CombatCommander.cpp">
@@ -152,6 +155,9 @@
     </ClCompile>
     <ClCompile Include="..\Source\Logger.cpp">
       <Filter>util</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Source\ActionZergBase.cpp">
+      <Filter>game\action</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -277,6 +283,9 @@
     </ClInclude>
     <ClInclude Include="..\Source\GameHistory.hpp">
       <Filter>game\util</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Source\ActionZergBase.h">
+      <Filter>game\action</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

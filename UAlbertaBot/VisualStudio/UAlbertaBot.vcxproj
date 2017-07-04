@@ -114,6 +114,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="..\Source\ActionZergBase.cpp" />
     <ClCompile Include="..\Source\AutoObserver.cpp" />
     <ClCompile Include="..\Source\BOSSManager.cpp" />
     <ClCompile Include="..\source\BuildingManager.cpp" />
@@ -155,6 +156,7 @@
     <ClCompile Include="..\source\WorkerManager.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\Source\ActionZergBase.h" />
     <ClInclude Include="..\Source\AutoObserver.h" />
     <ClInclude Include="..\Source\BOSSManager.h" />
     <ClInclude Include="..\source\BuildingManager.h" />
