@@ -303,6 +303,9 @@ const MetaPairVector StrategyManager::getZergBuildOrderGoal() const
 	}
 	else if (Config::Strategy::StrategyName == "Zerg_9D")
 	{
+		if (numDrones < 9){
+			goal.push_back(std::pair<MetaType, int>(BWAPI::UnitTypes::Zerg_Drone, 1));
+		}
 		if (BWAPI::Broodwar->self()->minerals() > 300 && numCC < 3) {
 			goal.push_back(std::pair<MetaType, int>(BWAPI::UnitTypes::Zerg_Hatchery, 1));
 			goal.push_back(std::pair<MetaType, int>(BWAPI::UnitTypes::Zerg_Drone, 1));
