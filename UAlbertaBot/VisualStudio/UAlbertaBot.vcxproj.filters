@@ -159,6 +159,9 @@
     <ClCompile Include="..\Source\ActionZergBase.cpp">
       <Filter>game\action</Filter>
     </ClCompile>
+    <ClCompile Include="..\Source\LurkerManager.cpp">
+      <Filter>game\combat\micro</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\Source\CombatCommander.h">
@@ -286,6 +289,9 @@
     </ClInclude>
     <ClInclude Include="..\Source\ActionZergBase.h">
       <Filter>game\action</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Source\LurkerManager.h">
+      <Filter>game\combat\micro</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
