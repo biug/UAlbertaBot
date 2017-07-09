@@ -141,6 +141,7 @@
     <ClCompile Include="..\Source\Micro.cpp" />
     <ClCompile Include="..\Source\ParseUtils.cpp" />
     <ClCompile Include="..\source\ProductionManager.cpp" />
+    <ClCompile Include="..\Source\ProductionQueue.cpp" />
     <ClCompile Include="..\source\RangedManager.cpp" />
     <ClCompile Include="..\source\ScoutManager.cpp" />
     <ClCompile Include="..\Source\Squad.cpp" />
@@ -185,6 +186,7 @@
     <ClInclude Include="..\Source\Micro.h" />
     <ClInclude Include="..\Source\ParseUtils.h" />
     <ClInclude Include="..\source\ProductionManager.h" />
+    <ClInclude Include="..\Source\ProductionQueue.h" />
     <ClInclude Include="..\source\RangedManager.h" />
     <ClInclude Include="..\source\ScoutManager.h" />
     <ClInclude Include="..\Source\Squad.h" />
