@@ -23,9 +23,6 @@ void RangedManager::assignTargetsOld(const BWAPI::Unitset & targets)
 
     for (auto & rangedUnit : rangedUnits)
 	{
-		// train sub units such as scarabs or interceptors
-		//trainSubUnits(rangedUnit);
-
 		// if the order is to attack or defend
 		if (order.getType() == SquadOrderTypes::Attack || order.getType() == SquadOrderTypes::Defend) 
         {
@@ -44,7 +41,7 @@ void RangedManager::assignTargetsOld(const BWAPI::Unitset & targets)
 				// attack it
                 if (Config::Micro::KiteWithRangedUnits)
                 {
-                    if (rangedUnit->getType() == BWAPI::UnitTypes::Zerg_Mutalisk || rangedUnit->getType() == BWAPI::UnitTypes::Terran_Vulture)
+                    if (rangedUnit->getType() == BWAPI::UnitTypes::Zerg_Mutalisk)
                     {
 				        Micro::MutaDanceTarget(rangedUnit, target);
                     }
@@ -272,7 +269,7 @@ void RangedManager::assignTargetsNew(const BWAPI::Unitset & targets)
 
         if (Config::Micro::KiteWithRangedUnits)
         {
-            if (attacker->getType() == BWAPI::UnitTypes::Zerg_Mutalisk || attacker->getType() == BWAPI::UnitTypes::Terran_Vulture)
+            if (attacker->getType() == BWAPI::UnitTypes::Zerg_Mutalisk)
             {
 			    Micro::MutaDanceTarget(attacker, target);
             }

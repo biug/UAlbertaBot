@@ -20,7 +20,6 @@ class WorkerManager
     void        handleGasWorkers();
     void        handleMoveWorkers();
     void        handleCombatWorkers();
-    void        handleRepairWorkers();
 
     WorkerManager();
 

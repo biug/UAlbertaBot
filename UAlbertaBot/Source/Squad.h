@@ -29,9 +29,6 @@ class Squad
 	MeleeManager        _meleeManager;
 	RangedManager       _rangedManager;
 	DetectorManager     _detectorManager;
-	TransportManager    _transportManager;
-    TankManager         _tankManager;
-    MedicManager        _medicManager;
 	LurkerManager		_lurkerManager;
 
 	std::map<BWAPI::Unit, bool>	_nearEnemy;

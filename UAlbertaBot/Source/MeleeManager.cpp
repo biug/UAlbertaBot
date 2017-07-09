@@ -202,11 +202,6 @@ BWAPI::Unit MeleeManager::closestMeleeUnit(BWAPI::Unit target, const BWAPI::Unit
 
 bool MeleeManager::meleeUnitShouldRetreat(BWAPI::Unit meleeUnit, const BWAPI::Unitset & targets)
 {
-    // terran don't regen so it doesn't make any sense to retreat
-    if (meleeUnit->getType().getRace() == BWAPI::Races::Terran)
-    {
-        return false;
-    }
 
     // we don't want to retreat the melee unit if its shields or hit points are above the threshold set in the config file
     // set those values to zero if you never want the unit to retreat from combat individually
@@ -257,8 +252,8 @@ void MeleeManager::assignTargetsNew(const BWAPI::Unitset & targets)
         attackersAssigned[unit] = 0;
     }
 
-    int smallThreshold = BWAPI::Broodwar->self()->getRace() == BWAPI::Races::Zerg ? 3 : 1;
-    int bigThreshold = BWAPI::Broodwar->self()->getRace() == BWAPI::Races::Zerg ? 12 : 3;
+	int smallThreshold = 3;
+	int bigThreshold = 12;
 
     // keep assigning targets while we have attackers and targets remaining
     while (!meleeUnitsToAssign.empty() && !meleeUnitTargets.empty())

@@ -9,7 +9,6 @@ ProductionQueue::ProductionQueue()
 
 void ProductionQueue::add(MetaType meta, bool priority)
 {
-	if (meta.getRace() != BWAPI::Races::Zerg) return;
 	if (priority)
 	{
 		_priorityQueue.push_back(meta);

@@ -27,8 +27,6 @@ void WorkerManager::update()
 	drawWorkerInformation(450,20);
 
 	workerData.drawDepotDebugInfo();
-
-    handleRepairWorkers();
 }
 
 void WorkerManager::updateWorkerStatus() 
@@ -77,7 +75,7 @@ void WorkerManager::stopRepairing(BWAPI::Unit worker)
 void WorkerManager::handleGasWorkers()
 {
 	// if we use 9d, only collect gas for metabolic boost, then minerals
-	if (BWAPI::Broodwar->self()->getRace() == BWAPI::Races::Zerg && Config::Strategy::StrategyName == "Zerg_9D" &&
+	if (Config::Strategy::StrategyName == "Zerg_9D" &&
 		(BWAPI::Broodwar->self()->isUpgrading(BWAPI::UpgradeTypes::Metabolic_Boost) || BWAPI::Broodwar->self()->getUpgradeLevel(BWAPI::UpgradeTypes::Metabolic_Boost) > 0)) {
 		// for each gas unit we have
 		for (auto & unit : BWAPI::Broodwar->self()->getUnits())
@@ -150,24 +148,6 @@ void WorkerManager::handleIdleWorkers()
 			setMineralWorker(worker);
 		}
 	}
-}
-
-void WorkerManager::handleRepairWorkers()
-{
-    if (BWAPI::Broodwar->self()->getRace() != BWAPI::Races::Terran)
-    {
-        return;
-    }
-
-    for (auto & unit : BWAPI::Broodwar->self()->getUnits())
-    {
-        if (unit->getType().isBuilding() && (unit->getHitPoints() < unit->getType().maxHitPoints()))
-        {
-            BWAPI::Unit repairWorker = getClosestMineralWorkerTo(unit);
-            setRepairWorker(repairWorker, unit);
-            break;
-        }
-    }
 }
 
 // bad micro for combat workers
@@ -580,7 +560,7 @@ void WorkerManager::onUnitMorph(BWAPI::Unit unit)
 	}
 
 	// if something morphs into a building, it was a worker?
-	if (unit->getType().isBuilding() && unit->getPlayer() == BWAPI::Broodwar->self() && unit->getPlayer()->getRace() == BWAPI::Races::Zerg)
+	if (unit->getType().isBuilding() && unit->getPlayer() == BWAPI::Broodwar->self())
 	{
 		//BWAPI::Broodwar->printf("A Drone started building");
 		workerData.workerDestroyed(unit);

@@ -186,14 +186,6 @@ bool MicroManager::checkPositionWalkable(BWAPI::Position pos)
 
 void MicroManager::trainSubUnits(BWAPI::Unit unit) const
 {
-	if (unit->getType() == BWAPI::UnitTypes::Protoss_Reaver)
-	{
-		unit->train(BWAPI::UnitTypes::Protoss_Scarab);
-	}
-	else if (unit->getType() == BWAPI::UnitTypes::Protoss_Carrier)
-	{
-		unit->train(BWAPI::UnitTypes::Protoss_Interceptor);
-	}
 }
 
 bool MicroManager::unitNearChokepoint(BWAPI::Unit unit) const

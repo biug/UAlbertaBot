@@ -121,20 +121,6 @@ void WorkerData::setWorkerJob(BWAPI::Unit unit, enum WorkerJob job, BWAPI::Unit 
 		// right click the refinery to start harvesting
 		Micro::SmartRightClick(unit, jobUnit);
 	}
-    else if (job == Repair)
-    {
-        // only SCVs can repair
-        assert(unit->getType() == BWAPI::UnitTypes::Terran_SCV);
-
-        // set the building the worker is to repair
-        workerRepairMap[unit] = jobUnit;
-
-        // start repairing 
-        if (!unit->isRepairing())
-        {
-            Micro::SmartRepair(unit, jobUnit);
-        }
-    }
 	else if (job == Scout)
 	{
 

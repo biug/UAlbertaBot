@@ -19,8 +19,7 @@ void BuildingManager::update()
     validateWorkersAndBuildings();          // check to see if assigned workers have died en route or while constructing
     assignWorkersToUnassignedBuildings();   // assign workers to the unassigned buildings and label them 'planned'    
     constructAssignedBuildings();           // for each planned building, if the worker isn't constructing, send the command    
-    checkForStartedConstruction();          // check to see if any buildings have started construction and update data structures    
-    checkForDeadTerranBuilders();           // if we are terran and a building is under construction without a worker, assign a new one    
+    checkForStartedConstruction();          // check to see if any buildings have started construction and update data structures     
     checkForCompletedBuildings();           // check to see if any buildings have completed and update data structures
 }
 
@@ -40,9 +39,6 @@ bool BuildingManager::isBeingBuilt(BWAPI::UnitType type)
 // STEP 1: DO BOOK KEEPING ON WORKERS WHICH MAY HAVE DIED
 void BuildingManager::validateWorkersAndBuildings()
 {
-    // TODO: if a terran worker dies while constructing and its building
-    //       is under construction, place unit back into buildingsNeedingBuilders
-
     std::vector<Building> toRemove;
     
     // find any buildings which have become obsolete
@@ -81,11 +77,7 @@ void BuildingManager::assignWorkersToUnassignedBuildings()
         if (workerToAssign)
         {
             //BWAPI::Broodwar->printf("VALID WORKER BEING ASSIGNED: %d", workerToAssign->getID());
-
-            // TODO: special case of terran building whose worker died mid construction
-            //       send the right click command to the buildingUnit to resume construction
-            //		 skip the buildingsAssigned step and push it back into buildingsUnderConstruction
-
+			
             b.builderUnit = workerToAssign;
 
             BWAPI::TilePosition testLocation = getBuildingLocation(b);
@@ -186,26 +178,7 @@ void BuildingManager::checkForStartedConstruction()
                 b.buildingUnit = buildingStarted;
 
                 // if we are zerg, the buildingUnit now becomes nullptr since it's destroyed
-                if (BWAPI::Broodwar->self()->getRace() == BWAPI::Races::Zerg)
-                {
-                    b.builderUnit = nullptr;
-                    // if we are protoss, give the worker back to worker manager
-                }
-                else if (BWAPI::Broodwar->self()->getRace() == BWAPI::Races::Protoss)
-                {
-                    // if this was the gas steal unit then it's the scout worker so give it back to the scout manager
-                    if (b.isGasSteal)
-                    {
-                        ScoutManager::Instance().setWorkerScout(b.builderUnit);
-                    }
-                    // otherwise tell the worker manager we're finished with this unit
-                    else
-                    {
-                        WorkerManager::Instance().finishedWithWorker(b.builderUnit);
-                    }
-
-                    b.builderUnit = nullptr;
-                }
+				b.builderUnit = nullptr;
 
                 // put it in the under construction vector
                 b.status = BuildingStatus::UnderConstruction;
@@ -220,10 +193,7 @@ void BuildingManager::checkForStartedConstruction()
     }
 }
 
-// STEP 5: IF WE ARE TERRAN, THIS MATTERS, SO: LOL
-void BuildingManager::checkForDeadTerranBuilders() {}
-
-// STEP 6: CHECK FOR COMPLETED BUILDINGS
+// STEP 5: CHECK FOR COMPLETED BUILDINGS
 void BuildingManager::checkForCompletedBuildings()
 {
     std::vector<Building> toRemove;
@@ -239,20 +209,6 @@ void BuildingManager::checkForCompletedBuildings()
         // if the unit has completed
         if (b.buildingUnit->isCompleted())
         {
-            // if we are terran, give the worker back to worker manager
-            if (BWAPI::Broodwar->self()->getRace() == BWAPI::Races::Terran)
-            {
-                if (b.isGasSteal)
-                {
-                    ScoutManager::Instance().setWorkerScout(b.builderUnit);
-                }
-                // otherwise tell the worker manager we're finished with this unit
-                else
-                {
-                    WorkerManager::Instance().finishedWithWorker(b.builderUnit);
-                }
-            }
-
             // remove this unit from the under construction vector
             toRemove.push_back(b);
         }
@@ -394,8 +350,6 @@ std::vector<BWAPI::UnitType> BuildingManager::buildingsQueued()
 
 BWAPI::TilePosition BuildingManager::getBuildingLocation(const Building & b)
 {
-    int numPylons = BWAPI::Broodwar->self()->completedUnitCount(BWAPI::UnitTypes::Protoss_Pylon);
-
     if (b.isGasSteal)
     {
         BWTA::BaseLocation * enemyBaseLocation = InformationManager::Instance().getMainBaseLocation(BWAPI::Broodwar->enemy());
@@ -407,11 +361,6 @@ BWAPI::TilePosition BuildingManager::getBuildingLocation(const Building & b)
             BWAPI::TilePosition tp(unit->getInitialTilePosition());
             return tp;
         }
-    }
-
-    if (b.type.requiresPsi() && numPylons == 0)
-    {
-        return BWAPI::TilePositions::None;
     }
 
     if (b.type.isRefinery())
@@ -428,11 +377,7 @@ BWAPI::TilePosition BuildingManager::getBuildingLocation(const Building & b)
     }
 
     // set the building padding specifically
-    int distance = b.type == BWAPI::UnitTypes::Protoss_Photon_Cannon ? 0 : Config::Macro::BuildingSpacing;
-    if (b.type == BWAPI::UnitTypes::Protoss_Pylon && (numPylons < 3))
-    {
-        distance = Config::Macro::PylonSpacing;
-    }
+    int distance = Config::Macro::BuildingSpacing;
 
     // get a position within our region
     return BuildingPlacer::Instance().getBuildLocationNear(b,distance,false);

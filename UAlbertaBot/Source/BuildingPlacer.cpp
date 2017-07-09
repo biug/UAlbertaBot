@@ -97,26 +97,6 @@ bool BuildingPlacer::canBuildHere(BWAPI::TilePosition position,const Building & 
     return true;
 }
 
-bool BuildingPlacer::tileBlocksAddon(BWAPI::TilePosition position) const
-{
-
-    for (int i=0; i<=2; ++i)
-    {
-        for (auto & unit : BWAPI::Broodwar->getUnitsOnTile(position.x - i,position.y))
-        {
-            if (unit->getType() == BWAPI::UnitTypes::Terran_Command_Center ||
-                unit->getType() == BWAPI::UnitTypes::Terran_Factory ||
-                unit->getType() == BWAPI::UnitTypes::Terran_Starport ||
-                unit->getType() == BWAPI::UnitTypes::Terran_Science_Facility)
-            {
-                return true;
-            }
-        }
-    }
-
-    return false;
-}
-
 //returns true if we can build this type of unit here with the specified amount of space.
 //space value is stored in this->buildDistance.
 bool BuildingPlacer::canBuildHereWithSpace(BWAPI::TilePosition position,const Building & b,int buildDist,bool horizontalOnly) const
@@ -133,32 +113,11 @@ bool BuildingPlacer::canBuildHereWithSpace(BWAPI::TilePosition position,const Bu
     int width(b.type.tileWidth());
     int height(b.type.tileHeight());
 
-    //make sure we leave space for add-ons. These types of units can have addons:
-    if (b.type==BWAPI::UnitTypes::Terran_Command_Center ||
-        b.type==BWAPI::UnitTypes::Terran_Factory ||
-        b.type==BWAPI::UnitTypes::Terran_Starport ||
-        b.type==BWAPI::UnitTypes::Terran_Science_Facility)
-    {
-        width += 2;
-    }
-
     // define the rectangle of the building spot
     int startx = position.x - buildDist;
     int starty = position.y - buildDist;
     int endx   = position.x + width + buildDist;
     int endy   = position.y + height + buildDist;
-
-    if (b.type.isAddon())
-    {
-        const BWAPI::UnitType builderType = type.whatBuilds().first;
-
-        BWAPI::TilePosition builderTile(position.x - builderType.tileWidth(),position.y + 2 - builderType.tileHeight());
-
-        startx = builderTile.x - buildDist;
-        starty = builderTile.y - buildDist;
-        endx = position.x + width + buildDist;
-        endy = position.y + height + buildDist;
-    }
 
     if (horizontalOnly)
     {
@@ -273,11 +232,6 @@ bool BuildingPlacer::buildable(const Building & b,int x,int y) const
 
     //returns true if this tile is currently buildable, takes into account units on tile
     if (!BWAPI::Broodwar->isBuildable(x,y))
-    {
-        return false;
-    }
-
-    if ((BWAPI::Broodwar->self()->getRace() == BWAPI::Races::Terran) && tileBlocksAddon(BWAPI::TilePosition(x,y)))
     {
         return false;
     }

@@ -80,34 +80,7 @@ void ProductionManager::update()
 
 	// if they have cloaked units get a new goal asap
 	if (!_enemyCloakedDetected && InformationManager::Instance().enemyHasCloakedUnits())
-	{
-        if (BWAPI::Broodwar->self()->getRace() == BWAPI::Races::Protoss)
-        {
-		    if (BWAPI::Broodwar->self()->allUnitCount(BWAPI::UnitTypes::Protoss_Photon_Cannon) < 2)
-		    {
-			    _queue.queueAsHighestPriority(MetaType(BWAPI::UnitTypes::Protoss_Photon_Cannon), true);
-			    _queue.queueAsHighestPriority(MetaType(BWAPI::UnitTypes::Protoss_Photon_Cannon), true);
-		    }
-
-		    if (BWAPI::Broodwar->self()->allUnitCount(BWAPI::UnitTypes::Protoss_Forge) == 0)
-		    {
-			    _queue.queueAsHighestPriority(MetaType(BWAPI::UnitTypes::Protoss_Forge), true);
-		    }
-        }
-        else if (BWAPI::Broodwar->self()->getRace() == BWAPI::Races::Terran)
-        {
-            if (BWAPI::Broodwar->self()->allUnitCount(BWAPI::UnitTypes::Terran_Missile_Turret) < 2)
-		    {
-			    _queue.queueAsHighestPriority(MetaType(BWAPI::UnitTypes::Terran_Missile_Turret), true);
-			    _queue.queueAsHighestPriority(MetaType(BWAPI::UnitTypes::Terran_Missile_Turret), true);
-		    }
-
-		    if (BWAPI::Broodwar->self()->allUnitCount(BWAPI::UnitTypes::Terran_Engineering_Bay) == 0)
-		    {
-			    _queue.queueAsHighestPriority(MetaType(BWAPI::UnitTypes::Terran_Engineering_Bay), true);
-		    }
-        }
-        
+	{        
         if (Config::Debug::DrawBuildOrderSearchInfo)
         {
 		    BWAPI::Broodwar->printf("Enemy Cloaked Unit Detected!");
@@ -229,72 +202,6 @@ BWAPI::Unit ProductionManager::getProducer(MetaType t, BWAPI::Position closestTo
         if (unit->isLifted())                                   { continue; }
         if (!unit->isPowered())                                 { continue; }
 
-        // if the type is an addon, some special cases
-        if (t.getUnitType().isAddon())
-        {
-            // if the unit already has an addon, it can't make one
-            if (unit->getAddon() != nullptr)
-            {
-                continue;
-            }
-
-            // if we just told this unit to build an addon, then it will not be building another one
-            // this deals with the frame-delay of telling a unit to build an addon and it actually starting to build
-            if (unit->getLastCommand().getType() == BWAPI::UnitCommandTypes::Build_Addon 
-                && (BWAPI::Broodwar->getFrameCount() - unit->getLastCommandFrame() < 10)) 
-            { 
-                continue; 
-            }
-
-            bool isBlocked = false;
-
-            // if the unit doesn't have space to build an addon, it can't make one
-            BWAPI::TilePosition addonPosition(unit->getTilePosition().x + unit->getType().tileWidth(), unit->getTilePosition().y + unit->getType().tileHeight() - t.getUnitType().tileHeight());
-            BWAPI::Broodwar->drawBoxMap(addonPosition.x*32, addonPosition.y*32, addonPosition.x*32 + 64, addonPosition.y*32 + 64, BWAPI::Colors::Red);
-            
-            for (int i=0; i<unit->getType().tileWidth() + t.getUnitType().tileWidth(); ++i)
-            {
-                for (int j=0; j<unit->getType().tileHeight(); ++j)
-                {
-                    BWAPI::TilePosition tilePos(unit->getTilePosition().x + i, unit->getTilePosition().y + j);
-
-                    // if the map won't let you build here, we can't build it
-                    if (!BWAPI::Broodwar->isBuildable(tilePos))
-                    {
-                        isBlocked = true;
-                        BWAPI::Broodwar->drawBoxMap(tilePos.x*32, tilePos.y*32, tilePos.x*32 + 32, tilePos.y*32 + 32, BWAPI::Colors::Red);
-                    }
-
-                    // if there are any units on the addon tile, we can't build it
-                    BWAPI::Unitset uot = BWAPI::Broodwar->getUnitsOnTile(tilePos.x, tilePos.y);
-                    if (uot.size() > 0 && !(uot.size() == 1 && *(uot.begin()) == unit))
-                    {
-                        isBlocked = true;;
-                        BWAPI::Broodwar->drawBoxMap(tilePos.x*32, tilePos.y*32, tilePos.x*32 + 32, tilePos.y*32 + 32, BWAPI::Colors::Red);
-                    }
-                }
-            }
-
-            if (isBlocked)
-            {
-                continue;
-            }
-        }
-        
-        // if the type requires an addon and the producer doesn't have one
-        typedef std::pair<BWAPI::UnitType, int> ReqPair;
-        for (const ReqPair & pair : t.getUnitType().requiredUnits())
-        {
-            BWAPI::UnitType requiredType = pair.first;
-            if (requiredType.isAddon())
-            {
-                if (!unit->getAddon() || (unit->getAddon()->getType() != requiredType))
-                {
-                    continue;
-                }
-            }
-        }
-
         // if we haven't cut it, add it to the set of candidates
         candidateProducers.insert(unit);
     }
@@ -349,29 +256,16 @@ void ProductionManager::create(BWAPI::Unit producer, BuildOrderItem & item)
         && t.getUnitType() != BWAPI::UnitTypes::Zerg_Hive
         && t.getUnitType() != BWAPI::UnitTypes::Zerg_Greater_Spire
 		&& t.getUnitType() != BWAPI::UnitTypes::Zerg_Sunken_Colony
-        && !t.getUnitType().isAddon())
+		&& t.getUnitType() != BWAPI::UnitTypes::Zerg_Spore_Colony)
     {
         // send the building task to the building manager
         BuildingManager::Instance().addBuildingTask(t.getUnitType(), BWAPI::Broodwar->self()->getStartLocation(), item.isGasSteal);
-    }
-    else if (t.getUnitType().isAddon())
-    {
-        //BWAPI::TilePosition addonPosition(producer->getTilePosition().x + producer->getType().tileWidth(), producer->getTilePosition().y + producer->getType().tileHeight() - t.unitType.tileHeight());
-        producer->buildAddon(t.getUnitType());
     }
     // if we're dealing with a non-building unit
     else if (t.isUnit()) 
     {
         // if the race is zerg, morph the unit
-        if (t.getUnitType().getRace() == BWAPI::Races::Zerg) 
-        {
-            producer->morph(t.getUnitType());
-        // if not, train the unit
-        } 
-        else 
-        {
-            producer->train(t.getUnitType());
-        }
+		producer->morph(t.getUnitType());
     }
     // if we're dealing with a tech research
     else if (t.isTech())
@@ -449,14 +343,7 @@ bool ProductionManager::detectBuildOrderDeadlock()
 	if ((supplyAvailable < supplyCost) && !supplyInProgress)
 	{
         // if we're zerg, check to see if a building is planned to be built
-        if (BWAPI::Broodwar->self()->getRace() == BWAPI::Races::Zerg && BuildingManager::Instance().buildingsQueued().size() > 0)
-        {
-            return false;
-        }
-        else
-        {
-		    return true;
-        }
+		return BuildingManager::Instance().buildingsQueued().size() == 0;
 	}
 
 	return false;

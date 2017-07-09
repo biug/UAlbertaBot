@@ -124,13 +124,6 @@ int UnitUtil::GetAttackRange(BWAPI::Unit attacker, BWAPI::Unit target)
 
     int range = weapon.maxRange();
 
-    if ((attacker->getType() == BWAPI::UnitTypes::Protoss_Dragoon) 
-        && (attacker->getPlayer() == BWAPI::Broodwar->self())
-        && BWAPI::Broodwar->self()->getUpgradeLevel(BWAPI::UpgradeTypes::Singularity_Charge))
-	{
-		range = 6 * 32;
-	}
-
     return range;
 }
 

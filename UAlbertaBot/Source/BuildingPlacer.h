@@ -31,7 +31,6 @@ public:
     bool					isReserved(int x,int y) const;
     bool					isInResourceBox(int x,int y) const;
     bool					tileOverlapsBaseLocation(BWAPI::TilePosition tile,BWAPI::UnitType type) const;
-    bool                    tileBlocksAddon(BWAPI::TilePosition position) const;
 
     BWAPI::TilePosition		GetBuildLocation(const Building & b,int padding) const;
 

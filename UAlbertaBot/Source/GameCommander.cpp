@@ -178,25 +178,11 @@ BWAPI::Unit GameCommander::getFirstSupplyProvider()
 {
 	BWAPI::Unit supplyProvider = nullptr;
 
-	if (BWAPI::Broodwar->self()->getRace() == BWAPI::Races::Zerg)
+	for (auto & unit : BWAPI::Broodwar->self()->getUnits())
 	{
-		for (auto & unit : BWAPI::Broodwar->self()->getUnits())
+		if (unit->getType() == BWAPI::UnitTypes::Zerg_Spawning_Pool)
 		{
-			if (unit->getType() == BWAPI::UnitTypes::Zerg_Spawning_Pool)
-			{
-				supplyProvider = unit;
-			}
-		}
-	}
-	else
-	{
-		
-		for (auto & unit : BWAPI::Broodwar->self()->getUnits())
-		{
-			if (unit->getType() == BWAPI::Broodwar->self()->getRace().getSupplyProvider())
-			{
-				supplyProvider = unit;
-			}
+			supplyProvider = unit;
 		}
 	}
 
