@@ -92,6 +92,16 @@ const MetaPairVector StrategyManager::getBuildOrderGoal()
 	return getZergBuildOrderGoal();
 }
 
+void StrategyManager::updateProductionQueue(ProductionQueue & queue)
+{
+	// need to be update
+	MetaPairVector result = getBuildOrderGoal();
+	for (const auto & unit : result)
+	{
+		queue.add(unit.first);
+	}
+}
+
 const MetaPairVector StrategyManager::getZergBuildOrderGoal() const
 {
 	// the goal to return

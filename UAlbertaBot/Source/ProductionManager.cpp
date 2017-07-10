@@ -12,11 +12,11 @@ ProductionManager::ProductionManager()
 
 void ProductionManager::setBuildOrder(const BuildOrder & buildOrder)
 {
-	_queue.clearAll();
+	_queue.clear();
 
 	for (size_t i(0); i<buildOrder.size(); ++i)
 	{
-		_queue.queueAsLowestPriority(buildOrder[i], true);
+		_queue.add(buildOrder[i]);
 	}
 }
 
@@ -27,29 +27,7 @@ void ProductionManager::performBuildOrderSearch()
         return;
     }
 
-	BuildOrder buildOrder(BWAPI::Broodwar->self()->getRace());
-	auto & pairs = StrategyManager::Instance().getBuildOrderGoal();
-	for (const auto & pair : pairs) {
-		for (int i = 0; i < pair.second; ++i) {
-			buildOrder.add(pair.first);
-		}
-	}
-	setBuildOrder(buildOrder);
-
-	//BuildOrder & buildOrder = BOSSManager::Instance().getBuildOrder();
-
- //   if (buildOrder.size() > 0)
- //   {
-	//    setBuildOrder(buildOrder);
- //       BOSSManager::Instance().reset();
- //   }
- //   else
- //   {
- //       if (!BOSSManager::Instance().isSearchInProgress())
- //       {
-	//		BOSSManager::Instance().startNewSearch(StrategyManager::Instance().getBuildOrderGoal());
- //       }
- //   }
+	StrategyManager::Instance().updateProductionQueue(_queue);
 }
 
 void ProductionManager::update() 
@@ -58,7 +36,7 @@ void ProductionManager::update()
 	manageBuildOrderQueue();
     
 	// if nothing is currently building, get a new goal from the strategy manager
-	if ((_queue.size() == 0) && (BWAPI::Broodwar->getFrameCount() > 10))
+	if ((_queue._readyQueue.empty()) && (BWAPI::Broodwar->getFrameCount() > 10))
 	{
         if (Config::Debug::DrawBuildOrderSearchInfo)
         {
@@ -66,16 +44,6 @@ void ProductionManager::update()
         }
 
 		performBuildOrderSearch();
-	}
-
-	// detect if there's a build order deadlock once per second
-	if ((BWAPI::Broodwar->getFrameCount() % 24 == 0) && detectBuildOrderDeadlock())
-	{
-        if (Config::Debug::DrawBuildOrderSearchInfo)
-        {
-		    BWAPI::Broodwar->printf("Supply deadlock detected, building supply!");
-        }
-		_queue.queueAsHighestPriority(MetaType(BWAPI::Broodwar->self()->getRace().getSupplyProvider()), true);
 	}
 
 	// if they have cloaked units get a new goal asap
@@ -114,37 +82,61 @@ void ProductionManager::onUnitDestroy(BWAPI::Unit unit)
 
 void ProductionManager::manageBuildOrderQueue() 
 {
+	int supply = BWAPI::Broodwar->self()->supplyTotal() / 2;
+	int supplyUsed = (BWAPI::Broodwar->self()->supplyUsed() + 1) / 2;
+	int overlordInQueue = _queue.overlordCount();
+	if (supply - supplyUsed < 3 && _morphingOverlords.empty() && overlordInQueue <= 1)
+	{
+		if (supply <= 9)
+		{
+			if (supplyUsed == 9 && overlordInQueue == 0)
+			{
+				_queue.add(MetaType(BWAPI::UnitTypes::Zerg_Overlord), true);
+			}
+		}
+		else if (supply <= 27)
+		{
+			if (overlordInQueue == 0)
+			{
+				_queue.add(MetaType(BWAPI::UnitTypes::Zerg_Overlord), true);
+			}
+		}
+		else
+		{
+			_queue.add(MetaType(BWAPI::UnitTypes::Zerg_Overlord), true);
+		}
+	}
+	if (!_morphingOverlords.empty())
+	{
+		if (!(*_morphingOverlords.begin())->isMorphing())
+		{
+			_morphingOverlords.clear();
+		}
+	}
+	_queue.launchReady();
 	// if there is nothing in the _queue, oh well
-	if (_queue.isEmpty()) 
+	if (_queue._readyQueue.empty()) 
 	{
 		return;
 	}
 
-	// the current item to be used
-	BuildOrderItem & currentItem = _queue.getHighestPriorityItem();
-
 	// while there is still something left in the _queue
-	while (!_queue.isEmpty()) 
+	while (!_queue._readyQueue.empty()) 
 	{
+		MetaType unit = _queue._readyQueue.front();
+		_queue._readyQueue.pop_front();
 		// this is the unit which can produce the currentItem
-        BWAPI::Unit producer = getProducer(currentItem.metaType);
+        BWAPI::Unit producer = getProducer(unit);
 
 		// check to see if we can make it right now
-		bool canMake = canMakeNow(producer, currentItem.metaType);
-
-		// if we try to build too many refineries manually remove it
-		if (currentItem.metaType.isRefinery() && (BWAPI::Broodwar->self()->allUnitCount(BWAPI::Broodwar->self()->getRace().getRefinery() >= 3)))
-		{
-			_queue.removeCurrentHighestPriorityItem();
-			break;
-		}
+		bool canMake = canMakeNow(producer, unit);
 
 		// if the next item in the list is a building and we can't yet make it
-        if (currentItem.metaType.isBuilding() && !(producer && canMake) && currentItem.metaType.whatBuilds().isWorker())
+        if (unit.isBuilding() && !(producer && canMake) && unit.whatBuilds().isWorker())
 		{
 			// construct a temporary building object
-			Building b(currentItem.metaType.getUnitType(), BWAPI::Broodwar->self()->getStartLocation());
-            b.isGasSteal = currentItem.isGasSteal;
+			Building b(unit.getUnitType(), BWAPI::Broodwar->self()->getStartLocation());
+            b.isGasSteal = false;
 
 			// set the producer as the closest worker, but do not set its job yet
 			producer = WorkerManager::Instance().getBuilder(b, false);
@@ -157,29 +149,14 @@ void ProductionManager::manageBuildOrderQueue()
 		if (producer && canMake) 
 		{
 			// create it
-			create(producer, currentItem);
+			create(producer, unit);
 			_assignedWorkerForThisBuilding = false;
 			_haveLocationForThisBuilding = false;
-
-			// and remove it from the _queue
-			_queue.removeCurrentHighestPriorityItem();
-
-			// don't actually loop around in here
-			break;
-		}
-		// otherwise, if we can skip the current item
-		else if (_queue.canSkipItem())
-		{
-			// skip it
-			_queue.skipItem();
-
-			// and get the next one
-			currentItem = _queue.getNextHighestPriorityItem();				
 		}
 		else 
 		{
-			// so break out
-			break;
+			// retreat
+			_queue.retreat(unit);
 		}
 	}
 }
@@ -241,41 +218,43 @@ BWAPI::Unit ProductionManager::getClosestUnitToPosition(const BWAPI::Unitset & u
 }
 
 // this function will check to see if all preconditions are met and then create a unit
-void ProductionManager::create(BWAPI::Unit producer, BuildOrderItem & item) 
+void ProductionManager::create(BWAPI::Unit producer, MetaType & item) 
 {
     if (!producer)
     {
         return;
     }
 
-    MetaType t = item.metaType;
-
     // if we're dealing with a building
-    if (t.isUnit() && t.getUnitType().isBuilding() 
-        && t.getUnitType() != BWAPI::UnitTypes::Zerg_Lair 
-        && t.getUnitType() != BWAPI::UnitTypes::Zerg_Hive
-        && t.getUnitType() != BWAPI::UnitTypes::Zerg_Greater_Spire
-		&& t.getUnitType() != BWAPI::UnitTypes::Zerg_Sunken_Colony
-		&& t.getUnitType() != BWAPI::UnitTypes::Zerg_Spore_Colony)
+	if (item.isUnit() && item.getUnitType().isBuilding()
+		&& item.getUnitType() != BWAPI::UnitTypes::Zerg_Lair
+		&& item.getUnitType() != BWAPI::UnitTypes::Zerg_Hive
+		&& item.getUnitType() != BWAPI::UnitTypes::Zerg_Greater_Spire
+		&& item.getUnitType() != BWAPI::UnitTypes::Zerg_Sunken_Colony
+		&& item.getUnitType() != BWAPI::UnitTypes::Zerg_Spore_Colony)
     {
         // send the building task to the building manager
-        BuildingManager::Instance().addBuildingTask(t.getUnitType(), BWAPI::Broodwar->self()->getStartLocation(), item.isGasSteal);
+        BuildingManager::Instance().addBuildingTask(item.getUnitType(), BWAPI::Broodwar->self()->getStartLocation(), false);
     }
     // if we're dealing with a non-building unit
-    else if (t.isUnit()) 
+	else if (item.isUnit())
     {
         // if the race is zerg, morph the unit
-		producer->morph(t.getUnitType());
+		producer->morph(item.getUnitType());
+		if (item.getUnitType() == BWAPI::UnitTypes::Zerg_Overlord)
+		{
+			_morphingOverlords.insert(producer);
+		}
     }
     // if we're dealing with a tech research
-    else if (t.isTech())
+	else if (item.isTech())
     {
-        producer->research(t.getTechType());
+		producer->research(item.getTechType());
     }
-    else if (t.isUpgrade())
+	else if (item.isUpgrade())
     {
         //Logger::Instance().log("Produce Upgrade: " + t.getName() + "\n");
-        producer->upgrade(t.getUpgradeType());
+		producer->upgrade(item.getUpgradeType());
     }
     else
     {	
@@ -309,44 +288,6 @@ bool ProductionManager::canMakeNow(BWAPI::Unit producer, MetaType t)
 	}
 
 	return canMake;
-}
-
-bool ProductionManager::detectBuildOrderDeadlock()
-{
-	// if the _queue is empty there is no deadlock
-	if (_queue.size() == 0 || BWAPI::Broodwar->self()->supplyTotal() >= 390)
-	{
-		return false;
-	}
-
-	// are any supply providers being built currently
-	bool supplyInProgress =	BuildingManager::Instance().isBeingBuilt(BWAPI::Broodwar->self()->getRace().getSupplyProvider());
-
-    for (auto & unit : BWAPI::Broodwar->self()->getUnits())
-    {
-        if (unit->getType() == BWAPI::UnitTypes::Zerg_Egg)
-        {
-            if (unit->getBuildType() == BWAPI::UnitTypes::Zerg_Overlord)
-            {
-                supplyInProgress = true;
-                break;
-            }
-        }
-    }
-
-	// does the current item being built require more supply
-    
-	int supplyCost			= _queue.getHighestPriorityItem().metaType.supplyRequired();
-	int supplyAvailable		= std::max(0, BWAPI::Broodwar->self()->supplyTotal() - BWAPI::Broodwar->self()->supplyUsed());
-
-	// if we don't have enough supply and none is being built, there's a deadlock
-	if ((supplyAvailable < supplyCost) && !supplyInProgress)
-	{
-        // if we're zerg, check to see if a building is planned to be built
-		return BuildingManager::Instance().buildingsQueued().size() == 0;
-	}
-
-	return false;
 }
 
 // When the next item in the _queue is a building, this checks to see if we should move to it
@@ -555,8 +496,6 @@ void ProductionManager::drawProductionInformation(int x, int y)
 		BWAPI::Broodwar->drawTextScreen(x, yy, " %s%s", prefix.c_str(), t.getName().c_str());
 		BWAPI::Broodwar->drawTextScreen(x - 35, yy, "%s%6d", prefix.c_str(), unit->getRemainingBuildTime());
 	}
-
-	_queue.drawQueueInformation(x, yy+10);
 }
 
 ProductionManager & ProductionManager::Instance()
@@ -567,7 +506,7 @@ ProductionManager & ProductionManager::Instance()
 
 void ProductionManager::queueGasSteal()
 {
-    _queue.queueAsHighestPriority(MetaType(BWAPI::Broodwar->self()->getRace().getRefinery()), true, true);
+    _queue.add(MetaType(BWAPI::Broodwar->self()->getRace().getRefinery()), true);
 }
 
 // this will return true if any unit is on the first frame if it's training time remaining

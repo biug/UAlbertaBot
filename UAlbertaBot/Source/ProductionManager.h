@@ -6,6 +6,7 @@
 #include "StrategyManager.h"
 #include "BOSSManager.h"
 #include "BuildOrder.h"
+#include "ProductionQueue.h"
 
 namespace UAlbertaBot
 {
@@ -15,11 +16,12 @@ class ProductionManager
 {
     ProductionManager();
     
-    BuildOrderQueue     _queue;
+    ProductionQueue     _queue;
     BWAPI::TilePosition _predictedTilePosition;
     bool                _enemyCloakedDetected;
     bool                _assignedWorkerForThisBuilding;
     bool                _haveLocationForThisBuilding;
+	std::set<BWAPI::Unit>	_morphingOverlords;
     
     BWAPI::Unit         getClosestUnitToPosition(const BWAPI::Unitset & units,BWAPI::Position closestTo);
     BWAPI::Unit         selectUnitOfType(BWAPI::UnitType type,BWAPI::Position closestTo = BWAPI::Position(0,0));
@@ -29,13 +31,11 @@ class ProductionManager
     bool                hasNumCompletedUnitType(BWAPI::UnitType type,int num);
     bool                meetsReservedResources(MetaType type);
     void                setBuildOrder(const BuildOrder & buildOrder);
-    void                create(BWAPI::Unit producer,BuildOrderItem & item);
+	void				create(BWAPI::Unit producer, MetaType & unit);
     void                manageBuildOrderQueue();
     void                performCommand(BWAPI::UnitCommandType t);
     bool                canMakeNow(BWAPI::Unit producer,MetaType t);
     void                predictWorkerMovement(const Building & b);
-
-    bool                detectBuildOrderDeadlock();
 
     int                 getFreeMinerals();
     int                 getFreeGas();

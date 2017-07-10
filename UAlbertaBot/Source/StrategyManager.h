@@ -6,6 +6,7 @@
 #include "InformationManager.h"
 #include "WorkerManager.h"
 #include "BuildOrder.h"
+#include "ProductionQueue.h"
 
 namespace UAlbertaBot
 {
@@ -69,5 +70,6 @@ public:
 	const	int				        defendWithWorkers();
 	const	MetaPairVector		    getBuildOrderGoal();
 	const	BuildOrder &            getOpeningBookBuildOrder() const;
+	void					updateProductionQueue(ProductionQueue & queue);
 };
 }

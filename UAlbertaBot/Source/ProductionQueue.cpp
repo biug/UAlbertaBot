@@ -9,7 +9,7 @@ ProductionQueue::ProductionQueue()
 
 void ProductionQueue::add(MetaType meta, bool priority)
 {
-	if (priority)
+	if (priority || meta.getUnitType() == BWAPI::UnitTypes::Zerg_Overlord)
 	{
 		_priorityQueue.push_back(meta);
 	}
@@ -53,4 +53,38 @@ void ProductionQueue::launchReady()
 bool ProductionQueue::checkReady()
 {
 	return !_readyQueue.empty();
+}
+
+void ProductionQueue::retreat(MetaType & unit)
+{
+	if (unit.getUnitType() == BWAPI::UnitTypes::Zerg_Overlord)
+	{
+		_priorityQueue.push_front(unit);
+	}
+	else if (unit.isBuilding() || unit.isTech() || unit.isUpgrade())
+	{
+		_buildingQueue.push_front(unit);
+	}
+	else
+	{
+		_armyQueue.push_front(unit);
+	}
+}
+
+bool ProductionQueue::empty()
+{
+	return _buildingQueue.empty() && _armyQueue.empty() && _priorityQueue.empty();
+}
+
+int ProductionQueue::overlordCount()
+{
+	int count = 0;
+	for (int i = 0; i < _priorityQueue.size(); ++i)
+	{
+		if (_priorityQueue[i].getUnitType() == BWAPI::UnitTypes::Zerg_Overlord)
+		{
+			++count;
+		}
+	}
+	return count;
 }

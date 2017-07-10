@@ -8,7 +8,6 @@ namespace UAlbertaBot
 
 	class ProductionQueue
 	{
-		ProductionQueue();
 
 		std::deque<MetaType>	_buildingQueue;
 		std::deque<MetaType>	_armyQueue;
@@ -17,10 +16,17 @@ namespace UAlbertaBot
 	public:
 		std::deque<MetaType>	_readyQueue;
 
+		ProductionQueue();
+
 		void add(MetaType item, bool priority = false);
 		void clear();
 
 		void launchReady();
 		bool checkReady();
+
+		void retreat(MetaType & item);
+
+		bool empty();
+		int overlordCount();
 	};
 }
