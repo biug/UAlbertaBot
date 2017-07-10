@@ -15,7 +15,7 @@ namespace CasiaBot
 		void getBuildOrderList(UAlbertaBot::ProductionQueue &queue);
 
 	private:
-		int enermyTerranBarracksUnitsAmount;
+		int enermyTerranBarrackUnitsAmount;
 		int enermyTerranFactoryUnitsAmount;
 		double enermyTerranMechanizationRate;
 		int lastFrameCount = 0;
@@ -23,5 +23,7 @@ namespace CasiaBot
 		int lastFrameGasAmount;
 		std::deque<int> mineralNetIncrease;
 		std::deque<int> gasNetIncrease;
+
+		void updateState();
 	};
 }

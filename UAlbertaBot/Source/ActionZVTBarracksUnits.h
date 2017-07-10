@@ -13,7 +13,7 @@ namespace CasiaBot
 		bool tick();
 		void getBuildOrderList(UAlbertaBot::ProductionQueue &queue);
 	private:
-		int enermyTerranBarracksUnitsAmount;
+		int enermyTerranBarrackUnitsAmount;
 		int enermyTerranFactoryUnitsAmount;
 		double enermyTerranMechanizationRate;
 		int lastFrameCount = 0;
