@@ -6,6 +6,7 @@ using namespace UAlbertaBot;
 
 WorkerManager::WorkerManager() 
 {
+	needLessGas = needMoreGas = needLessMineral = needMoreMineral = false;
     previousClosestWorker = nullptr;
 }
 
@@ -17,6 +18,7 @@ WorkerManager & WorkerManager::Instance()
 
 void WorkerManager::update() 
 {
+	updateResourceStatus();
 	updateWorkerStatus();
 	handleGasWorkers();
 	handleIdleWorkers();
@@ -27,6 +29,28 @@ void WorkerManager::update()
 	drawWorkerInformation(450,20);
 
 	workerData.drawDepotDebugInfo();
+}
+
+void WorkerManager::updateResourceStatus()
+{
+	if (BWAPI::Broodwar->getFrameCount() % 10 == 0)
+	{
+		needLessGas = needMoreGas = needLessMineral = needMoreMineral = false;
+		int mineral = BWAPI::Broodwar->self()->minerals();
+		int gas = BWAPI::Broodwar->self()->gas();
+		if (mineral < 50)
+		{
+			needMoreMineral = true;
+		}
+		if (gas > 200)
+		{
+			needLessGas = true;
+		}
+		else if (gas == 0 && BWAPI::Broodwar->self()->gatheredGas() > 0)
+		{
+			needMoreGas = true;
+		}
+	}
 }
 
 void WorkerManager::updateWorkerStatus() 
@@ -74,24 +98,21 @@ void WorkerManager::stopRepairing(BWAPI::Unit worker)
 
 void WorkerManager::handleGasWorkers()
 {
-	// if we use 9d, only collect gas for metabolic boost, then minerals
-	if (Config::Strategy::StrategyName == "Zerg_9D" &&
-		(BWAPI::Broodwar->self()->isUpgrading(BWAPI::UpgradeTypes::Metabolic_Boost) || BWAPI::Broodwar->self()->getUpgradeLevel(BWAPI::UpgradeTypes::Metabolic_Boost) > 0)) {
-		// for each gas unit we have
-		for (auto & unit : BWAPI::Broodwar->self()->getUnits())
+	// for each unit we have
+	for (auto & unit : BWAPI::Broodwar->self()->getUnits())
+	{
+		// if that unit is a refinery
+		if (unit->getType().isRefinery() && unit->isCompleted() && !isGasStealRefinery(unit))
 		{
-			if (unit->getType().isWorker() && workerData.getWorkerJob(unit) == WorkerData::Gas)
+			if (needLessGas)
 			{
-				workerData.setWorkerJob(unit, WorkerData::Minerals, unit);
+				BWAPI::Unit gasWorker = workerData.getRefineryWorker(unit);
+				if (gasWorker != nullptr && gasWorker->isMoving())
+				{
+					setMineralWorker(gasWorker);
+				}
 			}
-		}
-	}
-	else {
-		// for each unit we have
-		for (auto & unit : BWAPI::Broodwar->self()->getUnits())
-		{
-			// if that unit is a refinery
-			if (unit->getType().isRefinery() && unit->isCompleted() && !isGasStealRefinery(unit))
+			else
 			{
 				// get the number of workers currently assigned to it
 				int numAssigned = workerData.getNumAssignedWorkers(unit);

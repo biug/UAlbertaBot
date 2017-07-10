@@ -42,6 +42,8 @@ private:
 	std::map<BWAPI::Unit, BWAPI::Unit>  workerRepairMap;
 	std::map<BWAPI::Unit, WorkerMoveData>         workerMoveMap;
 	std::map<BWAPI::Unit, BWAPI::UnitType>        workerBuildingTypeMap;
+	std::map<BWAPI::Unit, std::set<BWAPI::Unit>>	workerInDepot;
+	std::map<BWAPI::Unit, std::set<BWAPI::Unit>>	workerInRefinery;
 
 	std::map<BWAPI::Unit, int>                    depotWorkerCount;
 	std::map<BWAPI::Unit, int>                    refineryWorkerCount;
@@ -85,6 +87,8 @@ public:
 	enum WorkerJob			getWorkerJob(BWAPI::Unit unit);
 	BWAPI::Unit   getWorkerResource(BWAPI::Unit unit);
 	BWAPI::Unit   getWorkerDepot(BWAPI::Unit unit);
+	BWAPI::Unit   getDepotWorker(BWAPI::Unit unit);
+	BWAPI::Unit   getRefineryWorker(BWAPI::Unit unit);
 	BWAPI::Unit   getWorkerRepairUnit(BWAPI::Unit unit);
 	BWAPI::UnitType			getWorkerBuildingType(BWAPI::Unit unit);
 	WorkerMoveData			getWorkerMoveData(BWAPI::Unit unit);

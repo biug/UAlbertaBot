@@ -24,6 +24,10 @@ class WorkerManager
     WorkerManager();
 
 public:
+	bool		needLessGas;
+	bool		needMoreGas;
+	bool		needLessMineral;
+	bool		needMoreMineral;
 
     void        update();
     void        onUnitDestroy(BWAPI::Unit unit);
@@ -36,6 +40,7 @@ public:
 
     void        drawResourceDebugInfo();
     void        updateWorkerStatus();
+	void		updateResourceStatus();
     void        drawWorkerInformation(int x,int y);
 
     int         getNumMineralWorkers();

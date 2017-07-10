@@ -72,6 +72,7 @@ void WorkerData::removeDepot(BWAPI::Unit unit)
 		if (workerDepotMap[worker] == unit)
 		{
 			setWorkerJob(worker, Idle, nullptr);
+			workerInDepot[unit].erase(worker);
 		}
 	}
 }
@@ -102,6 +103,7 @@ void WorkerData::setWorkerJob(BWAPI::Unit unit, enum WorkerJob job, BWAPI::Unit 
 
 		// set the mineral the worker is working on
 		workerDepotMap[unit] = jobUnit;
+		workerInDepot[jobUnit].insert(unit);
 
         BWAPI::Unit mineralToMine = getMineralToMine(unit);
         workerMineralAssignment[unit] = mineralToMine;
@@ -117,6 +119,7 @@ void WorkerData::setWorkerJob(BWAPI::Unit unit, enum WorkerJob job, BWAPI::Unit 
 
 		// set the refinery the worker is working on
 		workerRefineryMap[unit] = jobUnit;
+		workerInRefinery[jobUnit].insert(unit);
 
 		// right click the refinery to start harvesting
 		Micro::SmartRightClick(unit, jobUnit);
@@ -173,6 +176,7 @@ void WorkerData::clearPreviousJob(BWAPI::Unit unit)
 	{
 		depotWorkerCount[workerDepotMap[unit]] -= 1;
 
+		workerInDepot[workerDepotMap[unit]].erase(unit);
 		workerDepotMap.erase(unit);
 
         // remove a worker from this unit's assigned mineral patch
@@ -184,6 +188,7 @@ void WorkerData::clearPreviousJob(BWAPI::Unit unit)
 	else if (previousJob == Gas)
 	{
 		refineryWorkerCount[workerRefineryMap[unit]] -= 1;
+		workerInRefinery[workerRefineryMap[unit]].erase(unit);
 		workerRefineryMap.erase(unit);
 	}
 	else if (previousJob == Build)
@@ -435,6 +440,34 @@ BWAPI::Unit WorkerData::getWorkerRepairUnit(BWAPI::Unit unit)
 	{
 		return it->second;
 	}	
+
+	return nullptr;
+}
+
+BWAPI::Unit WorkerData::getDepotWorker(BWAPI::Unit unit)
+{
+	if (!unit) { return nullptr; }
+
+	std::map<BWAPI::Unit, std::set<BWAPI::Unit>>::iterator it = workerInDepot.find(unit);
+
+	if (it != workerInDepot.end() && it->second.size() > 0)
+	{
+		return *it->second.begin();
+	}
+
+	return nullptr;
+}
+
+BWAPI::Unit WorkerData::getRefineryWorker(BWAPI::Unit unit)
+{
+	if (!unit) { return nullptr; }
+
+	std::map<BWAPI::Unit, std::set<BWAPI::Unit>>::iterator it = workerInRefinery.find(unit);
+
+	if (it != workerInRefinery.end() && it->second.size() > 0)
+	{
+		return *it->second.begin();
+	}
 
 	return nullptr;
 }
