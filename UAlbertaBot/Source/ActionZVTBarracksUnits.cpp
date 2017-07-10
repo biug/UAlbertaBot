@@ -1,9 +1,10 @@
 #include "ActionZVTBarracksUnits.h"
 #include "BuildingManager.h"
-#include <vector>
+#include "ActionHelper.h"
 
 using namespace CasiaBot;
 using namespace UAlbertaBot;
+using namespace CasiaBot::ActionHelper;
 using namespace std;
 
 void ActionZVTBarracksUnits::init()
@@ -59,7 +60,7 @@ void ActionZVTBarracksUnits::getBuildOrderList(UAlbertaBot::ProductionQueue & qu
 
 		if (hatch_count <= 2)
 		{
-			mineralDequePositive = isDequeAllPositive(mineralNetIncrease);
+			mineralDequePositive = IsDequeAllPositive(mineralNetIncrease);
 			if (mineralDequePositive)
 			{
 				queue.add(MetaType(BWAPI::UnitTypes::Zerg_Hatchery), true);
@@ -67,8 +68,8 @@ void ActionZVTBarracksUnits::getBuildOrderList(UAlbertaBot::ProductionQueue & qu
 		}
 		else
 		{
-			mineralDequePositive = isDequeAllPositive(mineralNetIncrease);
-			gasDequePositive = isDequeAllPositive(gasNetIncrease);
+			mineralDequePositive = IsDequeAllPositive(mineralNetIncrease);
+			gasDequePositive = IsDequeAllPositive(gasNetIncrease);
 			if (mineralDequePositive && gasDequePositive)
 			{
 				queue.add(MetaType(BWAPI::UnitTypes::Zerg_Hatchery), true);
@@ -153,14 +154,3 @@ void ActionZVTBarracksUnits::updateState()
 	enermyTerranMechanizationRate = enermyTerranFactoryUnitsAmount / enermyTerranBarracksUnitsAmount;
 }
 
-bool ActionZVTBarracksUnits::isDequeAllPositive(std::deque<int>& queue)
-{
-	for (size_t i = 0; i < queue.size(); i++)
-	{
-		if (queue[i] <= 0)
-		{
-			return false;
-		}
-	}
-	return true;
-}

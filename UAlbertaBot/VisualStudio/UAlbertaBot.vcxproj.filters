@@ -168,6 +168,12 @@
     <ClCompile Include="..\Source\ActionZVTBarracksUnits.cpp">
       <Filter>game\action</Filter>
     </ClCompile>
+    <ClCompile Include="..\Source\ActionZVTFactoriesUnits.cpp">
+      <Filter>game\action</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Source\ActionHelper.cpp">
+      <Filter>game\util</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\Source\CombatCommander.h">
@@ -304,6 +310,12 @@
     </ClInclude>
     <ClInclude Include="..\Source\ActionZVTBarracksUnits.h">
       <Filter>game\action</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Source\ActionZVTFactoriesUnits.h">
+      <Filter>game\action</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Source\ActionHelper.h">
+      <Filter>game\util</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

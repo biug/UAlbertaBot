@@ -1,17 +1,19 @@
 #pragma once
 
 #include "ActionZergBase.h"
+#include "ProductionQueue.h"
 #include <deque>
 
 namespace CasiaBot
 {
-	class ActionZVTBarracksUnits : public ActionZergBase
+	class ActionZVTFactoriesUnits : public ActionZergBase
 	{
 	public:
 		void init();
 		bool canDeployAction();
 		bool tick();
 		void getBuildOrderList(UAlbertaBot::ProductionQueue &queue);
+
 	private:
 		int enermyTerranBarracksUnitsAmount;
 		int enermyTerranFactoryUnitsAmount;
@@ -21,7 +23,5 @@ namespace CasiaBot
 		int lastFrameGasAmount;
 		std::deque<int> mineralNetIncrease;
 		std::deque<int> gasNetIncrease;
-
-		void updateState();
 	};
 }

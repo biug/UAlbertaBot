@@ -114,8 +114,10 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="..\Source\ActionHelper.cpp" />
     <ClCompile Include="..\Source\ActionZergBase.cpp" />
     <ClCompile Include="..\Source\ActionZVTBarracksUnits.cpp" />
+    <ClCompile Include="..\Source\ActionZVTFactoriesUnits.cpp" />
     <ClCompile Include="..\Source\AutoObserver.cpp" />
     <ClCompile Include="..\Source\BOSSManager.cpp" />
     <ClCompile Include="..\source\BuildingManager.cpp" />
@@ -159,8 +161,10 @@
     <ClCompile Include="..\source\WorkerManager.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\Source\ActionHelper.h" />
     <ClInclude Include="..\Source\ActionZergBase.h" />
     <ClInclude Include="..\Source\ActionZVTBarracksUnits.h" />
+    <ClInclude Include="..\Source\ActionZVTFactoriesUnits.h" />
     <ClInclude Include="..\Source\AutoObserver.h" />
     <ClInclude Include="..\Source\BOSSManager.h" />
     <ClInclude Include="..\source\BuildingManager.h" />

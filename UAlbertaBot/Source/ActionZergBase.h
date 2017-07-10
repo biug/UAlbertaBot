@@ -1,5 +1,6 @@
 #pragma once
 #include "BuildOrder.h"
+#include "ProductionQueue.h"
 
 namespace CasiaBot
 {
