@@ -1,7 +1,6 @@
 #pragma once
 
 #include "ActionZergBase.h"
-#include "ProductionQueue.h"
 #include <deque>
 
 namespace CasiaBot
@@ -9,12 +8,15 @@ namespace CasiaBot
 	class ActionZVTFactoriesUnits : public ActionZergBase
 	{
 	public:
+		ActionZVTFactoriesUnits();
+		~ActionZVTFactoriesUnits(){}
 		void init();
 		bool canDeployAction();
 		bool tick();
 		void getBuildOrderList(UAlbertaBot::ProductionQueue &queue);
 
 	private:
+		bool isInitialized = false;
 		int enermyTerranBarrackUnitsAmount;
 		int enermyTerranFactoryUnitsAmount;
 		double enermyTerranMechanizationRate;
@@ -23,6 +25,7 @@ namespace CasiaBot
 		int lastFrameGasAmount;
 		std::deque<int> mineralNetIncrease;
 		std::deque<int> gasNetIncrease;
+		const double escalationMark = 80;	// 敌方人口达到此值时开始造雷兽
 
 		void updateState();
 	};

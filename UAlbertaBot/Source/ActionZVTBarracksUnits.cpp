@@ -7,14 +7,23 @@ using namespace UAlbertaBot;
 using namespace CasiaBot::ActionHelper;
 using namespace std;
 
+ActionZVTBarracksUnits::ActionZVTBarracksUnits()
+{
+	init();
+}
+
 void ActionZVTBarracksUnits::init()
 {
-	updateCurrentState();
-	mineralNetIncrease = { 0,0,0,0,0 };
-	gasNetIncrease = { 0,0,0,0,0 };
-	lastFrameCount = BWAPI::Broodwar->getFrameCount();
-	lastFrameMineralAmount = BWAPI::Broodwar->self()->minerals();
-	lastFrameGasAmount = BWAPI::Broodwar->self()->gas();
+	if (!isInitialized)
+	{
+		updateCurrentState();
+		mineralNetIncrease = { 0,0,0,0,0 };
+		gasNetIncrease = { 0,0,0,0,0 };
+		lastFrameCount = BWAPI::Broodwar->getFrameCount();
+		lastFrameMineralAmount = BWAPI::Broodwar->self()->minerals();
+		lastFrameGasAmount = BWAPI::Broodwar->self()->gas();
+		isInitialized = true;
+	}
 }
 
 bool ActionZVTBarracksUnits::canDeployAction()

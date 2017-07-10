@@ -8,11 +8,14 @@ namespace CasiaBot
 	class ActionZVTBarracksUnits : public ActionZergBase
 	{
 	public:
+		ActionZVTBarracksUnits();
+		~ActionZVTBarracksUnits(){}
 		void init();
 		bool canDeployAction();
 		bool tick();
 		void getBuildOrderList(UAlbertaBot::ProductionQueue &queue);
 	private:
+		bool isInitialized = false;
 		int enermyTerranBarrackUnitsAmount;
 		int enermyTerranFactoryUnitsAmount;
 		double enermyTerranMechanizationRate;
