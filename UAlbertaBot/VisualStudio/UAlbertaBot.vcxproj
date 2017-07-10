@@ -143,6 +143,8 @@
     <ClCompile Include="..\source\MicroManager.cpp" />
     <ClCompile Include="..\Source\Config.cpp" />
     <ClCompile Include="..\Source\Micro.cpp" />
+    <ClCompile Include="..\Source\MutaliskManager.cpp" />
+    <ClCompile Include="..\Source\OverlordManager.cpp" />
     <ClCompile Include="..\Source\ParseUtils.cpp" />
     <ClCompile Include="..\source\ProductionManager.cpp" />
     <ClCompile Include="..\Source\ProductionQueue.cpp" />
@@ -160,6 +162,7 @@
     <ClCompile Include="..\Source\UnitUtil.cpp" />
     <ClCompile Include="..\source\WorkerData.cpp" />
     <ClCompile Include="..\source\WorkerManager.cpp" />
+    <ClCompile Include="..\Source\ZerglingManager.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\Source\ActionHelper.h" />
@@ -192,6 +195,8 @@
     <ClInclude Include="..\source\MicroManager.h" />
     <ClInclude Include="..\Source\Config.h" />
     <ClInclude Include="..\Source\Micro.h" />
+    <ClInclude Include="..\Source\MutaliskManager.h" />
+    <ClInclude Include="..\Source\OverlordManager.h" />
     <ClInclude Include="..\Source\ParseUtils.h" />
     <ClInclude Include="..\source\ProductionManager.h" />
     <ClInclude Include="..\Source\ProductionQueue.h" />
@@ -210,6 +215,7 @@
     <ClInclude Include="..\Source\UnitUtil.h" />
     <ClInclude Include="..\source\WorkerData.h" />
     <ClInclude Include="..\source\WorkerManager.h" />
+    <ClInclude Include="..\Source\ZerglingManager.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

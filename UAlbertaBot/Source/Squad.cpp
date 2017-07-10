@@ -58,16 +58,23 @@ void Squad::update()
 		_rangedManager.regroup(regroupPosition);
 		_lurkerManager.regroup(regroupPosition);
 		//_hydraliskManager.regroup(regroupPosition);
+		_zerglingManager.regroup(regroupPosition);
+		_mutaliskManager.regroup(regroupPosition);
+		_overlordManager.regroup(regroupPosition);
+		
 	}
 	else // otherwise, execute micro
 	{
-		_meleeManager.execute(_order);
-		_rangedManager.execute(_order);
-		_lurkerManager.execute(_order);
-		_hydraliskManager.execute(_order);
+		// _meleeManager.execute(_order);
+		// _rangedManager.execute(_order);
+		// _lurkerManager.execute(_order);
+		// _hydraliskManager.execute(_order);
+		// _zerglingManager.execute(_order);
+		// _mutaliskManager.execute(_order);
+		_overlordManager.execute(_order);
 
-		_detectorManager.setUnitClosestToEnemy(unitClosestToEnemy());
-		_detectorManager.execute(_order);
+		// _detectorManager.setUnitClosestToEnemy(unitClosestToEnemy());
+		// _detectorManager.execute(_order);
 	}
 }
 
@@ -143,12 +150,16 @@ void Squad::addUnitsToMicroManagers()
 	BWAPI::Unitset detectorUnits;
 	BWAPI::Unitset lurkerUnits;
 	BWAPI::Unitset hydraliskUnits;
+	BWAPI::Unitset zerglingUnits;
+	BWAPI::Unitset mutaliskUnits;
+	BWAPI::Unitset overlordUnits;
 
 	// add _units to micro managers
 	for (auto & unit : _units)
 	{
 		if(unit->isCompleted() && unit->getHitPoints() > 0 && unit->exists())
 		{
+			UAB_ASSERT_SIMPLE("%d %d", unit->getType(), BWAPI::UnitTypes::Zerg_Overlord);
 			// select dector _units
             if (unit->getType() == BWAPI::UnitTypes::Zerg_Lurker)
 			{
@@ -157,6 +168,19 @@ void Squad::addUnitsToMicroManagers()
 			else if (unit->getType() == BWAPI::UnitTypes::Zerg_Hydralisk)
 			{
 				hydraliskUnits.insert(unit);
+			}
+			else if (unit->getType() == BWAPI::UnitTypes::Zerg_Zergling)
+			{
+				zerglingUnits.insert(unit);
+			}
+			else if (unit->getType() == BWAPI::UnitTypes::Zerg_Mutalisk)
+			{
+				mutaliskUnits.insert(unit);
+			}
+			else if (unit->getType() == BWAPI::UnitTypes::Zerg_Overlord)
+			{
+				UAB_ASSERT_SIMPLE("123");
+				overlordUnits.insert(unit);
 			}
 			else if (unit->getType().isDetector() && !unit->getType().isBuilding())
 			{
@@ -175,11 +199,14 @@ void Squad::addUnitsToMicroManagers()
 		}
 	}
 
-	_meleeManager.setUnits(meleeUnits);
-	_rangedManager.setUnits(rangedUnits);
-	_detectorManager.setUnits(detectorUnits);
-	_lurkerManager.setUnits(lurkerUnits);
-	_hydraliskManager.setUnits(hydraliskUnits);
+	// _meleeManager.setUnits(meleeUnits);
+	// _rangedManager.setUnits(rangedUnits);
+	// _detectorManager.setUnits(detectorUnits);
+	// _lurkerManager.setUnits(lurkerUnits);
+	// _hydraliskManager.setUnits(hydraliskUnits);
+	// _zerglingManager.setUnits(zerglingUnits);
+	// _mutaliskManager.setUnits(mutaliskUnits);
+	_overlordManager.setUnits(overlordUnits);
 }
 
 // calculates whether or not to regroup

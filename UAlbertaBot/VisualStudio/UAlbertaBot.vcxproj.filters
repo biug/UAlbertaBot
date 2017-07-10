@@ -177,6 +177,15 @@
     <ClCompile Include="..\Source\HydraliskManager.cpp">
       <Filter>game\combat\micro</Filter>
     </ClCompile>
+    <ClCompile Include="..\Source\ZerglingManager.cpp">
+      <Filter>game\combat\micro</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Source\OverlordManager.cpp">
+      <Filter>game\combat\micro</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Source\MutaliskManager.cpp">
+      <Filter>game\combat\micro</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\Source\CombatCommander.h">
@@ -321,6 +330,15 @@
       <Filter>game\util</Filter>
     </ClInclude>
     <ClInclude Include="..\Source\HydraliskManager.h">
+      <Filter>game\combat\micro</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Source\ZerglingManager.h">
+      <Filter>game\combat\micro</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Source\OverlordManager.h">
+      <Filter>game\combat\micro</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Source\MutaliskManager.h">
       <Filter>game\combat\micro</Filter>
     </ClInclude>
   </ItemGroup>
