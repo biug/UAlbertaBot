@@ -12,6 +12,7 @@
 #include "TankManager.h"
 #include "MedicManager.h"
 #include "LurkerManager.h"
+#include "HydraliskManager.h"
 
 namespace UAlbertaBot
 {
@@ -30,6 +31,7 @@ class Squad
 	RangedManager       _rangedManager;
 	DetectorManager     _detectorManager;
 	LurkerManager		_lurkerManager;
+	HydraliskManager	_hydraliskManager;
 
 	std::map<BWAPI::Unit, bool>	_nearEnemy;
 
