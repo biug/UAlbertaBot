@@ -1,5 +1,6 @@
 #pragma once
 #include "BuildOrder.h"
+#include "ProductionQueue.h"
 
 namespace CasiaBot
 {
@@ -12,9 +13,9 @@ namespace CasiaBot
 		virtual bool canDeployAction() = 0;
 		virtual void init() = 0;
 		virtual bool tick() = 0;
-		virtual UAlbertaBot::BuildOrder getBuildOrderList() = 0;
+		virtual void getBuildOrderList(UAlbertaBot::ProductionQueue &queue) = 0;
 
-	private:
+	protected:
 		//己方
 		//单位
 		int larva_count;						//幼虫
