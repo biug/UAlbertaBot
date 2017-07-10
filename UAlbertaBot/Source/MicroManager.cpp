@@ -37,7 +37,6 @@ void MicroManager::execute(const SquadOrder & inputOrder)
 	{
 		return;
 	}
-	UAB_ASSERT_SIMPLE("aaaaaaaaaaaaaaaaaaaaaaaaaaaaa");
 	order = inputOrder;
 	drawOrderText();
 
