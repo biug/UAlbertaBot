@@ -11,5 +11,7 @@ public:
 
 	OverlordManager();
 	void executeMicro(const BWAPI::Unitset & targets);
+	
+	void executeMove(const SquadOrder & inputOrder);
 };
 }

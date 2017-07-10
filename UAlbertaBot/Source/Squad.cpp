@@ -71,7 +71,7 @@ void Squad::update()
 		_hydraliskManager.execute(_order);
 		_zerglingManager.execute(_order);
 		_mutaliskManager.execute(_order);
-		_overlordManager.execute(_order);
+		_overlordManager.executeMove(_order);
 
 		// _detectorManager.setUnitClosestToEnemy(unitClosestToEnemy());
 		// _detectorManager.execute(_order);
