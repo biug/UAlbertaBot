@@ -78,7 +78,7 @@ void LurkerManager::executeMicro(const BWAPI::Unitset & targets)
 				// if we're not near the order position
 				if (lurker->getDistance(order.getPosition()) > 160)
 				{
-					if (lurker->canBurrow())
+					if (lurker->canUnburrow())
 					{
 						lurker->unburrow();
 					}
@@ -175,14 +175,31 @@ int LurkerManager::getAttackPriority(BWAPI::Unit rangedUnit, BWAPI::Unit target)
 	{
 		return 100;
 	}
-
 	if (target->getType().isBuilding() && (target->isCompleted() || target->isBeingConstructed()) && target->getDistance(ourBasePosition) < 1200)
 	{
 		return 90;
 	}
 
+	int priority = 0;
+	BWAPI::UnitType type(targetType);
+	double hpRatio = (type.maxHitPoints() > 0) ? target->getHitPoints() / type.maxHitPoints() : 1.0; 
+	//low hp
+	if (hpRatio < 0.33)
+	{
+		priority = 5;
+	}
+
+	//Tank, Reaver, High Templar
+	if (targetType == BWAPI::UnitTypes::Terran_Siege_Tank_Siege_Mode || 
+		targetType == BWAPI::UnitTypes::Terran_Siege_Tank_Tank_Mode ||
+		targetType == BWAPI::UnitTypes::Protoss_Reaver ||
+		targetType == BWAPI::UnitTypes::Protoss_High_Templar
+		)
+	{
+		return priority + 13;
+	}
 	// highest priority is something that can attack us or aid in combat
-	if (targetType == BWAPI::UnitTypes::Terran_Bunker || isThreat)
+	else if (targetType == BWAPI::UnitTypes::Terran_Bunker || isThreat)
 	{
 		return 11;
 	}

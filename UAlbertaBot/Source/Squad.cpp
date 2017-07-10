@@ -57,12 +57,14 @@ void Squad::update()
 		_meleeManager.regroup(regroupPosition);
 		_rangedManager.regroup(regroupPosition);
 		_lurkerManager.regroup(regroupPosition);
+		//_hydraliskManager.regroup(regroupPosition);
 	}
 	else // otherwise, execute micro
 	{
 		_meleeManager.execute(_order);
 		_rangedManager.execute(_order);
 		_lurkerManager.execute(_order);
+		_hydraliskManager.execute(_order);
 
 		_detectorManager.setUnitClosestToEnemy(unitClosestToEnemy());
 		_detectorManager.execute(_order);
@@ -140,6 +142,7 @@ void Squad::addUnitsToMicroManagers()
 	BWAPI::Unitset rangedUnits;
 	BWAPI::Unitset detectorUnits;
 	BWAPI::Unitset lurkerUnits;
+	BWAPI::Unitset hydraliskUnits;
 
 	// add _units to micro managers
 	for (auto & unit : _units)
@@ -150,6 +153,10 @@ void Squad::addUnitsToMicroManagers()
             if (unit->getType() == BWAPI::UnitTypes::Zerg_Lurker)
 			{
 				lurkerUnits.insert(unit);
+			}
+			else if (unit->getType() == BWAPI::UnitTypes::Zerg_Hydralisk)
+			{
+				hydraliskUnits.insert(unit);
 			}
 			else if (unit->getType().isDetector() && !unit->getType().isBuilding())
 			{
@@ -172,6 +179,7 @@ void Squad::addUnitsToMicroManagers()
 	_rangedManager.setUnits(rangedUnits);
 	_detectorManager.setUnits(detectorUnits);
 	_lurkerManager.setUnits(lurkerUnits);
+	_hydraliskManager.setUnits(hydraliskUnits);
 }
 
 // calculates whether or not to regroup
