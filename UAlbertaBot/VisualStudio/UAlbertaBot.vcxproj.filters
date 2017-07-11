@@ -192,6 +192,12 @@
     <ClCompile Include="..\Source\ActionZVZZerglingLurker.cpp">
       <Filter>game\action</Filter>
     </ClCompile>
+    <ClCompile Include="..\Source\ActionZVPDragoon.cpp">
+      <Filter>game\action</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Source\ActionZVPZealot.cpp">
+      <Filter>game\action</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\Source\CombatCommander.h">
@@ -351,6 +357,12 @@
       <Filter>game\action</Filter>
     </ClInclude>
     <ClInclude Include="..\Source\ActionZVZZerglingLurker.h">
+      <Filter>game\action</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Source\ActionZVPDragoon.h">
+      <Filter>game\action</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Source\ActionZVPZealot.h">
       <Filter>game\action</Filter>
     </ClInclude>
   </ItemGroup>
