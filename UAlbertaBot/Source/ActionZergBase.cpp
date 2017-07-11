@@ -130,7 +130,7 @@ void ActionZergBase::updateCurrentState()
 	//我方
 	for (auto &unit : BWAPI::Broodwar->self()->getUnits()) {
 		if (!unit->getType().isWorker() && !unit->getType().isBuilding()) {
-			if (unit->getType().isFlyer) {
+			if (unit->getType().isFlyer()) {
 				air_army_supply += unit->getType().supplyRequired();
 			}
 			else {
@@ -151,14 +151,14 @@ void ActionZergBase::updateCurrentState()
 
 		//军事力量
 		if (!unit->getType().isWorker() && !unit->getType().isBuilding()) {
-			if (unit->getType().isFlyer) {
+			if (unit->getType().isFlyer()) {
 				enemy_air_army_supply += unit->getType().supplyRequired();
 			}
 			else {
 				enemy_ground_army_supply += unit->getType().supplyRequired();
-				if (unit->getType().size == BWAPI::UnitSizeTypes::Large)
+				if (unit->getType().size() == BWAPI::UnitSizeTypes::Large)
 					enemy_ground_large_army_supply += unit->getType().supplyRequired();
-				if (unit->getType().size == BWAPI::UnitSizeTypes::Small)
+				if (unit->getType().size() == BWAPI::UnitSizeTypes::Small)
 					enemy_ground_small_army_supply += unit->getType().supplyRequired();
 			}
 			enemy_army_supply += unit->getType().supplyRequired();
@@ -228,7 +228,7 @@ std::pair<BWAPI::TilePosition, BWAPI::TilePosition> ActionZergBase::getClosestOp
 }
 
 double ActionZergBase::unitPathingDistance(BWAPI::UnitType type, std::pair<BWAPI::TilePosition, BWAPI::TilePosition> fromto) {
-	if (type.isFlyer)
+	if (type.isFlyer())
 		return (fromto.first - fromto.second).getLength();
 	return BWTA::getGroundDistance(fromto.first, fromto.second);
 }
