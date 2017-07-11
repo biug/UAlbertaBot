@@ -1,10 +1,12 @@
 #include "ActionZVTFactoriesUnits.h"
 #include "BuildingManager.h"
 #include "ActionHelper.h"
+#include "UnitUtil.h"
 
 using namespace CasiaBot;
 using namespace UAlbertaBot;
 using namespace CasiaBot::ActionHelper;
+using namespace UAlbertaBot::UnitUtil;
 using namespace std;
 
 ActionZVTFactoriesUnits::ActionZVTFactoriesUnits()
@@ -223,6 +225,13 @@ void ActionZVTFactoriesUnits::getBuildOrderList(UAlbertaBot::ProductionQueue & q
 			}
 
 		} while (true);
+
+		int extractorUpperBound = std::min(hatch_count, 3);
+		int currentExtractorCount = (int)GetAllUnitCount(BWAPI::UnitTypes::Zerg_Extractor);
+		if (currentExtractorCount < extractorUpperBound)
+		{
+			queue.add(MetaType(BWAPI::UnitTypes::Zerg_Extractor));
+		}
 	}
 	else
 	{
@@ -264,6 +273,13 @@ void ActionZVTFactoriesUnits::getBuildOrderList(UAlbertaBot::ProductionQueue & q
 			}
 
 		} while (true);
+
+		int extractorUpperBound = std::min(hatch_count, 3);
+		int currentExtractorCount = (int)GetAllUnitCount(BWAPI::UnitTypes::Zerg_Extractor);
+		if (currentExtractorCount < extractorUpperBound)
+		{
+			queue.add(MetaType(BWAPI::UnitTypes::Zerg_Extractor), true);
+		}
 	}
 }
 

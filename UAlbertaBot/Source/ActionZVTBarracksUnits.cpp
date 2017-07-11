@@ -1,10 +1,12 @@
 #include "ActionZVTBarracksUnits.h"
 #include "BuildingManager.h"
 #include "ActionHelper.h"
+#include "UnitUtil.h"
 
 using namespace CasiaBot;
 using namespace UAlbertaBot;
 using namespace CasiaBot::ActionHelper;
+using namespace UAlbertaBot::UnitUtil;
 using namespace std;
 
 ActionZVTBarracksUnits::ActionZVTBarracksUnits()
@@ -156,7 +158,12 @@ void ActionZVTBarracksUnits::getBuildOrderList(UAlbertaBot::ProductionQueue & qu
 
 	} while (true);
 
-
+	int extractorUpperBound = std::min(hatch_count, 3);
+	int currentExtractorCount = (int)GetAllUnitCount(BWAPI::UnitTypes::Zerg_Extractor);
+	if (currentExtractorCount < extractorUpperBound)
+	{
+		queue.add(MetaType(BWAPI::UnitTypes::Zerg_Extractor));
+	}
 
 }
 
