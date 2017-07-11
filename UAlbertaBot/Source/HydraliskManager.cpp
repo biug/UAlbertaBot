@@ -27,8 +27,9 @@ void HydraliskManager::assignTargetsOld(const BWAPI::Unitset & targets)
 		// if the order is to attack or defend
 		if (order.getType() == SquadOrderTypes::Attack || order.getType() == SquadOrderTypes::Defend) 
         {
+            BWAPI::Position ourBasePosition = BWAPI::Position(BWAPI::Broodwar->self()->getStartLocation());
 			// if there are targets
-			if (!hydraliskUnitTargets.empty())
+			if (!hydraliskUnitTargets.empty() && hydraliskUnit->getDistance(ourBasePosition) < 1200)
 			{
 				// find the best target for this zealot
 				BWAPI::Unit target = getTarget(hydraliskUnit, hydraliskUnitTargets);
@@ -37,7 +38,6 @@ void HydraliskManager::assignTargetsOld(const BWAPI::Unitset & targets)
 	            {
 		            BWAPI::Broodwar->drawLineMap(hydraliskUnit->getPosition(), hydraliskUnit->getTargetPosition(), BWAPI::Colors::Purple);
 	            }
-
 
 				// attack it
                 if (Config::Micro::KiteWithRangedUnits)
@@ -53,7 +53,6 @@ void HydraliskManager::assignTargetsOld(const BWAPI::Unitset & targets)
 			else
 			{
 				// if we're not near the order position
-				BWAPI::Position ourBasePosition = BWAPI::Position(BWAPI::Broodwar->self()->getStartLocation());
 				if (hydraliskUnit->getDistance(ourBasePosition) > 1000)
 				{
 					// move to it

@@ -40,14 +40,15 @@ void LurkerManager::executeMicro(const BWAPI::Unitset & targets)
 			{
 				for (auto & target : targets)
 				{
-					if(target->getType() == BWAPI::UnitTypes::Terran_Missile_Turret ||
-						target->getType() == BWAPI::UnitTypes::Terran_Science_Vessel ||
-						target->getType() == BWAPI::UnitTypes::Protoss_Photon_Cannon ||
-						target->getType() == BWAPI::UnitTypes::Protoss_Observer ||
-						target->getType() == BWAPI::UnitTypes::Zerg_Spore_Colony ||
-						target->getType() == BWAPI::UnitTypes::Zerg_Overlord)
+					BWAPI::UnitType targetType = target->getType();
+					if(targetType == BWAPI::UnitTypes::Terran_Missile_Turret ||
+						targetType == BWAPI::UnitTypes::Terran_Science_Vessel ||
+						targetType == BWAPI::UnitTypes::Protoss_Photon_Cannon ||
+						targetType == BWAPI::UnitTypes::Protoss_Observer ||
+						targetType == BWAPI::UnitTypes::Zerg_Spore_Colony ||
+						targetType == BWAPI::UnitTypes::Zerg_Overlord)
 					{
-						if (lurker->getDistance(target) >= target->getType().groundWeapon().maxRange() - 32)
+						if (lurker->getDistance(target) >= target->getType().sightRange() - 32)
 						{
 							continue;
 						}
