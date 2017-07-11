@@ -16,7 +16,7 @@ void ProductionManager::setBuildOrder(const BuildOrder & buildOrder)
 
 	for (size_t i(0); i<buildOrder.size(); ++i)
 	{
-		_queue.add(buildOrder[i]);
+		_queue.add(ProductionItem(buildOrder[i]));
 	}
 }
 
@@ -123,7 +123,8 @@ void ProductionManager::manageBuildOrderQueue()
 	// while there is still something left in the _queue
 	while (!_queue._readyQueue.empty()) 
 	{
-		MetaType unit = _queue._readyQueue.front();
+		ProductionItem & item = _queue._readyQueue.front();
+		MetaType & unit = item._unit;
 		_queue._readyQueue.pop_front();
 		// this is the unit which can produce the currentItem
         BWAPI::Unit producer = getProducer(unit);
@@ -132,7 +133,7 @@ void ProductionManager::manageBuildOrderQueue()
 		bool canMake = canMakeNow(producer, unit);
 
 		// if the next item in the list is a building and we can't yet make it
-        if (unit.isBuilding() && !(producer && canMake) && unit.whatBuilds().isWorker())
+        if (unit.isBuilding() && !(producer && canMake) && unit.whatBuilds().isWorker() && !item._assigned)
 		{
 			// construct a temporary building object
 			Building b(unit.getUnitType(), BWAPI::Broodwar->self()->getStartLocation());
@@ -143,6 +144,7 @@ void ProductionManager::manageBuildOrderQueue()
 
 			// predict the worker movement to that building location
 			predictWorkerMovement(b);
+			item._assigned = true;
 		}
 
 		// if we can make the current item

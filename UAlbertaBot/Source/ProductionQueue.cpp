@@ -7,19 +7,20 @@ ProductionQueue::ProductionQueue()
 	clear();
 }
 
-void ProductionQueue::add(MetaType meta, bool priority)
+void ProductionQueue::add(const ProductionItem & item, bool priority)
 {
-	if (priority || meta.getUnitType() == BWAPI::UnitTypes::Zerg_Overlord)
+	const MetaType & unit = item._unit;
+	if (priority || unit.getUnitType() == BWAPI::UnitTypes::Zerg_Overlord)
 	{
-		_priorityQueue.push_back(meta);
+		_priorityQueue.push_back(item);
 	}
-	else if (meta.isBuilding() || meta.isTech() || meta.isUpgrade())
+	else if (unit.isBuilding() || unit.isTech() || unit.isUpgrade())
 	{
-		_buildingQueue.push_back(meta);
+		_buildingQueue.push_back(item);
 	}
 	else
 	{
-		_armyQueue.push_back(meta);
+		_armyQueue.push_back(item);
 	}
 }
 
@@ -55,19 +56,20 @@ bool ProductionQueue::checkReady()
 	return !_readyQueue.empty();
 }
 
-void ProductionQueue::retreat(MetaType & unit)
+void ProductionQueue::retreat(const ProductionItem & item)
 {
+	const MetaType & unit = item._unit;
 	if (unit.getUnitType() == BWAPI::UnitTypes::Zerg_Overlord)
 	{
-		_priorityQueue.push_front(unit);
+		_priorityQueue.push_front(item);
 	}
 	else if (unit.isBuilding() || unit.isTech() || unit.isUpgrade())
 	{
-		_buildingQueue.push_front(unit);
+		_buildingQueue.push_front(item);
 	}
 	else
 	{
-		_armyQueue.push_front(unit);
+		_armyQueue.push_front(item);
 	}
 }
 
@@ -81,7 +83,7 @@ int ProductionQueue::overlordCount()
 	int count = 0;
 	for (int i = 0; i < _priorityQueue.size(); ++i)
 	{
-		if (_priorityQueue[i].getUnitType() == BWAPI::UnitTypes::Zerg_Overlord)
+		if (_priorityQueue[i]._unit.getUnitType() == BWAPI::UnitTypes::Zerg_Overlord)
 		{
 			++count;
 		}

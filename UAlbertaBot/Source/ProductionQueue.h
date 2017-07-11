@@ -1,7 +1,7 @@
 #pragma once
 
 #include <deque>
-#include "MetaType.h"
+#include "ProductionItem.h"
 
 namespace UAlbertaBot
 {
@@ -9,22 +9,22 @@ namespace UAlbertaBot
 	class ProductionQueue
 	{
 
-		std::deque<MetaType>	_buildingQueue;
-		std::deque<MetaType>	_armyQueue;
-		std::deque<MetaType>	_priorityQueue;
+		std::deque<ProductionItem>	_buildingQueue;
+		std::deque<ProductionItem>	_armyQueue;
+		std::deque<ProductionItem>	_priorityQueue;
 
 	public:
-		std::deque<MetaType>	_readyQueue;
+		std::deque<ProductionItem>	_readyQueue;
 
 		ProductionQueue();
 
-		void add(MetaType item, bool priority = false);
+		void add(const ProductionItem & item, bool priority = false);
 		void clear();
 
 		void launchReady();
 		bool checkReady();
 
-		void retreat(MetaType & item);
+		void retreat(const ProductionItem & item);
 
 		bool empty();
 		int overlordCount();

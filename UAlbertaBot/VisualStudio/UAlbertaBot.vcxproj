@@ -148,6 +148,7 @@
     <ClCompile Include="..\Source\MutaliskManager.cpp" />
     <ClCompile Include="..\Source\OverlordManager.cpp" />
     <ClCompile Include="..\Source\ParseUtils.cpp" />
+    <ClCompile Include="..\Source\ProductionItem.cpp" />
     <ClCompile Include="..\source\ProductionManager.cpp" />
     <ClCompile Include="..\Source\ProductionQueue.cpp" />
     <ClCompile Include="..\source\RangedManager.cpp" />
@@ -202,6 +203,7 @@
     <ClInclude Include="..\Source\MutaliskManager.h" />
     <ClInclude Include="..\Source\OverlordManager.h" />
     <ClInclude Include="..\Source\ParseUtils.h" />
+    <ClInclude Include="..\Source\ProductionItem.h" />
     <ClInclude Include="..\source\ProductionManager.h" />
     <ClInclude Include="..\Source\ProductionQueue.h" />
     <ClInclude Include="..\source\RangedManager.h" />

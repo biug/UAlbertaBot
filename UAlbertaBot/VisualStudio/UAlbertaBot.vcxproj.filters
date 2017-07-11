@@ -192,6 +192,9 @@
     <ClCompile Include="..\Source\ActionZVZZerglingLurker.cpp">
       <Filter>game\action</Filter>
     </ClCompile>
+    <ClCompile Include="..\Source\ProductionItem.cpp">
+      <Filter>game\util</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\Source\CombatCommander.h">
@@ -352,6 +355,9 @@
     </ClInclude>
     <ClInclude Include="..\Source\ActionZVZZerglingLurker.h">
       <Filter>game\action</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Source\ProductionItem.h">
+      <Filter>game\util</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
