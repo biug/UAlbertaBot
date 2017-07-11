@@ -5,20 +5,19 @@
 
 namespace CasiaBot
 {
-	class ActionZVTBarracksUnits : public ActionZergBase
+	class ActionZVZZerglingMutalisk : public ActionZergBase
 	{
 	public:
-		ActionZVTBarracksUnits();
-		~ActionZVTBarracksUnits(){}
+		ActionZVZZerglingMutalisk();
+		~ActionZVZZerglingMutalisk() {}
 		void init();
 		bool canDeployAction();
 		bool tick();
 		void getBuildOrderList(UAlbertaBot::ProductionQueue &queue);
+
 	private:
 		bool isInitialized = false;
-		int enemyTerranBarrackUnitsAmount;
-		int enemyTerranFactoryUnitsAmount;
-		double enemyTerranMechanizationRate;
+
 		int lastFrameCount = 0;
 		int lastFrameMineralAmount;
 		int lastFrameGasAmount;

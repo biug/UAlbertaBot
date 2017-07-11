@@ -17,9 +17,9 @@ namespace CasiaBot
 
 	private:
 		bool isInitialized = false;
-		int enermyTerranBarrackUnitsAmount;
-		int enermyTerranFactoryUnitsAmount;
-		double enermyTerranMechanizationRate;
+		int enemyTerranBarrackUnitsAmount;
+		int enemyTerranFactoryUnitsAmount;
+		double enemyTerranMechanizationRate;
 		int lastFrameCount = 0;
 		int lastFrameMineralAmount;
 		int lastFrameGasAmount;

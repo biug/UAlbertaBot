@@ -1,12 +1,11 @@
 #include "ActionZVTBarracksUnits.h"
 #include "BuildingManager.h"
 #include "ActionHelper.h"
-#include "UnitUtil.h"
+#include "InformationManager.h"
 
 using namespace CasiaBot;
 using namespace UAlbertaBot;
 using namespace CasiaBot::ActionHelper;
-using namespace UAlbertaBot::UnitUtil;
 using namespace std;
 
 ActionZVTBarracksUnits::ActionZVTBarracksUnits()
@@ -31,7 +30,7 @@ void ActionZVTBarracksUnits::init()
 bool ActionZVTBarracksUnits::canDeployAction()
 {
 	updateState();
-	if (enermyTerranMechanizationRate <= 0.5)
+	if (enemyTerranMechanizationRate <= 0.5)
 	{
 		return true;
 	}
@@ -42,7 +41,7 @@ bool ActionZVTBarracksUnits::canDeployAction()
 bool ActionZVTBarracksUnits::tick()
 {
 	updateState();
-	if (enermyTerranMechanizationRate >= 1)
+	if (enemyTerranMechanizationRate >= 1)
 	{
 		return true;
 	}
@@ -52,6 +51,8 @@ bool ActionZVTBarracksUnits::tick()
 
 void ActionZVTBarracksUnits::getBuildOrderList(UAlbertaBot::ProductionQueue & queue)
 {
+	updateState();
+
 	// 判断是否需要增加母巢
 	int currentFrameCount = BWAPI::Broodwar->getFrameCount();
 	if (hatch_count <= 4 && currentFrameCount && currentFrameCount % 200 == 0)
@@ -133,7 +134,7 @@ void ActionZVTBarracksUnits::getBuildOrderList(UAlbertaBot::ProductionQueue & qu
 	}
 
 	// 判断需要建造多少部队
-	int need_zergling_count = (int)(enermyTerranBarrackUnitsAmount * 1.5) - zergling_count;
+	int need_zergling_count = (int)(enemyTerranBarrackUnitsAmount * 1.5) - zergling_count;
 	int need_lurker_count = need_zergling_count / 2;
 
 	// 穿插建造Zergling和Lurker
@@ -159,7 +160,7 @@ void ActionZVTBarracksUnits::getBuildOrderList(UAlbertaBot::ProductionQueue & qu
 	} while (true);
 
 	int extractorUpperBound = std::min(hatch_count, 3);
-	int currentExtractorCount = (int)GetAllUnitCount(BWAPI::UnitTypes::Zerg_Extractor);
+	int currentExtractorCount = (int)InformationManager::Instance().getNumUnits(BWAPI::UnitTypes::Zerg_Extractor, BWAPI::Broodwar->self());
 	if (currentExtractorCount < extractorUpperBound)
 	{
 		queue.add(MetaType(BWAPI::UnitTypes::Zerg_Extractor));
@@ -170,8 +171,22 @@ void ActionZVTBarracksUnits::getBuildOrderList(UAlbertaBot::ProductionQueue & qu
 void ActionZVTBarracksUnits::updateState()
 {
 	updateCurrentState();
-	enermyTerranBarrackUnitsAmount = enermy_marine_count + enermy_firebat_count + enermy_ghost_count + enermy_medic_count;
-	enermyTerranFactoryUnitsAmount = enermy_vulture_count + enermy_tank_count + enermy_goliath_count;
-	enermyTerranMechanizationRate = enermyTerranFactoryUnitsAmount / enermyTerranBarrackUnitsAmount;
+
+	auto &info = InformationManager::Instance();
+	auto self = BWAPI::Broodwar->self();
+	auto enemy = BWAPI::Broodwar->enemy();
+	hatch_count = info.getNumUnits(BWAPI::UnitTypes::Zerg_Hatchery, self) + info.getNumUnits(BWAPI::UnitTypes::Zerg_Lair, self) + info.getNumUnits(BWAPI::UnitTypes::Zerg_Hive, self);
+	zergling_count = info.getNumUnits(BWAPI::UnitTypes::Zerg_Zergling, self);
+	enemy_marine_count = info.getNumUnits(BWAPI::UnitTypes::Terran_Marine, enemy);
+	enemy_firebat_count = info.getNumUnits(BWAPI::UnitTypes::Terran_Firebat, enemy);
+	enemy_ghost_count = info.getNumUnits(BWAPI::UnitTypes::Terran_Ghost, enemy);
+	enemy_medic_count = info.getNumUnits(BWAPI::UnitTypes::Terran_Medic, enemy);
+	enemy_vulture_count = info.getNumUnits(BWAPI::UnitTypes::Terran_Vulture, enemy);
+	enemy_tank_count = info.getNumUnits(BWAPI::UnitTypes::Terran_Siege_Tank_Tank_Mode, enemy);
+	enemy_goliath_count = info.getNumUnits(BWAPI::UnitTypes::Terran_Goliath, enemy);
+
+	enemyTerranBarrackUnitsAmount = enemy_marine_count + enemy_firebat_count + enemy_ghost_count + enemy_medic_count;
+	enemyTerranFactoryUnitsAmount = enemy_vulture_count + enemy_tank_count + enemy_goliath_count;
+	enemyTerranMechanizationRate = enemyTerranFactoryUnitsAmount / enemyTerranBarrackUnitsAmount;
 }
 
