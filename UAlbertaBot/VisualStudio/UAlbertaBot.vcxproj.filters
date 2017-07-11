@@ -186,6 +186,9 @@
     <ClCompile Include="..\Source\MutaliskManager.cpp">
       <Filter>game\combat\micro</Filter>
     </ClCompile>
+    <ClCompile Include="..\Source\ActionZVZZerglingMutalisk.cpp">
+      <Filter>game\action</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\Source\CombatCommander.h">
@@ -340,6 +343,9 @@
     </ClInclude>
     <ClInclude Include="..\Source\MutaliskManager.h">
       <Filter>game\combat\micro</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Source\ActionZVZZerglingMutalisk.h">
+      <Filter>game\action</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
