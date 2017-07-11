@@ -18,8 +18,6 @@ void LurkerManager::executeMicro(const BWAPI::Unitset & targets)
 
 	int lurkerRange = BWAPI::UnitTypes::Zerg_Lurker.groundWeapon().maxRange() - 32;
 
-
-
 	// for each lurker
 	for (auto & lurker : lurkers)
 	{
@@ -40,6 +38,28 @@ void LurkerManager::executeMicro(const BWAPI::Unitset & targets)
 			// if there are targets
 			if (!lurkerTargets.empty())
 			{
+				for (auto & target : targets)
+				{
+					if(target->getType() == BWAPI::UnitTypes::Terran_Missile_Turret ||
+						target->getType() == BWAPI::UnitTypes::Terran_Science_Vessel ||
+						target->getType() == BWAPI::UnitTypes::Protoss_Photon_Cannon ||
+						target->getType() == BWAPI::UnitTypes::Protoss_Observer ||
+						target->getType() == BWAPI::UnitTypes::Zerg_Spore_Colony ||
+						target->getType() == BWAPI::UnitTypes::Zerg_Overlord)
+					{
+						if (lurker->getDistance(target) >= target->getType().groundWeapon().maxRange() - 32)
+						{
+							continue;
+						}
+						if (lurker->canUnburrow()){
+							lurker->unburrow();
+						}
+						BWAPI::Position fleeVector = Micro::GetKiteVector(target, lurker);
+						BWAPI::Position moveToPosition(lurker->getPosition() + fleeVector);
+						Micro::SmartMove(lurker, moveToPosition);
+						return;
+					}
+				}
 				// find the best target for this lurker
 				BWAPI::Unit target = getTarget(lurker, lurkerTargets);
 
@@ -58,7 +78,6 @@ void LurkerManager::executeMicro(const BWAPI::Unitset & targets)
 				{
 					lurker->unburrow();
 				}
-
 
 				// if we're in siege mode just attack the target
 				if (lurker->isBurrowed())
@@ -157,13 +176,6 @@ int LurkerManager::getAttackPriority(BWAPI::Unit rangedUnit, BWAPI::Unit target)
 	BWAPI::UnitType rangedType = rangedUnit->getType();
 	BWAPI::UnitType targetType = target->getType();
 
-	bool isThreat = rangedType.isFlyer() ? targetType.airWeapon() != BWAPI::WeaponTypes::None : targetType.groundWeapon() != BWAPI::WeaponTypes::None;
-
-	if (target->getType().isWorker())
-	{
-		isThreat = false;
-	}
-
 	if (target->getType() == BWAPI::UnitTypes::Zerg_Larva || target->getType() == BWAPI::UnitTypes::Zerg_Egg)
 	{
 		return 0;
@@ -189,43 +201,52 @@ int LurkerManager::getAttackPriority(BWAPI::Unit rangedUnit, BWAPI::Unit target)
 		priority = 5;
 	}
 
-	//Tank, Reaver, High Templar
-	if (targetType == BWAPI::UnitTypes::Terran_Siege_Tank_Siege_Mode || 
+    //Medic
+    if (targetType == BWAPI::UnitTypes::Terran_Medic)
+    {
+        return priority + 15;
+    }
+    //Science Vessel, Shuttle
+    else if (targetType == BWAPI::UnitTypes::Terran_Science_Vessel ||
+            targetType == BWAPI::UnitTypes::Protoss_Shuttle)
+    {
+		return priority + 14;
+    }
+	//Tank, Reaver, High Templar, Bunker
+	else if (targetType == BWAPI::UnitTypes::Terran_Siege_Tank_Siege_Mode || 
 		targetType == BWAPI::UnitTypes::Terran_Siege_Tank_Tank_Mode ||
 		targetType == BWAPI::UnitTypes::Protoss_Reaver ||
-		targetType == BWAPI::UnitTypes::Protoss_High_Templar
+		targetType == BWAPI::UnitTypes::Protoss_High_Templar ||
+		targetType == BWAPI::UnitTypes::Terran_Bunker
 		)
 	{
 		return priority + 13;
 	}
-	// highest priority is something that can attack us or aid in combat
-	else if (targetType == BWAPI::UnitTypes::Terran_Bunker || isThreat)
+	//Archon
+	else if(targetType == BWAPI::UnitTypes::Protoss_Archon)
 	{
-		return 11;
+		return priority + 12;
 	}
 	// next priority is worker
 	else if (targetType.isWorker())
 	{
 		return 9;
 	}
-	// next is special buildings
-	else if (targetType == BWAPI::UnitTypes::Zerg_Spawning_Pool)
+	//can attack us
+	else if (targetType.groundWeapon() != BWAPI::WeaponTypes::None)
 	{
-		return 5;
+		return priority + 11;
 	}
 	// next is special buildings
-	else if (targetType == BWAPI::UnitTypes::Protoss_Pylon)
+	else if (targetType == BWAPI::UnitTypes::Zerg_Spawning_Pool ||
+			targetType == BWAPI::UnitTypes::Protoss_Pylon)
 	{
-		return 5;
+		return 7;
 	}
-	// next is buildings that cost gas
-	else if (targetType.gasPrice() > 0)
+	// next is buildings that cost
+	else if (targetType.gasPrice() > 0 || targetType.mineralPrice() > 0)
 	{
-		return 4;
-	}
-	else if (targetType.mineralPrice() > 0)
-	{
-		return 3;
+		return targetType.gasPrice() / 50 + targetType.mineralPrice() / 100;
 	}
 	// then everything else
 	else

@@ -19,7 +19,8 @@ void MutaliskManager::assignTargetsOld(const BWAPI::Unitset & targets)
 
 	// figure out targets
 	BWAPI::Unitset mutaliskUnitTargets;
-    std::copy_if(targets.begin(), targets.end(), std::inserter(mutaliskUnitTargets, mutaliskUnitTargets.end()), [](BWAPI::Unit u){ return u->isVisible(); });
+    std::copy_if(targets.begin(), targets.end(), std::inserter(mutaliskUnitTargets, mutaliskUnitTargets.end()),
+     [](BWAPI::Unit u){ return u->isVisible(); });
 
     for (auto & mutaliskUnit : mutaliskUnits)
 	{
@@ -51,7 +52,6 @@ void MutaliskManager::assignTargetsOld(const BWAPI::Unitset & targets)
 			// if there are no targets
 			else
 			{
-
 				// if we're not near the order position
 				BWAPI::Position ourBasePosition = BWAPI::Position(BWAPI::Broodwar->self()->getStartLocation());
 				if (mutaliskUnit->getDistance(ourBasePosition) > 1000)
@@ -121,34 +121,12 @@ int MutaliskManager::getAttackPriority(BWAPI::Unit mutaliskUnit, BWAPI::Unit tar
 	BWAPI::UnitType rangedType = mutaliskUnit->getType();
 	BWAPI::UnitType targetType = target->getType();
 
-    
-    if (mutaliskUnit->getType() == BWAPI::UnitTypes::Zerg_Scourge)
-    {
-        if (target->getType() == BWAPI::UnitTypes::Protoss_Carrier)
-        {
-            
-            return 100;
-        }
-
-        if (target->getType() == BWAPI::UnitTypes::Protoss_Corsair)
-        {
-            return 90;
-        }
-    }
-
-	bool isThreat = rangedType.isFlyer() ? targetType.airWeapon() != BWAPI::WeaponTypes::None : targetType.groundWeapon() != BWAPI::WeaponTypes::None;
-
-    if (target->getType().isWorker())
-    {
-        isThreat = false;
-    }
-
     if (target->getType() == BWAPI::UnitTypes::Zerg_Larva || target->getType() == BWAPI::UnitTypes::Zerg_Egg)
     {
         return 0;
     }
 
-    if (mutaliskUnit->isFlying() && target->getType() == BWAPI::UnitTypes::Protoss_Carrier)
+    if (target->getType() == BWAPI::UnitTypes::Protoss_Carrier)
     {
         return 101;
     }
@@ -175,49 +153,52 @@ int MutaliskManager::getAttackPriority(BWAPI::Unit mutaliskUnit, BWAPI::Unit tar
 		priority = 5;
 	}
 
-	//Tank, Reaver, High Templar
-	if (targetType == BWAPI::UnitTypes::Terran_Siege_Tank_Siege_Mode || 
-		targetType == BWAPI::UnitTypes::Terran_Siege_Tank_Tank_Mode ||
-		targetType == BWAPI::UnitTypes::Protoss_Reaver ||
-		targetType == BWAPI::UnitTypes::Protoss_High_Templar
-		)
+    //Medic
+    if (targetType == BWAPI::UnitTypes::Terran_Medic)
+    {
+        return priority + 15;
+    }
+    //Science Vessel, Shuttle
+    else if (targetType == BWAPI::UnitTypes::Terran_Science_Vessel ||
+            targetType == BWAPI::UnitTypes::Protoss_Shuttle)
+    {
+		return priority + 14;
+    }
+    //Tank, Reaver, High Templar, Bunker
+    else if (targetType == BWAPI::UnitTypes::Terran_Siege_Tank_Siege_Mode || 
+        targetType == BWAPI::UnitTypes::Terran_Siege_Tank_Tank_Mode ||
+        targetType == BWAPI::UnitTypes::Protoss_Reaver ||
+        targetType == BWAPI::UnitTypes::Protoss_High_Templar ||
+        targetType == BWAPI::UnitTypes::Terran_Bunker
+        )
 	{
 		return priority + 13;
 	}
-	// highest priority is something that can attack us or aid in combat
-	else if (targetType ==  BWAPI::UnitTypes::Terran_Bunker || isThreat)
-    {
-        return 11;
-    }
-	// next priority is worker
-	else if (targetType.isWorker()) 
-	{
-        if (mutaliskUnit->getType() == BWAPI::UnitTypes::Terran_Vulture)
-        {
-            return 11;
-        }
 
-  		return 11;
-	}
-    // next is special buildings
-	else if (targetType == BWAPI::UnitTypes::Zerg_Spawning_Pool)
-	{
-		return 5;
-	}
-	// next is special buildings
-	else if (targetType == BWAPI::UnitTypes::Protoss_Pylon)
-	{
-		return 5;
-	}
-	// next is buildings that cost gas
-	else if (targetType.gasPrice() > 0)
-	{
-		return 4;
-	}
-	else if (targetType.mineralPrice() > 0)
-	{
-		return 3;
-	}
+    // next priority is worker
+    else if (targetType.isWorker())
+    {
+        return 9;
+    }
+    //can attack us
+    else if (targetType.airWeapon() != BWAPI::WeaponTypes::None)
+    {
+        return priority + 11;
+    }
+    else if (targetType.groundWeapon() != BWAPI::WeaponTypes::None)
+    {
+        return priority + 10;
+    }
+    else if (targetType == BWAPI::UnitTypes::Zerg_Spawning_Pool ||
+            targetType == BWAPI::UnitTypes::Protoss_Pylon)
+    {
+        return 7;
+    }
+	// next is buildings that cost
+    else if (targetType.gasPrice() > 0 || targetType.mineralPrice() > 0)
+    {
+        return targetType.gasPrice() / 50 + targetType.mineralPrice() / 100;
+    }
 	// then everything else
 	else
 	{

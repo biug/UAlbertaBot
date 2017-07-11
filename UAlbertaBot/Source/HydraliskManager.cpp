@@ -1,4 +1,4 @@
-#include "HydraliskManager.h"
+﻿#include "HydraliskManager.h"
 #include "UnitUtil.h"
 
 using namespace UAlbertaBot;
@@ -19,7 +19,8 @@ void HydraliskManager::assignTargetsOld(const BWAPI::Unitset & targets)
 
 	// figure out targets
 	BWAPI::Unitset hydraliskUnitTargets;
-    std::copy_if(targets.begin(), targets.end(), std::inserter(hydraliskUnitTargets, hydraliskUnitTargets.end()), [](BWAPI::Unit u){ return u->isVisible(); });
+    std::copy_if(targets.begin(), targets.end(), std::inserter(hydraliskUnitTargets, hydraliskUnitTargets.end()),
+     [](BWAPI::Unit u){ return u->isVisible(); });
 
     for (auto & hydraliskUnit : hydraliskUnits)
 	{
@@ -51,7 +52,6 @@ void HydraliskManager::assignTargetsOld(const BWAPI::Unitset & targets)
 			// if there are no targets
 			else
 			{
-
 				// if we're not near the order position
 				BWAPI::Position ourBasePosition = BWAPI::Position(BWAPI::Broodwar->self()->getStartLocation());
 				if (hydraliskUnit->getDistance(ourBasePosition) > 1000)
@@ -136,12 +136,6 @@ int HydraliskManager::getAttackPriority(BWAPI::Unit hydraliskUnit, BWAPI::Unit t
         }
     }
 
-	bool isThreat = rangedType.isFlyer() ? targetType.airWeapon() != BWAPI::WeaponTypes::None : targetType.groundWeapon() != BWAPI::WeaponTypes::None;
-
-    if (target->getType().isWorker())
-    {
-        isThreat = false;
-    }
 
     if (target->getType() == BWAPI::UnitTypes::Zerg_Larva || target->getType() == BWAPI::UnitTypes::Zerg_Egg)
     {
@@ -175,54 +169,58 @@ int HydraliskManager::getAttackPriority(BWAPI::Unit hydraliskUnit, BWAPI::Unit t
 		priority = 5;
 	}
 
-	//Tank, Reaver, High Templar
-	if (targetType == BWAPI::UnitTypes::Terran_Siege_Tank_Siege_Mode || 
-		targetType == BWAPI::UnitTypes::Terran_Siege_Tank_Tank_Mode ||
-		targetType == BWAPI::UnitTypes::Protoss_Reaver ||
-		targetType == BWAPI::UnitTypes::Protoss_High_Templar
-		)
-	{
-		return priority + 13;
-	}
-	// highest priority is something that can attack us or aid in combat
-	else if (targetType ==  BWAPI::UnitTypes::Terran_Bunker || isThreat)
+    //Medic
+    if (targetType == BWAPI::UnitTypes::Terran_Medic)
+    {
+        return priority + 15;
+    }
+    //Science Vessel, Shuttle
+    else if (targetType == BWAPI::UnitTypes::Terran_Science_Vessel ||
+            targetType == BWAPI::UnitTypes::Protoss_Shuttle)
+    {
+		return priority + 14;
+    }
+    //Tank, Reaver, High Templar, Bunker
+    else if (targetType == BWAPI::UnitTypes::Terran_Siege_Tank_Siege_Mode || 
+        targetType == BWAPI::UnitTypes::Terran_Siege_Tank_Tank_Mode ||
+        targetType == BWAPI::UnitTypes::Protoss_Reaver ||
+        targetType == BWAPI::UnitTypes::Protoss_High_Templar ||
+        targetType == BWAPI::UnitTypes::Terran_Bunker
+        )
+    {
+        return priority + 13;
+    }
+    //Archon
+    else if (targetType == BWAPI::UnitTypes::Protoss_Archon)
+    {
+        return priority + 12;
+    }
+    //can attack us
+    else if (targetType.groundWeapon() != BWAPI::WeaponTypes::None)
     {
         return 11;
     }
-	// next priority is worker
-	else if (targetType.isWorker()) 
-	{
-        if (hydraliskUnit->getType() == BWAPI::UnitTypes::Terran_Vulture)
-        {
-            return 11;
-        }
-
-  		return 11;
-	}
+    // next priority is worker
+    else if (targetType.isWorker())
+    {
+        return 9;
+    }
     // next is special buildings
-	else if (targetType == BWAPI::UnitTypes::Zerg_Spawning_Pool)
-	{
-		return 5;
-	}
-	// next is special buildings
-	else if (targetType == BWAPI::UnitTypes::Protoss_Pylon)
-	{
-		return 5;
-	}
-	// next is buildings that cost gas
-	else if (targetType.gasPrice() > 0)
-	{
-		return 4;
-	}
-	else if (targetType.mineralPrice() > 0)
-	{
-		return 3;
-	}
-	// then everything else
-	else
-	{
-		return 1;
-	}
+    else if (targetType == BWAPI::UnitTypes::Zerg_Spawning_Pool ||
+            targetType == BWAPI::UnitTypes::Protoss_Pylon)
+    {
+        return 7;
+    }
+    // next is buildings that cost
+    else if (targetType.gasPrice() > 0 || targetType.mineralPrice() > 0)
+    {
+        return targetType.gasPrice() / 50 + targetType.mineralPrice() / 100;
+    }
+    // then everything else
+    else
+    {
+        return 1;
+    }
 }
 
 BWAPI::Unit HydraliskManager::closestrangedUnit(BWAPI::Unit target, std::set<BWAPI::Unit> & hydraliskUnitsToAssign)

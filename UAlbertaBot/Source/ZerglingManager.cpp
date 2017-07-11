@@ -1,4 +1,4 @@
-#include "ZerglingManager.h"
+﻿#include "ZerglingManager.h"
 #include "UnitUtil.h"
 
 using namespace UAlbertaBot;
@@ -121,59 +121,66 @@ BWAPI::Unit ZerglingManager::getTarget(BWAPI::Unit zerglingUnit, const BWAPI::Un
 }
 
 	// get the attack priority of a type in relation to a zergling
-int ZerglingManager::getAttackPriority(BWAPI::Unit attacker, BWAPI::Unit unit) 
+int ZerglingManager::getAttackPriority(BWAPI::Unit zerglingUnit, BWAPI::Unit target)
 {
-	BWAPI::UnitType type = unit->getType();
+	BWAPI::UnitType rangedType = zerglingUnit->getType();
+	BWAPI::UnitType targetType = target->getType();
 
-    if (attacker->getType() == BWAPI::UnitTypes::Protoss_Dark_Templar 
-        && unit->getType() == BWAPI::UnitTypes::Terran_Missile_Turret
-        && (BWAPI::Broodwar->self()->deadUnitCount(BWAPI::UnitTypes::Protoss_Dark_Templar) == 0))
+	if (targetType == BWAPI::UnitTypes::Terran_Missile_Turret)
     {
-        return 13;
+        return 18;
     }
 
-	if (attacker->getType() == BWAPI::UnitTypes::Protoss_Dark_Templar && unit->getType().isWorker())
+	int priority = 0;
+	BWAPI::UnitType type(targetType);
+	double hpRatio = (type.maxHitPoints() > 0) ? target->getHitPoints() / type.maxHitPoints() : 1.0; 
+	//low hp
+	if (hpRatio < 0.33)
 	{
-		return 12;
+		priority = 5;
 	}
 
-	// highest priority is something that can attack us or aid in combat
-    if (type ==  BWAPI::UnitTypes::Terran_Bunker)
+    //Medic
+    if (targetType == BWAPI::UnitTypes::Terran_Medic)
     {
-        return 11;
+        return priority + 15;
     }
-    else if (type == BWAPI::UnitTypes::Terran_Medic || 
-		(type.groundWeapon() != BWAPI::WeaponTypes::None && !type.isWorker()) || 
-		type ==  BWAPI::UnitTypes::Terran_Bunker ||
-		type == BWAPI::UnitTypes::Protoss_High_Templar ||
-		type == BWAPI::UnitTypes::Protoss_Reaver ||
-		(type.isWorker() && unitNearChokepoint(unit))) 
+    //Science Vessel, Shuttle
+    else if (targetType == BWAPI::UnitTypes::Terran_Science_Vessel ||
+            targetType == BWAPI::UnitTypes::Protoss_Shuttle)
+    {
+		return priority + 14;
+    }
+	//Tank, Reaver, High Templar, Bunker
+	else if (targetType == BWAPI::UnitTypes::Terran_Siege_Tank_Siege_Mode || 
+		targetType == BWAPI::UnitTypes::Terran_Siege_Tank_Tank_Mode ||
+		targetType == BWAPI::UnitTypes::Protoss_Reaver ||
+		targetType == BWAPI::UnitTypes::Protoss_High_Templar ||
+		targetType == BWAPI::UnitTypes::Terran_Bunker
+		)
 	{
-		return 10;
-	} 
+		return priority + 13;
+	}
 	// next priority is worker
-	else if (type.isWorker()) 
+	else if (targetType.isWorker())
 	{
 		return 9;
 	}
-    // next is special buildings
-	else if (type == BWAPI::UnitTypes::Zerg_Spawning_Pool)
+	//can attack us
+	else if (targetType.groundWeapon() != BWAPI::WeaponTypes::None)
 	{
-		return 5;
+		return priority + 11;
 	}
 	// next is special buildings
-	else if (type == BWAPI::UnitTypes::Protoss_Pylon)
+	else if (targetType == BWAPI::UnitTypes::Zerg_Spawning_Pool ||
+			targetType == BWAPI::UnitTypes::Protoss_Pylon)
 	{
-		return 5;
+		return 7;
 	}
-	// next is buildings that cost gas
-	else if (type.gasPrice() > 0)
+	// next is buildings that cost
+	else if (targetType.gasPrice() > 0 || targetType.mineralPrice() > 0)
 	{
-		return 4;
-	}
-	else if (type.mineralPrice() > 0)
-	{
-		return 3;
+		return targetType.gasPrice() / 50 + targetType.mineralPrice() / 100;
 	}
 	// then everything else
 	else
