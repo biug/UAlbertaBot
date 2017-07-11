@@ -17,7 +17,6 @@ void ActionZVPZealot::init()
 {
 	if (!isInitialized)
 	{
-		updateCurrentState();
 		mineralNetIncrease = { 0,0,0,0,0 };
 		gasNetIncrease = { 0,0,0,0,0 };
 		lastFrameCount = BWAPI::Broodwar->getFrameCount();
@@ -29,7 +28,6 @@ void ActionZVPZealot::init()
 
 bool ActionZVPZealot::canDeployAction()
 {
-	updateState();
 	if (enemyDragoonOverZealotRate <= 1 && enemy_dragoon_count <= 5)
 	{
 		return true;
@@ -42,7 +40,6 @@ bool ActionZVPZealot::canDeployAction()
 
 bool ActionZVPZealot::tick()
 {
-	updateState();
 	if (enemyDragoonOverZealotRate > 1 || enemy_dragoon_count > 5)
 	{
 		return true;
@@ -55,8 +52,6 @@ bool ActionZVPZealot::tick()
 
 void ActionZVPZealot::getBuildOrderList(UAlbertaBot::ProductionQueue & queue)
 {
-	updateState();
-
 	// 判断是否需要增加母巢
 	int currentFrameCount = BWAPI::Broodwar->getFrameCount();
 	if (hatch_count <= 4 && currentFrameCount && currentFrameCount % 200 == 0)
@@ -191,9 +186,9 @@ void ActionZVPZealot::getBuildOrderList(UAlbertaBot::ProductionQueue & queue)
 	}
 }
 
-void ActionZVPZealot::updateState()
+void ActionZVPZealot::updateCurrentState(ProductionQueue &queue)
 {
-	updateCurrentState();
+	ActionZergBase::updateCurrentState(queue);
 
 	auto &info = InformationManager::Instance();
 	auto self = BWAPI::Broodwar->self();
@@ -205,5 +200,5 @@ void ActionZVPZealot::updateState()
 	enemy_dragoon_count = info.getNumUnits(BWAPI::UnitTypes::Protoss_Dragoon, enemy);
 	enemy_ht_count = info.getNumUnits(BWAPI::UnitTypes::Protoss_High_Templar, enemy);
 	enemy_dt_count = info.getNumUnits(BWAPI::UnitTypes::Protoss_Dark_Templar, enemy);
-	enemyDragoonOverZealotRate = (double)enemy_dragoon_count / enemy_zealot_count;
+	enemyDragoonOverZealotRate = enemy_zealot_count == 0 ? 10 : (double)enemy_dragoon_count / (double)enemy_zealot_count;
 }

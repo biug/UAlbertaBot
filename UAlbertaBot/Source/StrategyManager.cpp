@@ -5,12 +5,15 @@
 using namespace UAlbertaBot;
 
 // constructor
-StrategyManager::StrategyManager() 
+StrategyManager::StrategyManager()
 	: _selfRace(BWAPI::Broodwar->self()->getRace())
 	, _enemyRace(BWAPI::Broodwar->enemy()->getRace())
-    , _emptyBuildOrder(BWAPI::Broodwar->self()->getRace())
+	, _emptyBuildOrder(BWAPI::Broodwar->self()->getRace())
+	, _action(nullptr)
+	, _lastChangeFrame(0)
 {
-	
+	_actionZVTBarracks.init();
+	_actionZVTFactories.init();
 }
 
 // get an instance of this
@@ -87,19 +90,36 @@ void StrategyManager::addStrategy(const std::string & name, Strategy & strategy)
     _strategies[name] = strategy;
 }
 
-const MetaPairVector StrategyManager::getBuildOrderGoal()
-{
-	return getZergBuildOrderGoal();
-}
-
 void StrategyManager::updateProductionQueue(ProductionQueue & queue)
 {
+	_actionZVTBarracks.updateCurrentState(queue);
+	_actionZVTFactories.updateCurrentState(queue);
+	int currentFrame = BWAPI::Broodwar->getFrameCount();
 	// need to be update
-	MetaPairVector result = getBuildOrderGoal();
-	for (const auto & unit : result)
+	if (_action == nullptr)
 	{
-		queue.add(unit.first);
+		_action = &_actionZVTBarracks;
 	}
+	if (currentFrame - _lastChangeFrame >= 1000 || queue.empty())
+	{
+		_lastChangeFrame = currentFrame;
+		if (_action->tick())
+		{
+			queue.clear();
+			bool useBarracks = _actionZVTBarracks.canDeployAction();
+			bool useFactories = _actionZVTFactories.canDeployAction();
+			_action = &_actionZVTBarracks;
+			if (useBarracks)
+			{
+				_action = &_actionZVTBarracks;
+			}
+			else if (useFactories)
+			{
+				_action = &_actionZVTFactories;
+			}
+		}
+	}
+	_action->getBuildOrderList(queue);
 }
 
 const MetaPairVector StrategyManager::getZergBuildOrderGoal() const

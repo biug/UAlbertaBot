@@ -137,10 +137,15 @@ void BuildingManager::constructAssignedBuildings()
             else
             {
                 // issue the build order!
-                b.builderUnit->build(b.type,b.finalPosition);
-
-                // set the flag to true
-                b.buildCommandGiven = true;
+				if (b.builderUnit->build(b.type, b.finalPosition))
+				{
+					// set the flag to true
+					b.buildCommandGiven = true;
+				}
+				else
+				{
+					std::string falg = "false";
+				}
             }
         }
     }

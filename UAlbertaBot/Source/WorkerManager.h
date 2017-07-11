@@ -11,7 +11,15 @@ class Building;
 class WorkerManager
 {
     WorkerData  workerData;
-    BWAPI::Unit previousClosestWorker;
+	BWAPI::Unit previousClosestWorker;
+	bool		needLessGas;
+	bool		needMoreGas;
+	bool		needLessMineral;
+	bool		needMoreMineral;
+	bool		gasNotUsed;
+
+	std::deque<int>										gasUsed;
+	std::map<BWAPI::Unit, std::deque<BWAPI::Position>>	workersPos;
 
     void        setMineralWorker(BWAPI::Unit unit);
     bool        isGasStealRefinery(BWAPI::Unit unit);
@@ -24,10 +32,6 @@ class WorkerManager
     WorkerManager();
 
 public:
-	bool		needLessGas;
-	bool		needMoreGas;
-	bool		needLessMineral;
-	bool		needMoreMineral;
 
     void        update();
     void        onUnitDestroy(BWAPI::Unit unit);

@@ -10,10 +10,11 @@ namespace CasiaBot
 	public:
 		ActionZVTBarracksUnits();
 		~ActionZVTBarracksUnits(){}
-		void init();
-		bool canDeployAction();
-		bool tick();
-		void getBuildOrderList(UAlbertaBot::ProductionQueue &queue);
+		void init() override;
+		bool canDeployAction() override;
+		bool tick() override;
+		void getBuildOrderList(UAlbertaBot::ProductionQueue &queue) override;
+		void updateCurrentState(UAlbertaBot::ProductionQueue &queue) override;
 	private:
 		bool isInitialized = false;
 		int enemyTerranBarrackUnitsAmount;
@@ -24,7 +25,5 @@ namespace CasiaBot
 		int lastFrameGasAmount;
 		std::deque<int> mineralNetIncrease;
 		std::deque<int> gasNetIncrease;
-
-		void updateState();
 	};
 }

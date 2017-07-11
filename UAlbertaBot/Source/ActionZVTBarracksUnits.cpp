@@ -17,7 +17,6 @@ void ActionZVTBarracksUnits::init()
 {
 	if (!isInitialized)
 	{
-		updateCurrentState();
 		mineralNetIncrease = { 0,0,0,0,0 };
 		gasNetIncrease = { 0,0,0,0,0 };
 		lastFrameCount = BWAPI::Broodwar->getFrameCount();
@@ -29,7 +28,6 @@ void ActionZVTBarracksUnits::init()
 
 bool ActionZVTBarracksUnits::canDeployAction()
 {
-	updateState();
 	if (enemyTerranMechanizationRate < 1)
 	{
 		return true;
@@ -40,7 +38,6 @@ bool ActionZVTBarracksUnits::canDeployAction()
 
 bool ActionZVTBarracksUnits::tick()
 {
-	updateState();
 	if (enemyTerranMechanizationRate >= 1)
 	{
 		return true;
@@ -51,11 +48,10 @@ bool ActionZVTBarracksUnits::tick()
 
 void ActionZVTBarracksUnits::getBuildOrderList(UAlbertaBot::ProductionQueue & queue)
 {
-	updateState();
-
 	// 判断是否需要增加母巢
+	int drone_count_exist = InformationManager::Instance().getNumUnits(BWAPI::UnitTypes::Zerg_Drone, BWAPI::Broodwar->self());
 	int currentFrameCount = BWAPI::Broodwar->getFrameCount();
-	if (hatch_count <= 4 && currentFrameCount && currentFrameCount % 200 == 0)
+	if (hatch_count <= 4 && currentFrameCount > 10 && currentFrameCount % 200 == 0)
 	{
 		int currentFrameMineralAmount = BWAPI::Broodwar->self()->minerals();
 		int currentFrameGasAmount = BWAPI::Broodwar->self()->gas();
@@ -96,67 +92,58 @@ void ActionZVTBarracksUnits::getBuildOrderList(UAlbertaBot::ProductionQueue & qu
 	}
 
 	// 判断前提建筑是否存在
-	bool isExtractorExist = BuildingManager::Instance().isBeingBuilt(BWAPI::UnitTypes::Zerg_Extractor);
-	if (!isExtractorExist)
+	bool isExtractorExist = BuildingManager::Instance().isBeingBuilt(BWAPI::UnitTypes::Zerg_Extractor) || extractor_count > 0;
+	if (!isExtractorExist && drone_count_exist >= 7 && InformationManager::Instance().getNumUnits(BWAPI::UnitTypes::Zerg_Spawning_Pool, BWAPI::Broodwar->self()))
 	{
-		queue.add(MetaType(BWAPI::UnitTypes::Zerg_Drone), true);
+		queue.add(MetaType(BWAPI::UnitTypes::Zerg_Drone));
 		queue.add(MetaType(BWAPI::UnitTypes::Zerg_Extractor), true);
 	}
 
-	bool isSpawningPoolExist = BuildingManager::Instance().isBeingBuilt(BWAPI::UnitTypes::Zerg_Spawning_Pool);
+	bool isSpawningPoolExist = BuildingManager::Instance().isBeingBuilt(BWAPI::UnitTypes::Zerg_Spawning_Pool) || spawning_pool_count > 0;
 	if (!isSpawningPoolExist)
 	{
-		queue.add(MetaType(BWAPI::UnitTypes::Zerg_Drone), true);
+		queue.add(MetaType(BWAPI::UnitTypes::Zerg_Drone));
 		queue.add(MetaType(BWAPI::UnitTypes::Zerg_Spawning_Pool), true);
 	}
 
-	bool isHydraliskDenExist = BuildingManager::Instance().isBeingBuilt(BWAPI::UnitTypes::Zerg_Hydralisk_Den);
+	bool isHydraliskDenExist = BuildingManager::Instance().isBeingBuilt(BWAPI::UnitTypes::Zerg_Hydralisk_Den) || hydralisk_den_count > 0;
 	if (!isHydraliskDenExist)
 	{
-		queue.add(MetaType(BWAPI::UnitTypes::Zerg_Drone), true);
+		queue.add(MetaType(BWAPI::UnitTypes::Zerg_Drone));
 		queue.add(MetaType(BWAPI::UnitTypes::Zerg_Hydralisk_Den), true);
 	}
 
-	bool isHiveExist = BuildingManager::Instance().isBeingBuilt(BWAPI::UnitTypes::Zerg_Hive);
-	bool isQueenNestExist = BuildingManager::Instance().isBeingBuilt(BWAPI::UnitTypes::Zerg_Queens_Nest);
-	bool isLairExist = BuildingManager::Instance().isBeingBuilt(BWAPI::UnitTypes::Zerg_Lair);
-	if (!isHiveExist)
+	bool isHiveExist = BuildingManager::Instance().isBeingBuilt(BWAPI::UnitTypes::Zerg_Hive) || hive_count > 0;
+	bool isQueenNestExist = BuildingManager::Instance().isBeingBuilt(BWAPI::UnitTypes::Zerg_Queens_Nest) || queens_nest_count > 0;
+	bool isLairExist = BuildingManager::Instance().isBeingBuilt(BWAPI::UnitTypes::Zerg_Lair) || lair_count > 0;
+	if (!isLairExist)
 	{
-		if (!isQueenNestExist)
+		if (currentFrameCount > 4800)
 		{
-			if (!isLairExist)
-			{
-				queue.add(MetaType(BWAPI::UnitTypes::Zerg_Lair), true);
-				queue.add(MetaType(BWAPI::UnitTypes::Zerg_Drone), true);
-				queue.add(MetaType(BWAPI::UnitTypes::Zerg_Queens_Nest), true);
-				queue.add(MetaType(BWAPI::UnitTypes::Zerg_Hive), true);
-			}
-			else
-			{
-				queue.add(MetaType(BWAPI::UnitTypes::Zerg_Drone), true);
-				queue.add(MetaType(BWAPI::UnitTypes::Zerg_Queens_Nest), true);
-				queue.add(MetaType(BWAPI::UnitTypes::Zerg_Hive), true);
-			}
-		}
-		else
-		{
-			queue.add(MetaType(BWAPI::UnitTypes::Zerg_Hive), true);
+			queue.add(MetaType(BWAPI::UnitTypes::Zerg_Lair));
 		}
 	}
 
-	queue.add(MetaType(BWAPI::TechTypes::Lurker_Aspect), true);
-	queue.add(MetaType(BWAPI::UpgradeTypes::Metabolic_Boost), true);
-	queue.add(MetaType(BWAPI::UpgradeTypes::Adrenal_Glands), true);
-
-	// 判断人口是否接近满，系统内部的supply数值是双倍的
-	if (BWAPI::Broodwar->self()->supplyUsed() + 8 >= BWAPI::Broodwar->self()->supplyTotal())
+	if (InformationManager::Instance().getNumUnits(BWAPI::UnitTypes::Zerg_Spawning_Pool, BWAPI::Broodwar->self()) > 0 && queue.upgradeCount(BWAPI::UpgradeTypes::Metabolic_Boost) == 0)
 	{
-		queue.add(MetaType(BWAPI::UnitTypes::Zerg_Overlord), true);
+		queue.add(MetaType(BWAPI::UpgradeTypes::Metabolic_Boost));
+	}
+	if (InformationManager::Instance().getNumUnits(BWAPI::UnitTypes::Zerg_Hydralisk_Den, BWAPI::Broodwar->self()) > 0 && InformationManager::Instance().getNumUnits(BWAPI::UnitTypes::Zerg_Lair, BWAPI::Broodwar->self()) > 0 && queue.techCount(BWAPI::TechTypes::Lurker_Aspect) == 0)
+	{
+		queue.add(MetaType(BWAPI::TechTypes::Lurker_Aspect));
+	}
+	if (InformationManager::Instance().getNumUnits(BWAPI::UnitTypes::Zerg_Hive, BWAPI::Broodwar->self()) > 0 && queue.upgradeCount(BWAPI::UpgradeTypes::Adrenal_Glands) == 0)
+	{
+		queue.add(MetaType(BWAPI::UpgradeTypes::Adrenal_Glands));
 	}
 
 	// 判断需要建造多少部队
 	int need_zergling_count = (int)(enemyTerranBarrackUnitsAmount * 1.5) - zergling_count;
-	int need_lurker_count = need_zergling_count / 2;
+	if (need_zergling_count <= 0 && zergling_count < 24)
+	{
+		need_zergling_count = 2;
+	}
+	int need_lurker_count = std::min(1, need_zergling_count / 3);
 
 	// 穿插建造Zergling和Lurker
 	do
@@ -169,8 +156,15 @@ void ActionZVTBarracksUnits::getBuildOrderList(UAlbertaBot::ProductionQueue & qu
 		}
 		if (need_lurker_count > 0)
 		{
-			queue.add(MetaType(BWAPI::UnitTypes::Zerg_Hydralisk));
-			queue.add(MetaType(BWAPI::UnitTypes::Zerg_Lurker));
+			if (InformationManager::Instance().getNumUnits(BWAPI::UnitTypes::Zerg_Hydralisk_Den, BWAPI::Broodwar->self()) > 0)
+			{
+				queue.add(MetaType(BWAPI::UnitTypes::Zerg_Hydralisk));
+			}
+			if (BWAPI::Broodwar->self()->hasResearched(BWAPI::TechTypes::Lurker_Aspect)
+				&& InformationManager::Instance().getNumUnits(BWAPI::UnitTypes::Zerg_Hydralisk, BWAPI::Broodwar->self()) > 0)
+			{
+				queue.add(MetaType(BWAPI::UnitTypes::Zerg_Lurker));
+			}
 			need_lurker_count--;
 		}
 		if (need_zergling_count <= 0 && need_lurker_count <= 0)
@@ -180,34 +174,26 @@ void ActionZVTBarracksUnits::getBuildOrderList(UAlbertaBot::ProductionQueue & qu
 
 	} while (true);
 
-	int extractorUpperBound = std::min(hatch_count, 3);
-	int currentExtractorCount = (int)InformationManager::Instance().getNumUnits(BWAPI::UnitTypes::Zerg_Extractor, BWAPI::Broodwar->self());
-	if (currentExtractorCount < extractorUpperBound)
+	if (drone_count * 15 < hatch_count)
 	{
-		queue.add(MetaType(BWAPI::UnitTypes::Zerg_Extractor));
+		queue.add(MetaType(BWAPI::UnitTypes::Zerg_Drone));
 	}
+
+	//int extractorUpperBound = std::min(hatch_count, 3);
+	//int currentExtractorCount = (int)InformationManager::Instance().getNumUnits(BWAPI::UnitTypes::Zerg_Extractor, BWAPI::Broodwar->self());
+	//if (currentExtractorCount < extractorUpperBound)
+	//{
+	//	queue.add(MetaType(BWAPI::UnitTypes::Zerg_Extractor));
+	//}
 
 }
 
-void ActionZVTBarracksUnits::updateState()
+void ActionZVTBarracksUnits::updateCurrentState(ProductionQueue &queue)
 {
-	updateCurrentState();
-
-	auto &info = InformationManager::Instance();
-	auto self = BWAPI::Broodwar->self();
-	auto enemy = BWAPI::Broodwar->enemy();
-	hatch_count = info.getNumUnits(BWAPI::UnitTypes::Zerg_Hatchery, self) + info.getNumUnits(BWAPI::UnitTypes::Zerg_Lair, self) + info.getNumUnits(BWAPI::UnitTypes::Zerg_Hive, self);
-	zergling_count = info.getNumUnits(BWAPI::UnitTypes::Zerg_Zergling, self);
-	enemy_marine_count = info.getNumUnits(BWAPI::UnitTypes::Terran_Marine, enemy);
-	enemy_firebat_count = info.getNumUnits(BWAPI::UnitTypes::Terran_Firebat, enemy);
-	enemy_ghost_count = info.getNumUnits(BWAPI::UnitTypes::Terran_Ghost, enemy);
-	enemy_medic_count = info.getNumUnits(BWAPI::UnitTypes::Terran_Medic, enemy);
-	enemy_vulture_count = info.getNumUnits(BWAPI::UnitTypes::Terran_Vulture, enemy);
-	enemy_tank_count = info.getNumUnits(BWAPI::UnitTypes::Terran_Siege_Tank_Tank_Mode, enemy);
-	enemy_goliath_count = info.getNumUnits(BWAPI::UnitTypes::Terran_Goliath, enemy);
+	ActionZergBase::updateCurrentState(queue);
 
 	enemyTerranBarrackUnitsAmount = enemy_marine_count + enemy_firebat_count + enemy_ghost_count + enemy_medic_count;
 	enemyTerranFactoryUnitsAmount = enemy_vulture_count + enemy_tank_count + enemy_goliath_count;
-	enemyTerranMechanizationRate = (double)enemyTerranFactoryUnitsAmount / enemyTerranBarrackUnitsAmount;
+	enemyTerranMechanizationRate = enemyTerranBarrackUnitsAmount == 0 ? 10 : (double)enemyTerranFactoryUnitsAmount / (double)enemyTerranBarrackUnitsAmount;
 }
 

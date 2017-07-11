@@ -21,13 +21,19 @@ void UnitData::updateUnit(BWAPI::Unit unit)
 {
 	if (!unit) { return; }
 
-    bool firstSeen = false;
+	bool firstSeen = false;
     auto & it = unitMap.find(unit);
-    if (it == unitMap.end())
+	if (it == unitMap.end())
     {
         firstSeen = true;
         unitMap[unit] = UnitInfo();
     }
+	// unit changed, maybe morph
+	else if (unitMap[unit].type != unit->getType())
+	{
+		firstSeen = true;
+		numUnits[unitMap[unit].type]--;
+	}
     
 	UnitInfo & ui   = unitMap[unit];
     ui.unit         = unit;

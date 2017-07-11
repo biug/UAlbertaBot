@@ -36,7 +36,7 @@ void ProductionManager::update()
 	manageBuildOrderQueue();
     
 	// if nothing is currently building, get a new goal from the strategy manager
-	if ((_queue._readyQueue.empty()) && (BWAPI::Broodwar->getFrameCount() > 10))
+	if ((BWAPI::Broodwar->getFrameCount() > 10))
 	{
         if (Config::Debug::DrawBuildOrderSearchInfo)
         {
@@ -84,7 +84,7 @@ void ProductionManager::manageBuildOrderQueue()
 {
 	int supply = BWAPI::Broodwar->self()->supplyTotal() / 2;
 	int supplyUsed = (BWAPI::Broodwar->self()->supplyUsed() + 1) / 2;
-	int overlordInQueue = _queue.overlordCount();
+	int overlordInQueue = _queue.unitCount(BWAPI::UnitTypes::Zerg_Overlord.getID());
 	if (supply - supplyUsed < 3 && _morphingOverlords.empty() && overlordInQueue <= 1)
 	{
 		if (supply <= 9)
@@ -110,7 +110,7 @@ void ProductionManager::manageBuildOrderQueue()
 	{
 		if (!(*_morphingOverlords.begin())->isMorphing())
 		{
-			_morphingOverlords.clear();
+			_morphingOverlords.pop_front();
 		}
 	}
 	_queue.launchReady();
@@ -123,9 +123,8 @@ void ProductionManager::manageBuildOrderQueue()
 	// while there is still something left in the _queue
 	while (!_queue._readyQueue.empty()) 
 	{
-		ProductionItem & item = _queue._readyQueue.front();
+		ProductionItem item = _queue.popReady();
 		MetaType & unit = item._unit;
-		_queue._readyQueue.pop_front();
 		// this is the unit which can produce the currentItem
         BWAPI::Unit producer = getProducer(unit);
 
@@ -158,6 +157,14 @@ void ProductionManager::manageBuildOrderQueue()
 		else 
 		{
 			// retreat
+			if (unit.type() == MetaTypes::Tech && BWAPI::Broodwar->self()->hasResearched(unit.getTechType()))
+			{
+				continue;
+			}
+			if (unit.type() == MetaTypes::Upgrade && BWAPI::Broodwar->self()->getUpgradeLevel(unit.getUpgradeType()) > 0)
+			{
+				continue;
+			}
 			_queue.retreat(unit);
 		}
 	}
@@ -245,7 +252,7 @@ void ProductionManager::create(BWAPI::Unit producer, MetaType & item)
 		producer->morph(item.getUnitType());
 		if (item.getUnitType() == BWAPI::UnitTypes::Zerg_Overlord)
 		{
-			_morphingOverlords.insert(producer);
+			_morphingOverlords.push_back(producer);
 		}
     }
     // if we're dealing with a tech research

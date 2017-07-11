@@ -36,13 +36,22 @@ void WorkerManager::updateResourceStatus()
 	if (BWAPI::Broodwar->getFrameCount() % 10 == 0)
 	{
 		needLessGas = needMoreGas = needLessMineral = needMoreMineral = false;
+		gasNotUsed = false;
+		gasUsed.push_back(BWAPI::Broodwar->self()->spentGas());
+		if (gasUsed.size() >= 20)
+		{
+			if (gasUsed.front() == gasUsed.back()) {
+				gasNotUsed = true;
+			}
+			gasUsed.pop_front();
+		}
 		int mineral = BWAPI::Broodwar->self()->minerals();
 		int gas = BWAPI::Broodwar->self()->gas();
 		if (mineral < 50)
 		{
 			needMoreMineral = true;
 		}
-		if (gas > 200)
+		if (gas > 224 && gasNotUsed)
 		{
 			needLessGas = true;
 		}
@@ -61,6 +70,23 @@ void WorkerManager::updateWorkerStatus()
 		if (!worker->isCompleted())
 		{
 			continue;
+		}
+
+		if (BWAPI::Broodwar->getFrameCount() > 10 && BWAPI::Broodwar->getFrameCount() % 10 == 0)
+		{
+			if (worker->getType().isWorker())
+			{
+				workersPos[worker].push_back(worker->getPosition());
+				if (workersPos[worker].size() >= 6)
+				{
+					auto job = workerData.getWorkerJob(worker);
+					if (workersPos[worker].front() == workersPos[worker].back() && job != WorkerData::Minerals && job != WorkerData::Gas)
+					{
+						setMineralWorker(worker);
+					}
+					workersPos[worker].pop_front();
+				}
+			}
 		}
 
 		// if it's idle

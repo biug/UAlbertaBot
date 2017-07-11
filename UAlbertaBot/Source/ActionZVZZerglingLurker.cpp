@@ -17,7 +17,6 @@ void ActionZVZZerglingLurker::init()
 {
 	if (!isInitialized)
 	{
-		updateCurrentState();
 		mineralNetIncrease = { 0,0,0,0,0 };
 		gasNetIncrease = { 0,0,0,0,0 };
 		lastFrameCount = BWAPI::Broodwar->getFrameCount();
@@ -29,7 +28,6 @@ void ActionZVZZerglingLurker::init()
 
 bool ActionZVZZerglingLurker::canDeployAction()
 {
-	updateState();
 	if (enemy_mutalisk_count <= 0 && enemy_hydralisk_count > 0)
 	{
 		return true;
@@ -42,7 +40,6 @@ bool ActionZVZZerglingLurker::canDeployAction()
 
 bool ActionZVZZerglingLurker::tick()
 {
-	updateState();
 	if (enemy_hydralisk_count <= 0)
 	{
 		return true;
@@ -55,8 +52,6 @@ bool ActionZVZZerglingLurker::tick()
 
 void ActionZVZZerglingLurker::getBuildOrderList(UAlbertaBot::ProductionQueue & queue)
 {
-	updateState();
-
 	// 判断是否需要增加母巢
 	int currentFrameCount = BWAPI::Broodwar->getFrameCount();
 	if (hatch_count <= 4 && currentFrameCount && currentFrameCount % 200 == 0)
@@ -197,9 +192,9 @@ void ActionZVZZerglingLurker::getBuildOrderList(UAlbertaBot::ProductionQueue & q
 	}
 }
 
-void ActionZVZZerglingLurker::updateState()
+void ActionZVZZerglingLurker::updateCurrentState(ProductionQueue &queue)
 {
-	updateCurrentState();
+	ActionZergBase::updateCurrentState(queue);
 
 	auto &info = InformationManager::Instance();
 	auto self = BWAPI::Broodwar->self();

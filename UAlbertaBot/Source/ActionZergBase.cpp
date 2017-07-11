@@ -11,32 +11,65 @@ ActionZergBase::~ActionZergBase()
 {
 }
 
-void ActionZergBase::updateCurrentState()
+void ActionZergBase::updateCurrentState(ProductionQueue &queue)
 {
 	//我方
-	larva_count = InformationManager::Instance().getNumUnits(BWAPI::UnitTypes::Zerg_Larva, BWAPI::Broodwar->self());		//幼虫
-	drone_count = InformationManager::Instance().getNumUnits(BWAPI::UnitTypes::Zerg_Drone, BWAPI::Broodwar->self());		//工蜂
-	zergling_count = InformationManager::Instance().getNumUnits(BWAPI::UnitTypes::Zerg_Zergling, BWAPI::Broodwar->self());	//小狗
-	hydralisk_count = InformationManager::Instance().getNumUnits(BWAPI::UnitTypes::Zerg_Hydralisk, BWAPI::Broodwar->self());//刺蛇
-	lurker_count = InformationManager::Instance().getNumUnits(BWAPI::UnitTypes::Zerg_Lurker, BWAPI::Broodwar->self());		//地刺
-	ultralisk_count = InformationManager::Instance().getNumUnits(BWAPI::UnitTypes::Zerg_Ultralisk, BWAPI::Broodwar->self());//雷兽
-	defiler_count = InformationManager::Instance().getNumUnits(BWAPI::UnitTypes::Zerg_Defiler, BWAPI::Broodwar->self());	//蝎子
-	overlord_count = InformationManager::Instance().getNumUnits(BWAPI::UnitTypes::Zerg_Overlord, BWAPI::Broodwar->self());	//领主
-	mutalisk_count = InformationManager::Instance().getNumUnits(BWAPI::UnitTypes::Zerg_Mutalisk, BWAPI::Broodwar->self());	//飞龙
-	scourge_count = InformationManager::Instance().getNumUnits(BWAPI::UnitTypes::Zerg_Scourge, BWAPI::Broodwar->self());	//自爆蚊
-	queen_count = InformationManager::Instance().getNumUnits(BWAPI::UnitTypes::Zerg_Queen, BWAPI::Broodwar->self());		//女王
-	guardian_count = InformationManager::Instance().getNumUnits(BWAPI::UnitTypes::Zerg_Guardian, BWAPI::Broodwar->self());	//守卫者
-	devourer_count = InformationManager::Instance().getNumUnits(BWAPI::UnitTypes::Zerg_Devourer, BWAPI::Broodwar->self());	//吞噬者
+	larva_count = InformationManager::Instance().getNumUnits(BWAPI::UnitTypes::Zerg_Larva, BWAPI::Broodwar->self())
+		+ queue.unitCount(BWAPI::UnitTypes::Zerg_Larva);		//幼虫
+	drone_count = InformationManager::Instance().getNumUnits(BWAPI::UnitTypes::Zerg_Drone, BWAPI::Broodwar->self())
+		+ queue.unitCount(BWAPI::UnitTypes::Zerg_Drone);		//工蜂
+	zergling_count = InformationManager::Instance().getNumUnits(BWAPI::UnitTypes::Zerg_Zergling, BWAPI::Broodwar->self())
+		+ queue.unitCount(BWAPI::UnitTypes::Zerg_Zergling) * 2;	//小狗
+	hydralisk_count = InformationManager::Instance().getNumUnits(BWAPI::UnitTypes::Zerg_Hydralisk, BWAPI::Broodwar->self())
+		+ queue.unitCount(BWAPI::UnitTypes::Zerg_Hydralisk);//刺蛇
+	lurker_count = InformationManager::Instance().getNumUnits(BWAPI::UnitTypes::Zerg_Lurker, BWAPI::Broodwar->self())
+		+ queue.unitCount(BWAPI::UnitTypes::Zerg_Lurker)
+		+ InformationManager::Instance().getNumUnits(BWAPI::UnitTypes::Zerg_Lurker_Egg, BWAPI::Broodwar->self())
+		+ queue.unitCount(BWAPI::UnitTypes::Zerg_Lurker_Egg);		//地刺
+	ultralisk_count = InformationManager::Instance().getNumUnits(BWAPI::UnitTypes::Zerg_Ultralisk, BWAPI::Broodwar->self())
+		+ queue.unitCount(BWAPI::UnitTypes::Zerg_Ultralisk);//雷兽
+	defiler_count = InformationManager::Instance().getNumUnits(BWAPI::UnitTypes::Zerg_Defiler, BWAPI::Broodwar->self())
+		+ queue.unitCount(BWAPI::UnitTypes::Zerg_Defiler);	//蝎子
+	overlord_count = InformationManager::Instance().getNumUnits(BWAPI::UnitTypes::Zerg_Overlord, BWAPI::Broodwar->self())
+		+ queue.unitCount(BWAPI::UnitTypes::Zerg_Overlord);	//领主
+	mutalisk_count = InformationManager::Instance().getNumUnits(BWAPI::UnitTypes::Zerg_Mutalisk, BWAPI::Broodwar->self())
+		+ queue.unitCount(BWAPI::UnitTypes::Zerg_Mutalisk);	//飞龙
+	scourge_count = InformationManager::Instance().getNumUnits(BWAPI::UnitTypes::Zerg_Scourge, BWAPI::Broodwar->self())
+		+ queue.unitCount(BWAPI::UnitTypes::Zerg_Scourge) * 2;	//自爆蚊
+	queen_count = InformationManager::Instance().getNumUnits(BWAPI::UnitTypes::Zerg_Queen, BWAPI::Broodwar->self())
+		+ queue.unitCount(BWAPI::UnitTypes::Zerg_Queen);		//女王
+	guardian_count = InformationManager::Instance().getNumUnits(BWAPI::UnitTypes::Zerg_Guardian, BWAPI::Broodwar->self())
+		+ queue.unitCount(BWAPI::UnitTypes::Zerg_Guardian);	//守卫者
+	devourer_count = InformationManager::Instance().getNumUnits(BWAPI::UnitTypes::Zerg_Devourer, BWAPI::Broodwar->self())
+		+ queue.unitCount(BWAPI::UnitTypes::Zerg_Devourer);	//吞噬者
 
-																															//建筑
+	//建筑
 	hatch_count = InformationManager::Instance().getNumUnits(BWAPI::UnitTypes::Zerg_Hatchery, BWAPI::Broodwar->self())
 		+ InformationManager::Instance().getNumUnits(BWAPI::UnitTypes::Zerg_Lair, BWAPI::Broodwar->self())
-		+ InformationManager::Instance().getNumUnits(BWAPI::UnitTypes::Zerg_Hive, BWAPI::Broodwar->self());						//母巢
+		+ InformationManager::Instance().getNumUnits(BWAPI::UnitTypes::Zerg_Hive, BWAPI::Broodwar->self())
+		+ queue.unitCount(BWAPI::UnitTypes::Zerg_Hatchery)
+		+ queue.unitCount(BWAPI::UnitTypes::Zerg_Lair)
+		+ queue.unitCount(BWAPI::UnitTypes::Zerg_Hive);						//母巢
 	completed_hatch_count = 0;
-	sunken_count = InformationManager::Instance().getNumUnits(BWAPI::UnitTypes::Zerg_Sunken_Colony, BWAPI::Broodwar->self());	//地刺塔
-	spore_count = InformationManager::Instance().getNumUnits(BWAPI::UnitTypes::Zerg_Spore_Colony, BWAPI::Broodwar->self());		//孢子塔
+	sunken_count = InformationManager::Instance().getNumUnits(BWAPI::UnitTypes::Zerg_Sunken_Colony, BWAPI::Broodwar->self())
+		+ queue.unitCount(BWAPI::UnitTypes::Zerg_Sunken_Colony);	//地刺塔
+	spore_count = InformationManager::Instance().getNumUnits(BWAPI::UnitTypes::Zerg_Spore_Colony, BWAPI::Broodwar->self())
+		+ queue.unitCount(BWAPI::UnitTypes::Zerg_Spore_Colony);		//孢子塔
 
-																																//军事力量
+	spawning_pool_count = InformationManager::Instance().getNumUnits(BWAPI::UnitTypes::Zerg_Spawning_Pool, BWAPI::Broodwar->self())
+		+ queue.unitCount(BWAPI::UnitTypes::Zerg_Spawning_Pool);
+	hydralisk_den_count = InformationManager::Instance().getNumUnits(BWAPI::UnitTypes::Zerg_Hydralisk_Den, BWAPI::Broodwar->self())
+		+ queue.unitCount(BWAPI::UnitTypes::Zerg_Hydralisk_Den);
+	queens_nest_count = InformationManager::Instance().getNumUnits(BWAPI::UnitTypes::Zerg_Queens_Nest, BWAPI::Broodwar->self())
+		+ queue.unitCount(BWAPI::UnitTypes::Zerg_Queens_Nest);
+	lair_count = InformationManager::Instance().getNumUnits(BWAPI::UnitTypes::Zerg_Lair, BWAPI::Broodwar->self())
+		+ queue.unitCount(BWAPI::UnitTypes::Zerg_Lair);
+	hive_count = InformationManager::Instance().getNumUnits(BWAPI::UnitTypes::Zerg_Hive, BWAPI::Broodwar->self())
+		+ queue.unitCount(BWAPI::UnitTypes::Zerg_Hive);
+	extractor_count = InformationManager::Instance().getNumUnits(BWAPI::UnitTypes::Zerg_Extractor, BWAPI::Broodwar->self())
+		+ queue.unitCount(BWAPI::UnitTypes::Zerg_Extractor);
+
+	//军事力量
 	army_supply = 0.0;
 	air_army_supply = 0.0;
 	ground_army_supply = 0.0;
@@ -71,13 +104,13 @@ void ActionZergBase::updateCurrentState()
 	enemy_science_vessel_count = InformationManager::Instance().getNumUnits(BWAPI::UnitTypes::Terran_Science_Vessel, BWAPI::Broodwar->enemy());		//科学球
 	enemy_dropship_count = InformationManager::Instance().getNumUnits(BWAPI::UnitTypes::Terran_Dropship, BWAPI::Broodwar->enemy());					//运输机
 
-																																					//人族建筑
+	//人族建筑
 	enemy_bunker_count = InformationManager::Instance().getNumUnits(BWAPI::UnitTypes::Terran_Bunker, BWAPI::Broodwar->enemy());						//地堡
 	enemy_barrack_count = InformationManager::Instance().getNumUnits(BWAPI::UnitTypes::Terran_Barracks, BWAPI::Broodwar->enemy());					//兵营
 	enemy_factory_count = InformationManager::Instance().getNumUnits(BWAPI::UnitTypes::Terran_Factory, BWAPI::Broodwar->enemy());					//工厂
 	enemy_starport_count = InformationManager::Instance().getNumUnits(BWAPI::UnitTypes::Terran_Starport, BWAPI::Broodwar->enemy());					//飞机场
 
-																																					//神族单位
+	//神族单位
 	enemy_zealot_count = InformationManager::Instance().getNumUnits(BWAPI::UnitTypes::Protoss_Zealot, BWAPI::Broodwar->enemy());					//狂热者
 	enemy_dragoon_count = InformationManager::Instance().getNumUnits(BWAPI::UnitTypes::Protoss_Dragoon, BWAPI::Broodwar->enemy());					//龙骑
 	enemy_ht_count = InformationManager::Instance().getNumUnits(BWAPI::UnitTypes::Protoss_High_Templar, BWAPI::Broodwar->enemy());					//光明圣堂
@@ -88,13 +121,13 @@ void ActionZergBase::updateCurrentState()
 	enemy_arbiter_count = InformationManager::Instance().getNumUnits(BWAPI::UnitTypes::Protoss_Arbiter, BWAPI::Broodwar->enemy());					//仲裁者
 	enemy_corsair_count = InformationManager::Instance().getNumUnits(BWAPI::UnitTypes::Protoss_Corsair, BWAPI::Broodwar->enemy());					//海盗船
 
-																																					//神族建筑
+	//神族建筑
 	enemy_cannon_count = InformationManager::Instance().getNumUnits(BWAPI::UnitTypes::Protoss_Photon_Cannon, BWAPI::Broodwar->enemy());				//光子炮塔
 	enemy_gateway_count = InformationManager::Instance().getNumUnits(BWAPI::UnitTypes::Protoss_Gateway, BWAPI::Broodwar->enemy());					//兵营
 	enemy_stargate_count = InformationManager::Instance().getNumUnits(BWAPI::UnitTypes::Protoss_Stargate, BWAPI::Broodwar->enemy());				//星门
 	enemy_robotics_facility_count = InformationManager::Instance().getNumUnits(BWAPI::UnitTypes::Protoss_Robotics_Facility, BWAPI::Broodwar->enemy());	//机械工厂
 
-																																						//虫族单位
+	//虫族单位
 	enemy_zergling_count = InformationManager::Instance().getNumUnits(BWAPI::UnitTypes::Zerg_Zergling, BWAPI::Broodwar->enemy());				//小狗
 	enemy_hydralisk_count = InformationManager::Instance().getNumUnits(BWAPI::UnitTypes::Zerg_Hydralisk, BWAPI::Broodwar->enemy());				//刺蛇
 	enemy_lurker_count = InformationManager::Instance().getNumUnits(BWAPI::UnitTypes::Zerg_Lurker, BWAPI::Broodwar->enemy());					//地刺
@@ -103,13 +136,13 @@ void ActionZergBase::updateCurrentState()
 	enemy_mutalisk_count = InformationManager::Instance().getNumUnits(BWAPI::UnitTypes::Zerg_Mutalisk, BWAPI::Broodwar->enemy());				//飞龙
 	enemy_queen_count = InformationManager::Instance().getNumUnits(BWAPI::UnitTypes::Zerg_Queen, BWAPI::Broodwar->enemy());					//女王
 
-																																			//虫族建筑
+	//虫族建筑
 	enemy_spawning_pool_count = InformationManager::Instance().getNumUnits(BWAPI::UnitTypes::Zerg_Spawning_Pool, BWAPI::Broodwar->enemy());			//孵化池
 	enemy_hydralisk_den_count = InformationManager::Instance().getNumUnits(BWAPI::UnitTypes::Zerg_Hydralisk_Den, BWAPI::Broodwar->enemy());			//刺蛇穴
 	enemy_evolution_chamber_count = InformationManager::Instance().getNumUnits(BWAPI::UnitTypes::Zerg_Evolution_Chamber, BWAPI::Broodwar->enemy());		//进化腔
 	enemy_spire_count = InformationManager::Instance().getNumUnits(BWAPI::UnitTypes::Zerg_Spire, BWAPI::Broodwar->enemy());					//飞龙塔
 
-																																			//军事力量
+	//军事力量
 	enemy_army_supply = 0.0;
 	enemy_air_army_supply = 0.0;
 	enemy_ground_army_supply = 0.0;
@@ -177,21 +210,21 @@ void ActionZergBase::updateCurrentState()
 		if (unit->getType() == BWAPI::UnitTypes::Zerg_Sunken_Colony)
 			++enemy_static_defence_count;
 
-		if (!unit->getType().isRefinery()) {
-			std::pair<BWAPI::TilePosition, BWAPI::TilePosition> closest = getClosestOpponentBaseLocation();
-			double t_v = unitPathingDistance(BWAPI::UnitTypes::Terran_SCV, closest);
-			if (unitPathingDistance(BWAPI::UnitTypes::Terran_SCV, std::make_pair(closest.first, unit->getTilePosition())) < t_v) {
-				if (unit->getType().isBuilding())
-					++enemy_proxy_building_count;
-				else if (!unit->getType().isWorker())
-					enemy_attacking_army_supply += unit->getType().supplyRequired();
-				else
-					++enemy_attacking_worker_count;
-			}
+		//if (!unit->getType().isRefinery()) {
+		//	std::pair<BWAPI::TilePosition, BWAPI::TilePosition> closest = getClosestOpponentBaseLocation();
+		//	double t_v = unitPathingDistance(BWAPI::UnitTypes::Terran_SCV, closest);
+		//	if (unitPathingDistance(BWAPI::UnitTypes::Terran_SCV, std::make_pair(closest.first, unit->getTilePosition())) < t_v) {
+		//		if (unit->getType().isBuilding())
+		//			++enemy_proxy_building_count;
+		//		else if (!unit->getType().isWorker())
+		//			enemy_attacking_army_supply += unit->getType().supplyRequired();
+		//		else
+		//			++enemy_attacking_worker_count;
+		//	}
 
-			if (unit->getType().isCloakable())
-				++enemy_cloaked_unit_count;
-		}
+		//	if (unit->getType().isCloakable())
+		//		++enemy_cloaked_unit_count;
+		//}
 		if (unit->getType().isWorker())
 			++enemy_worker_count;
 		if (unit->getType().isRefinery() || unit->getType() == BWAPI::UnitTypes::Resource_Vespene_Geyser)

@@ -7,9 +7,12 @@
 #include "WorkerManager.h"
 #include "BuildOrder.h"
 #include "ProductionQueue.h"
+#include "ActionZVTBarracksUnits.h"
+#include "ActionZVTFactoriesUnits.h"
 
 namespace UAlbertaBot
 {
+	using namespace CasiaBot;
 typedef std::pair<MetaType, size_t> MetaPair;
 typedef std::vector<MetaPair> MetaPairVector;
 
@@ -49,7 +52,11 @@ class StrategyManager
 	BWAPI::Race					    _enemyRace;
     std::map<std::string, Strategy> _strategies;
     int                             _totalGamesPlayed;
-    const BuildOrder                _emptyBuildOrder;
+	const BuildOrder                _emptyBuildOrder;
+	ActionZergBase*					_action;
+	int								_lastChangeFrame;
+	ActionZVTBarracksUnits			_actionZVTBarracks;
+	ActionZVTFactoriesUnits			_actionZVTFactories;
 
 	        void	                writeResults();
 	const	int					    getScore(BWAPI::Player player) const;
@@ -68,7 +75,6 @@ public:
 	const	bool				    regroup(int numInRadius);
 	const	bool				    rushDetected();
 	const	int				        defendWithWorkers();
-	const	MetaPairVector		    getBuildOrderGoal();
 	const	BuildOrder &            getOpeningBookBuildOrder() const;
 	void					updateProductionQueue(ProductionQueue & queue);
 };

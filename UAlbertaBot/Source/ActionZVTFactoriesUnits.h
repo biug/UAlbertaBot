@@ -10,10 +10,11 @@ namespace CasiaBot
 	public:
 		ActionZVTFactoriesUnits();
 		~ActionZVTFactoriesUnits(){}
-		void init();
-		bool canDeployAction();
-		bool tick();
-		void getBuildOrderList(UAlbertaBot::ProductionQueue &queue);
+		void init() override;
+		bool canDeployAction() override;
+		bool tick() override;
+		void getBuildOrderList(UAlbertaBot::ProductionQueue &queue) override;
+		void updateCurrentState(UAlbertaBot::ProductionQueue &queue) override;
 
 	private:
 		bool isInitialized = false;
@@ -25,8 +26,6 @@ namespace CasiaBot
 		int lastFrameGasAmount;
 		std::deque<int> mineralNetIncrease;
 		std::deque<int> gasNetIncrease;
-		const double escalationMark = 80;	// 敌方人口达到此值时开始造雷兽
-
-		void updateState();
+		const double escalationMark = 240;	// 敌方人口达到此值时开始造雷兽
 	};
 }

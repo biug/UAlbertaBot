@@ -10,11 +10,11 @@ namespace CasiaBot
 	public:
 		ActionZergBase();
 		~ActionZergBase();
-		virtual void updateCurrentState();
 		virtual bool canDeployAction() = 0;
 		virtual void init() = 0;
 		virtual bool tick() = 0;
 		virtual void getBuildOrderList(UAlbertaBot::ProductionQueue &queue) = 0;
+		virtual void updateCurrentState(UAlbertaBot::ProductionQueue &queue);
 
 	protected:
 		std::pair<BWAPI::TilePosition, BWAPI::TilePosition> getClosestOpponentBaseLocation();
@@ -42,6 +42,14 @@ namespace CasiaBot
 		int completed_hatch_count;
 		int sunken_count;						//地刺塔
 		int spore_count;						//孢子塔
+		int spawning_pool_count;
+		int hydralisk_den_count;
+		int queens_nest_count;
+		int lair_count;
+		int hive_count;
+		int extractor_count;
+		int defiler_mount_count;
+		int spire_count;
 
 												//军事力量
 		double army_supply;

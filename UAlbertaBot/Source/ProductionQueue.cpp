@@ -5,14 +5,47 @@ using namespace UAlbertaBot;
 ProductionQueue::ProductionQueue()
 {
 	clear();
+
+	int maxTypeID(0);
+	for (const BWAPI::UnitType & t : BWAPI::UnitTypes::allUnitTypes())
+	{
+		maxTypeID = maxTypeID > t.getID() ? maxTypeID : t.getID();
+	}
+	_unitCount = std::vector<int>(maxTypeID + 1, 0);
+
+	maxTypeID = 0;
+	for (const BWAPI::TechType & t : BWAPI::TechTypes::allTechTypes())
+	{
+		maxTypeID = maxTypeID > t.getID() ? maxTypeID : t.getID();
+	}
+	_techCount = std::vector<int>(maxTypeID + 1, 0);
+
+	maxTypeID = 0;
+	for (const BWAPI::UpgradeType & t : BWAPI::UpgradeTypes::allUpgradeTypes())
+	{
+		maxTypeID = maxTypeID > t.getID() ? maxTypeID : t.getID();
+	}
+	_upgradeCount = std::vector<int>(maxTypeID + 1, 0);
 }
 
 void ProductionQueue::add(const ProductionItem & item, bool priority)
 {
 	const MetaType & unit = item._unit;
+	if (unit.isUnit())
+	{
+		_unitCount[unit.getUnitType().getID()] += 1;
+	}
+	else if (unit.isTech())
+	{
+		_techCount[unit.getTechType().getID()] += 1;
+	}
+	else if (unit.isUpgrade())
+	{
+		_upgradeCount[unit.getUpgradeType().getID()] += 1;
+	}
 	if (priority || unit.getUnitType() == BWAPI::UnitTypes::Zerg_Overlord)
 	{
-		_priorityQueue.push_back(item);
+		_priorityQueue.push_front(item);
 	}
 	else if (unit.isBuilding() || unit.isTech() || unit.isUpgrade())
 	{
@@ -30,6 +63,25 @@ void ProductionQueue::clear()
 	_armyQueue.clear();
 	_priorityQueue.clear();
 	_readyQueue.clear();
+	for (auto && count : _unitCount)
+	{
+		count = 0;
+	}
+}
+
+int ProductionQueue::unitCount(BWAPI::UnitType type)
+{
+	return _unitCount[type.getID()];
+}
+
+int ProductionQueue::techCount(BWAPI::TechType type)
+{
+	return _techCount[type.getID()];
+}
+
+int ProductionQueue::upgradeCount(BWAPI::UpgradeType type)
+{
+	return _upgradeCount[type.getID()];
 }
 
 void ProductionQueue::launchReady()
@@ -51,42 +103,56 @@ void ProductionQueue::launchReady()
 	}
 }
 
-bool ProductionQueue::checkReady()
+ProductionItem ProductionQueue::popReady()
 {
-	return !_readyQueue.empty();
+	ProductionItem item = _readyQueue.front();
+	_readyQueue.pop_front();
+	MetaType unit = item._unit;
+	if (unit.isUnit())
+	{
+		_unitCount[unit.getUnitType().getID()] -= 1;
+	}
+	else if (unit.isTech())
+	{
+		_techCount[unit.getTechType().getID()] -= 1;
+	}
+	else if (unit.isUpgrade())
+	{
+		_upgradeCount[unit.getUpgradeType().getID()] -= 1;
+	}
+	return item;
 }
 
 void ProductionQueue::retreat(const ProductionItem & item)
 {
 	const MetaType & unit = item._unit;
+	if (unit.isUnit())
+	{
+		_unitCount[unit.getUnitType().getID()] += 1;
+	}
+	else if (unit.isTech())
+	{
+		_techCount[unit.getTechType().getID()] += 1;
+	}
+	else if (unit.isUpgrade())
+	{
+		_upgradeCount[unit.getUpgradeType().getID()] += 1;
+	}
 	if (unit.getUnitType() == BWAPI::UnitTypes::Zerg_Overlord)
 	{
-		_priorityQueue.push_front(item);
+		_priorityQueue.push_back(item);
 	}
 	else if (unit.isBuilding() || unit.isTech() || unit.isUpgrade())
 	{
-		_buildingQueue.push_front(item);
+		_buildingQueue.push_back(item);
 	}
 	else
 	{
-		_armyQueue.push_front(item);
+		_armyQueue.push_back(item);
 	}
 }
 
 bool ProductionQueue::empty()
 {
-	return _buildingQueue.empty() && _armyQueue.empty() && _priorityQueue.empty();
-}
-
-int ProductionQueue::overlordCount()
-{
-	int count = 0;
-	for (int i = 0; i < _priorityQueue.size(); ++i)
-	{
-		if (_priorityQueue[i]._unit.getUnitType() == BWAPI::UnitTypes::Zerg_Overlord)
-		{
-			++count;
-		}
-	}
-	return count;
+	return _buildingQueue.empty() && _armyQueue.empty() && _priorityQueue.empty() && _readyQueue.empty();
 }
