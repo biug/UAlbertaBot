@@ -121,10 +121,31 @@ void ActionZVZZerglingLurker::getBuildOrderList(UAlbertaBot::ProductionQueue & q
 		queue.add(MetaType(BWAPI::UnitTypes::Zerg_Hydralisk_Den), true);
 	}
 
+	bool isHiveExist = BuildingManager::Instance().isBeingBuilt(BWAPI::UnitTypes::Zerg_Hive);
+	bool isQueenNestExist = BuildingManager::Instance().isBeingBuilt(BWAPI::UnitTypes::Zerg_Queens_Nest);
 	bool isLairExist = BuildingManager::Instance().isBeingBuilt(BWAPI::UnitTypes::Zerg_Lair);
-	if (!isLairExist)
+	if (!isHiveExist)
 	{
-		queue.add(MetaType(BWAPI::UnitTypes::Zerg_Lair), true);
+		if (!isQueenNestExist)
+		{
+			if (!isLairExist)
+			{
+				queue.add(MetaType(BWAPI::UnitTypes::Zerg_Lair), true);
+				queue.add(MetaType(BWAPI::UnitTypes::Zerg_Drone), true);
+				queue.add(MetaType(BWAPI::UnitTypes::Zerg_Queens_Nest), true);
+				queue.add(MetaType(BWAPI::UnitTypes::Zerg_Hive), true);
+			}
+			else
+			{
+				queue.add(MetaType(BWAPI::UnitTypes::Zerg_Drone), true);
+				queue.add(MetaType(BWAPI::UnitTypes::Zerg_Queens_Nest), true);
+				queue.add(MetaType(BWAPI::UnitTypes::Zerg_Hive), true);
+			}
+		}
+		else
+		{
+			queue.add(MetaType(BWAPI::UnitTypes::Zerg_Hive), true);
+		}
 	}
 
 	queue.add(MetaType(BWAPI::TechTypes::Lurker_Aspect), true);
@@ -139,7 +160,7 @@ void ActionZVZZerglingLurker::getBuildOrderList(UAlbertaBot::ProductionQueue & q
 
 	// 判断需要建造多少部队
 	int need_zergling_count = (int)(enemy_zergling_count * 1.7) - zergling_count;
-	int need_lurker_count = (int)(enemy_hydralisk_count * 1.2);
+	int need_lurker_count = (int)(enemy_hydralisk_count * 1.2) - lurker_count;
 
 	for (int i = 0; i < hydralisk_count; i++)
 	{

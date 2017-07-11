@@ -32,7 +32,7 @@ void ActionZVTFactoriesUnits::init()
 bool ActionZVTFactoriesUnits::canDeployAction()
 {
 	updateState();
-	if (enemyTerranMechanizationRate >= 2)
+	if (enemyTerranMechanizationRate >= 1)
 	{
 		return true;
 	}
@@ -43,7 +43,7 @@ bool ActionZVTFactoriesUnits::canDeployAction()
 bool ActionZVTFactoriesUnits::tick()
 {
 	updateState();
-	if (enemyTerranMechanizationRate <= 1)
+	if (enemyTerranMechanizationRate < 1)
 	{
 		return true;
 	}

@@ -30,7 +30,7 @@ void ActionZVTBarracksUnits::init()
 bool ActionZVTBarracksUnits::canDeployAction()
 {
 	updateState();
-	if (enemyTerranMechanizationRate <= 0.5)
+	if (enemyTerranMechanizationRate < 1)
 	{
 		return true;
 	}
@@ -117,10 +117,31 @@ void ActionZVTBarracksUnits::getBuildOrderList(UAlbertaBot::ProductionQueue & qu
 		queue.add(MetaType(BWAPI::UnitTypes::Zerg_Hydralisk_Den), true);
 	}
 
+	bool isHiveExist = BuildingManager::Instance().isBeingBuilt(BWAPI::UnitTypes::Zerg_Hive);
+	bool isQueenNestExist = BuildingManager::Instance().isBeingBuilt(BWAPI::UnitTypes::Zerg_Queens_Nest);
 	bool isLairExist = BuildingManager::Instance().isBeingBuilt(BWAPI::UnitTypes::Zerg_Lair);
-	if (!isLairExist)
+	if (!isHiveExist)
 	{
-		queue.add(MetaType(BWAPI::UnitTypes::Zerg_Lair), true);
+		if (!isQueenNestExist)
+		{
+			if (!isLairExist)
+			{
+				queue.add(MetaType(BWAPI::UnitTypes::Zerg_Lair), true);
+				queue.add(MetaType(BWAPI::UnitTypes::Zerg_Drone), true);
+				queue.add(MetaType(BWAPI::UnitTypes::Zerg_Queens_Nest), true);
+				queue.add(MetaType(BWAPI::UnitTypes::Zerg_Hive), true);
+			}
+			else
+			{
+				queue.add(MetaType(BWAPI::UnitTypes::Zerg_Drone), true);
+				queue.add(MetaType(BWAPI::UnitTypes::Zerg_Queens_Nest), true);
+				queue.add(MetaType(BWAPI::UnitTypes::Zerg_Hive), true);
+			}
+		}
+		else
+		{
+			queue.add(MetaType(BWAPI::UnitTypes::Zerg_Hive), true);
+		}
 	}
 
 	queue.add(MetaType(BWAPI::TechTypes::Lurker_Aspect), true);
@@ -187,6 +208,6 @@ void ActionZVTBarracksUnits::updateState()
 
 	enemyTerranBarrackUnitsAmount = enemy_marine_count + enemy_firebat_count + enemy_ghost_count + enemy_medic_count;
 	enemyTerranFactoryUnitsAmount = enemy_vulture_count + enemy_tank_count + enemy_goliath_count;
-	enemyTerranMechanizationRate = enemyTerranFactoryUnitsAmount / enemyTerranBarrackUnitsAmount;
+	enemyTerranMechanizationRate = (double)enemyTerranFactoryUnitsAmount / enemyTerranBarrackUnitsAmount;
 }
 

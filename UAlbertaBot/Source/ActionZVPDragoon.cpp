@@ -1,4 +1,4 @@
-#include "ActionZVZZerglingMutalisk.h"
+#include "ActionZVPDragoon.h"
 #include "BuildingManager.h"
 #include "ActionHelper.h"
 #include "InformationManager.h"
@@ -8,12 +8,12 @@ using namespace UAlbertaBot;
 using namespace CasiaBot::ActionHelper;
 using namespace std;
 
-ActionZVZZerglingMutalisk::ActionZVZZerglingMutalisk()
+ActionZVPDragoon::ActionZVPDragoon()
 {
 	init();
 }
 
-void ActionZVZZerglingMutalisk::init()
+void ActionZVPDragoon::init()
 {
 	if (!isInitialized)
 	{
@@ -27,10 +27,10 @@ void ActionZVZZerglingMutalisk::init()
 	}
 }
 
-bool ActionZVZZerglingMutalisk::canDeployAction()
+bool ActionZVPDragoon::canDeployAction()
 {
 	updateState();
-	if (enemy_mutalisk_count > 0 || (enemy_hydralisk_count == 0 && enemy_mutalisk_count == 0))
+	if (enemyDragoonOverZealotRate > 1 || enemy_dragoon_count > 5)
 	{
 		return true;
 	}
@@ -40,10 +40,10 @@ bool ActionZVZZerglingMutalisk::canDeployAction()
 	}
 }
 
-bool ActionZVZZerglingMutalisk::tick()
+bool ActionZVPDragoon::tick()
 {
 	updateState();
-	if (enemy_hydralisk_count > 0 && enemy_mutalisk_count == 0)
+	if (enemyDragoonOverZealotRate <= 1 && enemy_dragoon_count <= 5)
 	{
 		return true;
 	}
@@ -53,7 +53,7 @@ bool ActionZVZZerglingMutalisk::tick()
 	}
 }
 
-void ActionZVZZerglingMutalisk::getBuildOrderList(UAlbertaBot::ProductionQueue & queue)
+void ActionZVPDragoon::getBuildOrderList(UAlbertaBot::ProductionQueue & queue)
 {
 	updateState();
 
@@ -141,13 +141,6 @@ void ActionZVZZerglingMutalisk::getBuildOrderList(UAlbertaBot::ProductionQueue &
 		}
 	}
 
-	bool isSpireExist = BuildingManager::Instance().isBeingBuilt(BWAPI::UnitTypes::Zerg_Spire);
-	if (!isSpireExist)	// 若飞龙塔不存在
-	{
-		queue.add(MetaType(BWAPI::UnitTypes::Zerg_Drone), true);
-		queue.add(MetaType(BWAPI::UnitTypes::Zerg_Spire), true);
-	}
-
 	queue.add(MetaType(BWAPI::UpgradeTypes::Metabolic_Boost), true);
 	queue.add(MetaType(BWAPI::UpgradeTypes::Adrenal_Glands), true);
 
@@ -158,39 +151,22 @@ void ActionZVZZerglingMutalisk::getBuildOrderList(UAlbertaBot::ProductionQueue &
 	}
 
 	// 判断需要建造多少部队
-	int need_zergling_count = (int)(enemy_zergling_count * 1.5) - zergling_count;
-	int need_mutalisk_count = (int)(enemy_zergling_count*0.5) + enemy_mutalisk_count + enemy_hydralisk_count - mutalisk_count;
+	int need_zergling_count = enemy_zealot_count * 8 + enemy_dragoon_count * 7 - zergling_count;
 
-	// 穿插建造Zergling和Mutalisk
-	do
+	for (int i = 0; i < need_zergling_count; i += 2)
 	{
-		if (need_zergling_count > 0)
-		{
-			// 2个Zergling
-			queue.add(MetaType(BWAPI::UnitTypes::Zerg_Zergling));
-			need_zergling_count -= 2;
-		}
-		if (need_mutalisk_count > 0)
-		{
-			queue.add(MetaType(BWAPI::UnitTypes::Zerg_Mutalisk));
-			need_mutalisk_count--;
-		}
-		if (need_zergling_count <= 0 && need_mutalisk_count <= 0)
-		{
-			break;
-		}
-
-	} while (true);
+		queue.add(MetaType(BWAPI::UnitTypes::Zerg_Zergling));
+	}
 
 	int extractorUpperBound = std::min(hatch_count, 2);
 	int currentExtractorCount = (int)InformationManager::Instance().getNumUnits(BWAPI::UnitTypes::Zerg_Extractor, BWAPI::Broodwar->self());
 	if (currentExtractorCount < extractorUpperBound)
 	{
-		queue.add(MetaType(BWAPI::UnitTypes::Zerg_Extractor), true);
+		queue.add(MetaType(BWAPI::UnitTypes::Zerg_Extractor));
 	}
 }
 
-void ActionZVZZerglingMutalisk::updateState()
+void ActionZVPDragoon::updateState()
 {
 	updateCurrentState();
 
@@ -199,8 +175,9 @@ void ActionZVZZerglingMutalisk::updateState()
 	auto enemy = BWAPI::Broodwar->enemy();
 	hatch_count = info.getNumUnits(BWAPI::UnitTypes::Zerg_Hatchery, self) + info.getNumUnits(BWAPI::UnitTypes::Zerg_Lair, self) + info.getNumUnits(BWAPI::UnitTypes::Zerg_Hive, self);
 	zergling_count = info.getNumUnits(BWAPI::UnitTypes::Zerg_Zergling, self);
-	mutalisk_count = info.getNumUnits(BWAPI::UnitTypes::Zerg_Mutalisk, self);
-	enemy_zergling_count = info.getNumUnits(BWAPI::UnitTypes::Zerg_Zergling, enemy);
-	enemy_hydralisk_count = info.getNumUnits(BWAPI::UnitTypes::Zerg_Hydralisk, enemy);
-	enemy_mutalisk_count = info.getNumUnits(BWAPI::UnitTypes::Zerg_Mutalisk, enemy);
+	enemy_zealot_count = info.getNumUnits(BWAPI::UnitTypes::Protoss_Zealot, enemy);
+	enemy_dragoon_count = info.getNumUnits(BWAPI::UnitTypes::Protoss_Dragoon, enemy);
+	enemy_ht_count = info.getNumUnits(BWAPI::UnitTypes::Protoss_High_Templar, enemy);
+	enemy_dt_count = info.getNumUnits(BWAPI::UnitTypes::Protoss_Dark_Templar, enemy);
+	enemyDragoonOverZealotRate = (double)enemy_dragoon_count / enemy_zealot_count;
 }
