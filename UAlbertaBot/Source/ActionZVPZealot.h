@@ -9,7 +9,7 @@ namespace CasiaBot
 	{
 	public:
 		ActionZVPZealot();
-		~ActionZVPZealot();
+		~ActionZVPZealot() {}
 		void init();
 		bool canDeployAction();
 		bool tick();
