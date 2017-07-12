@@ -79,143 +79,23 @@ void ActionZergBase::updateCurrentState(ProductionQueue &queue)
 	nydus_canal_in_queue = queue.unitCount(BWAPI::UnitTypes::Zerg_Nydus_Canal);
 	ultralisk_cavern_in_queue = queue.unitCount(BWAPI::UnitTypes::Zerg_Ultralisk_Cavern);
 
-	if (BuildingManager::Instance().isBeingBuilt(BWAPI::UnitTypes::Zerg_Hatchery))
-	{
-		hatchery_being_built = 1;
-	}
-	else
-	{
-		hatchery_being_built = 0;
-	}
-
-	if (BuildingManager::Instance().isBeingBuilt(BWAPI::UnitTypes::Zerg_Extractor))
-	{
-		extractor_being_built = 1;
-	}
-	else
-	{
-		extractor_being_built = 0;
-	}
-
-	if (BuildingManager::Instance().isBeingBuilt(BWAPI::UnitTypes::Zerg_Creep_Colony))
-	{
-		creep_colony_being_built = 1;
-	}
-	else
-	{
-		creep_colony_being_built = 0;
-	}
-
-	if (BuildingManager::Instance().isBeingBuilt(BWAPI::UnitTypes::Zerg_Sunken_Colony))
-	{
-		sunken_colony_being_built = 1;
-	}
-	else
-	{
-		sunken_colony_being_built = 0;
-	}
-
-	if (BuildingManager::Instance().isBeingBuilt(BWAPI::UnitTypes::Zerg_Spore_Colony))
-	{
-		spore_colony_being_built = 1;
-	}
-	else
-	{
-		spore_colony_being_built = 0;
-	}
-
-	if (BuildingManager::Instance().isBeingBuilt(BWAPI::UnitTypes::Zerg_Spawning_Pool))
-	{
-		spawning_pool_being_built = 1;
-	}
-	else
-	{
-		spawning_pool_being_built = 0;
-	}
-
-	if (BuildingManager::Instance().isBeingBuilt(BWAPI::UnitTypes::Zerg_Hydralisk_Den))
-	{
-		hydralisk_den_being_built = 1;
-	}
-	else
-	{
-		hydralisk_den_being_built = 0;
-	}
-
-	if (BuildingManager::Instance().isBeingBuilt(BWAPI::UnitTypes::Zerg_Lair))
-	{
-		lair_being_built = 1;
-	}
-	else
-	{
-		lair_being_built = 0;
-	}
-
-	if (BuildingManager::Instance().isBeingBuilt(BWAPI::UnitTypes::Zerg_Queens_Nest))
-	{
-		queens_nest_being_built = 1;
-	}
-	else
-	{
-		queens_nest_being_built = 0;
-	}
-
-	if (BuildingManager::Instance().isBeingBuilt(BWAPI::UnitTypes::Zerg_Hive))
-	{
-		hive_being_built = 1;
-	}
-	else
-	{
-		hive_being_built = 0;
-	}
-
-	if (BuildingManager::Instance().isBeingBuilt(BWAPI::UnitTypes::Zerg_Defiler_Mound))
-	{
-		defiler_mound_being_built = 1;
-	}
-	else
-	{
-		defiler_mound_being_built = 0;
-	}
-
-	if (BuildingManager::Instance().isBeingBuilt(BWAPI::UnitTypes::Zerg_Spire))
-	{
-		spire_being_built = 1;
-	}
-	else
-	{
-		spire_being_built = 0;
-	}
-
-	if (BuildingManager::Instance().isBeingBuilt(BWAPI::UnitTypes::Zerg_Greater_Spire))
-	{
-		greater_spire_being_built = 1;
-	}
-	else
-	{
-		greater_spire_being_built = 0;
-	}
-
-	if (BuildingManager::Instance().isBeingBuilt(BWAPI::UnitTypes::Zerg_Nydus_Canal))
-	{
-		nydus_canal_being_built = 1;
-	}
-	else
-	{
-		nydus_canal_being_built = 0;
-	}
-
-	if (BuildingManager::Instance().isBeingBuilt(BWAPI::UnitTypes::Zerg_Ultralisk_Cavern))
-	{
-		ultralisk_cavern_being_built = 1;
-	}
-	else
-	{
-	    ultralisk_cavern_being_built = 0;
-	}
-
-
-
+	hatchery_being_built = BuildingManager::Instance().isBeingBuilt(BWAPI::UnitTypes::Zerg_Hatchery) ? 1 : 0;
+	extractor_being_built = BuildingManager::Instance().isBeingBuilt(BWAPI::UnitTypes::Zerg_Extractor) ? 1 : 0;
+	creep_colony_being_built = BuildingManager::Instance().isBeingBuilt(BWAPI::UnitTypes::Zerg_Creep_Colony) ? 1 : 0;
+	sunken_colony_being_built = BuildingManager::Instance().isBeingBuilt(BWAPI::UnitTypes::Zerg_Sunken_Colony) ? 1 : 0;
+	spore_colony_being_built = BuildingManager::Instance().isBeingBuilt(BWAPI::UnitTypes::Zerg_Spore_Colony) ? 1 : 0;
+	spawning_pool_being_built = BuildingManager::Instance().isBeingBuilt(BWAPI::UnitTypes::Zerg_Spawning_Pool) ? 1 : 0;
+	hydralisk_den_being_built = BuildingManager::Instance().isBeingBuilt(BWAPI::UnitTypes::Zerg_Hydralisk_Den) ? 1 : 0;
+	lair_being_built = BuildingManager::Instance().isBeingBuilt(BWAPI::UnitTypes::Zerg_Lair) ? 1 : 0;
+	queens_nest_being_built = BuildingManager::Instance().isBeingBuilt(BWAPI::UnitTypes::Zerg_Queens_Nest) ? 1 : 0;
+	hive_being_built = BuildingManager::Instance().isBeingBuilt(BWAPI::UnitTypes::Zerg_Hive) ? 1 : 0;
+	defiler_mound_being_built = BuildingManager::Instance().isBeingBuilt(BWAPI::UnitTypes::Zerg_Defiler_Mound) ? 1 : 0;
+	spire_being_built = BuildingManager::Instance().isBeingBuilt(BWAPI::UnitTypes::Zerg_Spire) ? 1 : 0;
+	greater_spire_being_built = BuildingManager::Instance().isBeingBuilt(BWAPI::UnitTypes::Zerg_Greater_Spire) ? 1 : 0;
+	nydus_canal_being_built = BuildingManager::Instance().isBeingBuilt(BWAPI::UnitTypes::Zerg_Nydus_Canal) ? 1 : 0;
+	ultralisk_cavern_being_built = BuildingManager::Instance().isBeingBuilt(BWAPI::UnitTypes::Zerg_Ultralisk_Cavern) ? 1 : 0;
+	
+	
 	//军事力量
 	army_supply = 0.0;
 	air_army_supply = 0.0;
