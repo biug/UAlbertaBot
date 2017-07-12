@@ -58,7 +58,7 @@ void ActionZVZZerglingLurker::getBuildOrderList(UAlbertaBot::ProductionQueue & q
 	int currentFrameCount = BWAPI::Broodwar->getFrameCount();
 
 	// 判断是否需要增加母巢
-	if (hatch_count <= 4 && currentFrameCount > 10 && currentFrameCount % 200 == 0)
+	if (hatchery_count <= 4 && currentFrameCount > 10 && currentFrameCount % 200 == 0)
 	{
 		int currentFrameMineralAmount = BWAPI::Broodwar->self()->minerals();
 		int currentFrameGasAmount = BWAPI::Broodwar->self()->gas();
@@ -73,7 +73,7 @@ void ActionZVZZerglingLurker::getBuildOrderList(UAlbertaBot::ProductionQueue & q
 		bool mineralDequePositive;
 		bool gasDequePositive;
 
-		if (hatch_count <= 2)
+		if (hatchery_count <= 2)
 		{
 			mineralDequePositive = IsDequeAllPositive(mineralNetIncrease);
 			if (mineralDequePositive)
@@ -203,7 +203,7 @@ void ActionZVZZerglingLurker::getBuildOrderList(UAlbertaBot::ProductionQueue & q
 
 	} while (true);
 
-	if (drone_count < hatch_count * 15)
+	if (drone_count < hatchery_count * 15)
 	{
 		queue.add(MetaType(BWAPI::UnitTypes::Zerg_Drone));
 	}

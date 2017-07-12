@@ -54,7 +54,7 @@ void ActionZVTBarracksUnits::getBuildOrderList(UAlbertaBot::ProductionQueue & qu
 	int currentFrameCount = BWAPI::Broodwar->getFrameCount();
 	
 	// 判断是否需要增加母巢
-	if (hatch_count <= 4 && currentFrameCount > 10 && currentFrameCount % 200 == 0)
+	if (hatchery_count <= 4 && currentFrameCount > 10 && currentFrameCount % 200 == 0)
 	{
 		int currentFrameMineralAmount = BWAPI::Broodwar->self()->minerals();
 		int currentFrameGasAmount = BWAPI::Broodwar->self()->gas();
@@ -69,7 +69,7 @@ void ActionZVTBarracksUnits::getBuildOrderList(UAlbertaBot::ProductionQueue & qu
 		bool mineralDequePositive;
 		bool gasDequePositive;
 
-		if (hatch_count <= 2)
+		if (hatchery_count <= 2)
 		{
 			mineralDequePositive = IsDequeAllPositive(mineralNetIncrease);
 			if (mineralDequePositive)
@@ -153,7 +153,7 @@ void ActionZVTBarracksUnits::getBuildOrderList(UAlbertaBot::ProductionQueue & qu
 	}
 
 	bool notEnoughDrone = false;
-	if (hatch_count == 1)
+	if (hatchery_count == 1)
 	{
 		if (drone_count < 15)
 		{
@@ -163,11 +163,11 @@ void ActionZVTBarracksUnits::getBuildOrderList(UAlbertaBot::ProductionQueue & qu
 	}
 	else
 	{
-		if (drone_count < hatch_count * 10)
+		if (drone_count < hatchery_count * 10)
 		{
 			queue.add(MetaType(BWAPI::UnitTypes::Zerg_Drone), true);
 		}
-		notEnoughDrone = drone_count < 8 * hatch_count;
+		notEnoughDrone = drone_count < 8 * hatchery_count;
 	}
 
 	// 判断需要建造多少部队
@@ -220,7 +220,7 @@ void ActionZVTBarracksUnits::getBuildOrderList(UAlbertaBot::ProductionQueue & qu
 		}
 
 	} while (true);
-	//int extractorUpperBound = std::min(hatch_count, 3);
+	//int extractorUpperBound = std::min(hatchery_count, 3);
 	//int currentExtractorCount = (int)InformationManager::Instance().getNumUnits(BWAPI::UnitTypes::Zerg_Extractor, BWAPI::Broodwar->self());
 	//if (currentExtractorCount < extractorUpperBound)
 	//{

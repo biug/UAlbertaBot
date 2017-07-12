@@ -56,7 +56,7 @@ void ActionZVTFactoriesUnits::getBuildOrderList(UAlbertaBot::ProductionQueue & q
 	int currentFrameCount = BWAPI::Broodwar->getFrameCount();
 
 	// 判断是否需要增加母巢
-	if (hatch_count <= 4 && currentFrameCount > 10 && currentFrameCount % 200 == 0)
+	if (hatchery_count <= 4 && currentFrameCount > 10 && currentFrameCount % 200 == 0)
 	{
 		int currentFrameMineralAmount = BWAPI::Broodwar->self()->minerals();
 		int currentFrameGasAmount = BWAPI::Broodwar->self()->gas();
@@ -71,7 +71,7 @@ void ActionZVTFactoriesUnits::getBuildOrderList(UAlbertaBot::ProductionQueue & q
 		bool mineralDequePositive;
 		bool gasDequePositive;
 
-		if (hatch_count <= 2)
+		if (hatchery_count <= 2)
 		{
 			mineralDequePositive = IsDequeAllPositive(mineralNetIncrease);
 			if (mineralDequePositive)
@@ -108,7 +108,7 @@ void ActionZVTFactoriesUnits::getBuildOrderList(UAlbertaBot::ProductionQueue & q
 		queue.add(MetaType(BWAPI::UnitTypes::Zerg_Spawning_Pool), true);
 	}
 
-	bool isDefilerMoundExist = BuildingManager::Instance().isBeingBuilt(BWAPI::UnitTypes::Zerg_Defiler_Mound) || defiler_mount_count > 0;
+	bool isDefilerMoundExist = BuildingManager::Instance().isBeingBuilt(BWAPI::UnitTypes::Zerg_Defiler_Mound) || defiler_mound_count > 0;
 	bool isSpireExist = BuildingManager::Instance().isBeingBuilt(BWAPI::UnitTypes::Zerg_Spire) || spire_count > 0;
 	bool isHiveExist = BuildingManager::Instance().isBeingBuilt(BWAPI::UnitTypes::Zerg_Hive) || hive_count > 0;
 	bool isQueenNestExist = BuildingManager::Instance().isBeingBuilt(BWAPI::UnitTypes::Zerg_Queens_Nest) || queens_nest_count > 0;
@@ -179,7 +179,7 @@ void ActionZVTFactoriesUnits::getBuildOrderList(UAlbertaBot::ProductionQueue & q
 	}
 
 	bool notEnoughDrone = false;
-	if (hatch_count == 1)
+	if (hatchery_count == 1)
 	{
 		if (drone_count < 15)
 		{
@@ -189,11 +189,11 @@ void ActionZVTFactoriesUnits::getBuildOrderList(UAlbertaBot::ProductionQueue & q
 	}
 	else
 	{
-		if (drone_count < hatch_count * 10)
+		if (drone_count < hatchery_count * 10)
 		{
 			queue.add(MetaType(BWAPI::UnitTypes::Zerg_Drone), true);
 		}
-		notEnoughDrone = drone_count < 8 * hatch_count;
+		notEnoughDrone = drone_count < 8 * hatchery_count;
 	}
 
 	if (enemy_army_supply < escalationMark)
@@ -252,7 +252,7 @@ void ActionZVTFactoriesUnits::getBuildOrderList(UAlbertaBot::ProductionQueue & q
 
 		} while (true);
 
-		//int extractorUpperBound = std::min(hatch_count, 3);
+		//int extractorUpperBound = std::min(hatchery_count, 3);
 		//int currentExtractorCount = (int)InformationManager::Instance().getNumUnits(BWAPI::UnitTypes::Zerg_Extractor, BWAPI::Broodwar->self());
 		//if (currentExtractorCount < extractorUpperBound)
 		//{
@@ -320,7 +320,7 @@ void ActionZVTFactoriesUnits::getBuildOrderList(UAlbertaBot::ProductionQueue & q
 
 		} while (true);
 
-		//int extractorUpperBound = std::min(hatch_count, 3);
+		//int extractorUpperBound = std::min(hatchery_count, 3);
 		//int currentExtractorCount = (int)InformationManager::Instance().getNumUnits(BWAPI::UnitTypes::Zerg_Extractor, BWAPI::Broodwar->self());
 		//if (currentExtractorCount < extractorUpperBound)
 		//{
