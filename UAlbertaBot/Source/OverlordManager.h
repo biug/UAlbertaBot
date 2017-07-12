@@ -7,6 +7,9 @@ namespace UAlbertaBot
 {
 class OverlordManager : public MicroManager
 {
+protected:
+	int flag = 1;
+
 public:
 
 	OverlordManager();

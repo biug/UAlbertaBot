@@ -198,23 +198,20 @@ int LurkerManager::getAttackPriority(BWAPI::Unit rangedUnit, BWAPI::Unit target)
 	BWAPI::UnitType type(targetType);
 	double hpRatio = (type.maxHitPoints() > 0) ? target->getHitPoints() / type.maxHitPoints() : 1.0; 
 	//low hp
-	if (hpRatio < 0.33)
-	{
-		priority = 5;
-	}
+	priority = (1 - hpRatio) * 10;
 
     //Medic
-    if (targetType == BWAPI::UnitTypes::Terran_Medic)
+    if (targetType == BWAPI::UnitTypes::Terran_Medic ||
+    	targetType == BWAPI::UnitTypes::Terran_SCV)
     {
         return priority + 15;
     }
 	//Tank, Reaver, High Templar, Bunker
 	else if (targetType == BWAPI::UnitTypes::Terran_Siege_Tank_Siege_Mode || 
-		targetType == BWAPI::UnitTypes::Terran_Siege_Tank_Tank_Mode ||
-		targetType == BWAPI::UnitTypes::Protoss_Reaver ||
-		targetType == BWAPI::UnitTypes::Protoss_High_Templar ||
-		targetType == BWAPI::UnitTypes::Terran_Bunker
-		)
+			targetType == BWAPI::UnitTypes::Terran_Siege_Tank_Tank_Mode ||
+			targetType == BWAPI::UnitTypes::Protoss_Reaver ||
+			targetType == BWAPI::UnitTypes::Protoss_High_Templar ||
+			targetType == BWAPI::UnitTypes::Terran_Bunker)
 	{
 		return priority + 13;
 	}

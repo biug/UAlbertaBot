@@ -16,6 +16,8 @@
 #include "ZerglingManager.h"
 #include "MutaliskManager.h"
 #include "OverlordManager.h"
+#include "HarassZerglingManager.h"
+#include "HarassMutaliskManager.h"
 
 namespace UAlbertaBot
 {
