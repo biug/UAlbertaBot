@@ -79,21 +79,141 @@ void ActionZergBase::updateCurrentState(ProductionQueue &queue)
 	nydus_canal_in_queue = queue.unitCount(BWAPI::UnitTypes::Zerg_Nydus_Canal);
 	ultralisk_cavern_in_queue = queue.unitCount(BWAPI::UnitTypes::Zerg_Ultralisk_Cavern);
 
-	hatchery_being_built = BuildingManager::Instance().isBeingBuilt(BWAPI::UnitTypes::Zerg_Hatchery);
-	extractor_being_built = BuildingManager::Instance().isBeingBuilt(BWAPI::UnitTypes::Zerg_Extractor);
-	creep_colony_being_built = BuildingManager::Instance().isBeingBuilt(BWAPI::UnitTypes::Zerg_Creep_Colony);
-	sunken_colony_being_built = BuildingManager::Instance().isBeingBuilt(BWAPI::UnitTypes::Zerg_Sunken_Colony);
-	spore_colony_being_built = BuildingManager::Instance().isBeingBuilt(BWAPI::UnitTypes::Zerg_Spore_Colony);
-	spawning_pool_being_built = BuildingManager::Instance().isBeingBuilt(BWAPI::UnitTypes::Zerg_Spawning_Pool);
-	hydralisk_den_being_built = BuildingManager::Instance().isBeingBuilt(BWAPI::UnitTypes::Zerg_Hydralisk_Den);
-	lair_being_built = BuildingManager::Instance().isBeingBuilt(BWAPI::UnitTypes::Zerg_Lair);
-	queens_nest_being_built = BuildingManager::Instance().isBeingBuilt(BWAPI::UnitTypes::Zerg_Queens_Nest);
-	hive_being_built = BuildingManager::Instance().isBeingBuilt(BWAPI::UnitTypes::Zerg_Hive);
-	defiler_mound_being_built = BuildingManager::Instance().isBeingBuilt(BWAPI::UnitTypes::Zerg_Defiler_Mound);
-	spire_being_built = BuildingManager::Instance().isBeingBuilt(BWAPI::UnitTypes::Zerg_Spire);
-	greater_spire_being_built = BuildingManager::Instance().isBeingBuilt(BWAPI::UnitTypes::Zerg_Greater_Spire);
-	nydus_canal_being_built = BuildingManager::Instance().isBeingBuilt(BWAPI::UnitTypes::Zerg_Nydus_Canal);
-	ultralisk_cavern_being_built = BuildingManager::Instance().isBeingBuilt(BWAPI::UnitTypes::Zerg_Ultralisk_Cavern);
+	if (BuildingManager::Instance().isBeingBuilt(BWAPI::UnitTypes::Zerg_Hatchery))
+	{
+		hatchery_being_built = 1;
+	}
+	else
+	{
+		hatchery_being_built = 0;
+	}
+
+	if (BuildingManager::Instance().isBeingBuilt(BWAPI::UnitTypes::Zerg_Extractor))
+	{
+		extractor_being_built = 1;
+	}
+	else
+	{
+		extractor_being_built = 0;
+	}
+
+	if (BuildingManager::Instance().isBeingBuilt(BWAPI::UnitTypes::Zerg_Creep_Colony))
+	{
+		creep_colony_being_built = 1;
+	}
+	else
+	{
+		creep_colony_being_built = 0;
+	}
+
+	if (BuildingManager::Instance().isBeingBuilt(BWAPI::UnitTypes::Zerg_Sunken_Colony))
+	{
+		sunken_colony_being_built = 1;
+	}
+	else
+	{
+		sunken_colony_being_built = 0;
+	}
+
+	if (BuildingManager::Instance().isBeingBuilt(BWAPI::UnitTypes::Zerg_Spore_Colony))
+	{
+		spore_colony_being_built = 1;
+	}
+	else
+	{
+		spore_colony_being_built = 0;
+	}
+
+	if (BuildingManager::Instance().isBeingBuilt(BWAPI::UnitTypes::Zerg_Spawning_Pool))
+	{
+		spawning_pool_being_built = 1;
+	}
+	else
+	{
+		spawning_pool_being_built = 0;
+	}
+
+	if (BuildingManager::Instance().isBeingBuilt(BWAPI::UnitTypes::Zerg_Hydralisk_Den))
+	{
+		hydralisk_den_being_built = 1;
+	}
+	else
+	{
+		hydralisk_den_being_built = 0;
+	}
+
+	if (BuildingManager::Instance().isBeingBuilt(BWAPI::UnitTypes::Zerg_Lair))
+	{
+		lair_being_built = 1;
+	}
+	else
+	{
+		lair_being_built = 0;
+	}
+
+	if (BuildingManager::Instance().isBeingBuilt(BWAPI::UnitTypes::Zerg_Queens_Nest))
+	{
+		queens_nest_being_built = 1;
+	}
+	else
+	{
+		queens_nest_being_built = 0;
+	}
+
+	if (BuildingManager::Instance().isBeingBuilt(BWAPI::UnitTypes::Zerg_Hive))
+	{
+		hive_being_built = 1;
+	}
+	else
+	{
+		hive_being_built = 0;
+	}
+
+	if (BuildingManager::Instance().isBeingBuilt(BWAPI::UnitTypes::Zerg_Defiler_Mound))
+	{
+		defiler_mound_being_built = 1;
+	}
+	else
+	{
+		defiler_mound_being_built = 0;
+	}
+
+	if (BuildingManager::Instance().isBeingBuilt(BWAPI::UnitTypes::Zerg_Spire))
+	{
+		spire_being_built = 1;
+	}
+	else
+	{
+		spire_being_built = 0;
+	}
+
+	if (BuildingManager::Instance().isBeingBuilt(BWAPI::UnitTypes::Zerg_Greater_Spire))
+	{
+		greater_spire_being_built = 1;
+	}
+	else
+	{
+		greater_spire_being_built = 0;
+	}
+
+	if (BuildingManager::Instance().isBeingBuilt(BWAPI::UnitTypes::Zerg_Nydus_Canal))
+	{
+		nydus_canal_being_built = 1;
+	}
+	else
+	{
+		nydus_canal_being_built = 0;
+	}
+
+	if (BuildingManager::Instance().isBeingBuilt(BWAPI::UnitTypes::Zerg_Ultralisk_Cavern))
+	{
+		ultralisk_cavern_being_built = 1;
+	}
+	else
+	{
+	    ultralisk_cavern_being_built = 0;
+	}
+
 
 
 	//军事力量
