@@ -177,11 +177,12 @@ int LurkerManager::getAttackPriority(BWAPI::Unit rangedUnit, BWAPI::Unit target)
 	BWAPI::UnitType rangedType = rangedUnit->getType();
 	BWAPI::UnitType targetType = target->getType();
 
+	bool isThreat = targetType.isFlyer() ? false : targetType.groundWeapon() != BWAPI::WeaponTypes::None;
+
 	if (target->getType() == BWAPI::UnitTypes::Zerg_Larva || target->getType() == BWAPI::UnitTypes::Zerg_Egg)
 	{
 		return 0;
 	}
-
 	// if the target is building something near our base something is fishy
 	BWAPI::Position ourBasePosition = BWAPI::Position(BWAPI::Broodwar->self()->getStartLocation());
 	if (target->getType().isWorker() && (target->isConstructing() || target->isRepairing()) && target->getDistance(ourBasePosition) < 1200)
@@ -207,12 +208,6 @@ int LurkerManager::getAttackPriority(BWAPI::Unit rangedUnit, BWAPI::Unit target)
     {
         return priority + 15;
     }
-    //Science Vessel, Shuttle
-    else if (targetType == BWAPI::UnitTypes::Terran_Science_Vessel ||
-            targetType == BWAPI::UnitTypes::Protoss_Shuttle)
-    {
-		return priority + 14;
-    }
 	//Tank, Reaver, High Templar, Bunker
 	else if (targetType == BWAPI::UnitTypes::Terran_Siege_Tank_Siege_Mode || 
 		targetType == BWAPI::UnitTypes::Terran_Siege_Tank_Tank_Mode ||
@@ -234,7 +229,7 @@ int LurkerManager::getAttackPriority(BWAPI::Unit rangedUnit, BWAPI::Unit target)
 		return 9;
 	}
 	//can attack us
-	else if (targetType.groundWeapon() != BWAPI::WeaponTypes::None)
+	else if (isThreat)
 	{
 		return priority + 11;
 	}

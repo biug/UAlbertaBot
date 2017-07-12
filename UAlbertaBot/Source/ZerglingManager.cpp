@@ -126,6 +126,8 @@ int ZerglingManager::getAttackPriority(BWAPI::Unit zerglingUnit, BWAPI::Unit tar
 	BWAPI::UnitType rangedType = zerglingUnit->getType();
 	BWAPI::UnitType targetType = target->getType();
 
+	bool isThreat = targetType.isFlyer() ? false : targetType.groundWeapon() != BWAPI::WeaponTypes::None;
+	
 	if (targetType == BWAPI::UnitTypes::Terran_Missile_Turret)
     {
         return 18;
@@ -167,7 +169,7 @@ int ZerglingManager::getAttackPriority(BWAPI::Unit zerglingUnit, BWAPI::Unit tar
 		return 9;
 	}
 	//can attack us
-	else if (targetType.groundWeapon() != BWAPI::WeaponTypes::None)
+	else if (isThreat)
 	{
 		return priority + 11;
 	}

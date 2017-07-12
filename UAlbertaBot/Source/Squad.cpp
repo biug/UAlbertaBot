@@ -73,8 +73,8 @@ void Squad::update()
 		_mutaliskManager.execute(_order);
 		_overlordManager.executeMove(_order);
 
-		// _detectorManager.setUnitClosestToEnemy(unitClosestToEnemy());
-		// _detectorManager.execute(_order);
+		_detectorManager.setUnitClosestToEnemy(unitClosestToEnemy());
+		_detectorManager.execute(_order);
 	}
 }
 

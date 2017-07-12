@@ -29,7 +29,7 @@ void HydraliskManager::assignTargetsOld(const BWAPI::Unitset & targets)
         {
             BWAPI::Position ourBasePosition = BWAPI::Position(BWAPI::Broodwar->self()->getStartLocation());
 			// if there are targets
-			if (!hydraliskUnitTargets.empty() && hydraliskUnit->getDistance(ourBasePosition) < 1200)
+			if (!hydraliskUnitTargets.empty() && hydraliskUnit->getDistance(ourBasePosition) < 500)
 			{
 				// find the best target for this zealot
 				BWAPI::Unit target = getTarget(hydraliskUnit, hydraliskUnitTargets);
@@ -53,7 +53,7 @@ void HydraliskManager::assignTargetsOld(const BWAPI::Unitset & targets)
 			else
 			{
 				// if we're not near the order position
-				if (hydraliskUnit->getDistance(ourBasePosition) > 1000)
+				if (hydraliskUnit->getDistance(ourBasePosition) > 500)
 				{
 					// move to it
 					Micro::SmartAttackMove(hydraliskUnit, ourBasePosition);
