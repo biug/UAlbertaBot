@@ -9,7 +9,7 @@ namespace CasiaBot
 	{
 	public:
 		ActionZVTFactoriesUnits();
-		~ActionZVTFactoriesUnits(){}
+		~ActionZVTFactoriesUnits() {}
 		void init() override;
 		bool canDeployAction() override;
 		bool tick() override;
@@ -17,15 +17,9 @@ namespace CasiaBot
 		void updateCurrentState(UAlbertaBot::ProductionQueue &queue) override;
 
 	private:
-		bool isInitialized = false;
-		int enemyTerranBarrackUnitsAmount;
-		int enemyTerranFactoryUnitsAmount;
-		double enemyTerranMechanizationRate;
-		int lastFrameCount = 0;
-		int lastFrameMineralAmount;
-		int lastFrameGasAmount;
-		std::deque<int> mineralNetIncrease;
-		std::deque<int> gasNetIncrease;
+		int enemyTerranBarrackUnitsAmount = 0;
+		int enemyTerranFactoryUnitsAmount = 0;
+		double enemyTerranMechanizationRate = 0;
 		const double escalationMark = 240;	// 敌方人口达到此值时开始造雷兽
 	};
 }

@@ -6,20 +6,16 @@
 using namespace CasiaBot;
 using namespace UAlbertaBot;
 using namespace CasiaBot::ActionHelper;
-//using namespace UAlbertaBot::UnitUtil;
 using namespace std;
 
 ActionZVTFactoriesUnits::ActionZVTFactoriesUnits()
 {
-	init();
 }
 
 void ActionZVTFactoriesUnits::init()
 {
 	if (!isInitialized)
 	{
-		mineralNetIncrease = { 0,0,0,0,0 };
-		gasNetIncrease = { 0,0,0,0,0 };
 		lastFrameCount = BWAPI::Broodwar->getFrameCount();
 		lastFrameMineralAmount = BWAPI::Broodwar->self()->minerals();
 		lastFrameGasAmount = BWAPI::Broodwar->self()->gas();
