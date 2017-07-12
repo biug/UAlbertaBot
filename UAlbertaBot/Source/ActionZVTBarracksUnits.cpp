@@ -48,9 +48,12 @@ bool ActionZVTBarracksUnits::tick()
 
 void ActionZVTBarracksUnits::getBuildOrderList(UAlbertaBot::ProductionQueue & queue)
 {
-	// 判断是否需要增加母巢
+	// 现有工蜂数量
 	int drone_count_exist = InformationManager::Instance().getNumUnits(BWAPI::UnitTypes::Zerg_Drone, BWAPI::Broodwar->self());
+	// 当前帧数（累计）
 	int currentFrameCount = BWAPI::Broodwar->getFrameCount();
+	
+	// 判断是否需要增加母巢
 	if (hatch_count <= 4 && currentFrameCount > 10 && currentFrameCount % 200 == 0)
 	{
 		int currentFrameMineralAmount = BWAPI::Broodwar->self()->minerals();
@@ -71,7 +74,7 @@ void ActionZVTBarracksUnits::getBuildOrderList(UAlbertaBot::ProductionQueue & qu
 			mineralDequePositive = IsDequeAllPositive(mineralNetIncrease);
 			if (mineralDequePositive)
 			{
-				queue.add(MetaType(BWAPI::UnitTypes::Zerg_Drone), true);
+				//queue.add(MetaType(BWAPI::UnitTypes::Zerg_Drone), true);
 				queue.add(MetaType(BWAPI::UnitTypes::Zerg_Hatchery), true);
 			}
 		}
@@ -81,7 +84,7 @@ void ActionZVTBarracksUnits::getBuildOrderList(UAlbertaBot::ProductionQueue & qu
 			gasDequePositive = IsDequeAllPositive(gasNetIncrease);
 			if (mineralDequePositive && gasDequePositive)
 			{
-				queue.add(MetaType(BWAPI::UnitTypes::Zerg_Drone), true);
+				//queue.add(MetaType(BWAPI::UnitTypes::Zerg_Drone), true);
 				queue.add(MetaType(BWAPI::UnitTypes::Zerg_Hatchery), true);
 			}
 		}
@@ -95,32 +98,49 @@ void ActionZVTBarracksUnits::getBuildOrderList(UAlbertaBot::ProductionQueue & qu
 	bool isExtractorExist = BuildingManager::Instance().isBeingBuilt(BWAPI::UnitTypes::Zerg_Extractor) || extractor_count > 0;
 	if (!isExtractorExist && drone_count_exist >= 7 && InformationManager::Instance().getNumUnits(BWAPI::UnitTypes::Zerg_Spawning_Pool, BWAPI::Broodwar->self()))
 	{
-		queue.add(MetaType(BWAPI::UnitTypes::Zerg_Drone));
+		//queue.add(MetaType(BWAPI::UnitTypes::Zerg_Drone));
 		queue.add(MetaType(BWAPI::UnitTypes::Zerg_Extractor), true);
 	}
 
 	bool isSpawningPoolExist = BuildingManager::Instance().isBeingBuilt(BWAPI::UnitTypes::Zerg_Spawning_Pool) || spawning_pool_count > 0;
 	if (!isSpawningPoolExist)
 	{
-		queue.add(MetaType(BWAPI::UnitTypes::Zerg_Drone));
+		//queue.add(MetaType(BWAPI::UnitTypes::Zerg_Drone));
 		queue.add(MetaType(BWAPI::UnitTypes::Zerg_Spawning_Pool), true);
 	}
 
 	bool isHydraliskDenExist = BuildingManager::Instance().isBeingBuilt(BWAPI::UnitTypes::Zerg_Hydralisk_Den) || hydralisk_den_count > 0;
 	if (!isHydraliskDenExist)
 	{
-		queue.add(MetaType(BWAPI::UnitTypes::Zerg_Drone));
+		//queue.add(MetaType(BWAPI::UnitTypes::Zerg_Drone));
 		queue.add(MetaType(BWAPI::UnitTypes::Zerg_Hydralisk_Den), true);
 	}
 
 	bool isHiveExist = BuildingManager::Instance().isBeingBuilt(BWAPI::UnitTypes::Zerg_Hive) || hive_count > 0;
 	bool isQueenNestExist = BuildingManager::Instance().isBeingBuilt(BWAPI::UnitTypes::Zerg_Queens_Nest) || queens_nest_count > 0;
 	bool isLairExist = BuildingManager::Instance().isBeingBuilt(BWAPI::UnitTypes::Zerg_Lair) || lair_count > 0;
-	if (!isLairExist)
+	if (!isHiveExist)	// 若蜂巢不存在
 	{
-		if (currentFrameCount > 4800)
+		if (isQueenNestExist)	// 若皇后巢存在
 		{
-			queue.add(MetaType(BWAPI::UnitTypes::Zerg_Lair));
+			if (currentFrameCount > 10800)
+			{
+				queue.add(MetaType(BWAPI::UnitTypes::Zerg_Hive));
+			}
+		}
+		else	// 若皇后巢不存在
+		{
+			if (isLairExist)	// 若兽穴存在
+			{
+				if (currentFrameCount > 9000)
+				{
+					queue.add(MetaType(BWAPI::UnitTypes::Zerg_Queens_Nest));
+				}
+			}
+			else if (currentFrameCount > 4800)	// 若兽穴不存在
+			{
+				queue.add(MetaType(BWAPI::UnitTypes::Zerg_Lair));
+			}
 		}
 	}
 
@@ -151,7 +171,10 @@ void ActionZVTBarracksUnits::getBuildOrderList(UAlbertaBot::ProductionQueue & qu
 		if (need_zergling_count > 0)
 		{
 			// 2个Zergling
-			queue.add(MetaType(BWAPI::UnitTypes::Zerg_Zergling));
+			if (InformationManager::Instance().getNumUnits(BWAPI::UnitTypes::Zerg_Spawning_Pool, BWAPI::Broodwar->self()) > 0)
+			{
+				queue.add(MetaType(BWAPI::UnitTypes::Zerg_Zergling));
+			}
 			need_zergling_count -= 2;
 		}
 		if (need_lurker_count > 0)
@@ -174,7 +197,7 @@ void ActionZVTBarracksUnits::getBuildOrderList(UAlbertaBot::ProductionQueue & qu
 
 	} while (true);
 
-	if (drone_count * 15 < hatch_count)
+	if (drone_count < hatch_count * 15)
 	{
 		queue.add(MetaType(BWAPI::UnitTypes::Zerg_Drone));
 	}
