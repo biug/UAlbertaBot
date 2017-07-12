@@ -50,10 +50,12 @@ bool ActionZVTFactoriesUnits::tick()
 
 void ActionZVTFactoriesUnits::getBuildOrderList(UAlbertaBot::ProductionQueue & queue)
 {
+	// 现有工蜂数量
+	int drone_count_exist = InformationManager::Instance().getNumUnits(BWAPI::UnitTypes::Zerg_Drone, BWAPI::Broodwar->self());
+	// 当前帧数（累计）
+	int currentFrameCount = BWAPI::Broodwar->getFrameCount();
 
 	// 判断是否需要增加母巢
-	int drone_count_exist = InformationManager::Instance().getNumUnits(BWAPI::UnitTypes::Zerg_Drone, BWAPI::Broodwar->self());
-	int currentFrameCount = BWAPI::Broodwar->getFrameCount();
 	if (hatch_count <= 4 && currentFrameCount > 10 && currentFrameCount % 200 == 0)
 	{
 		int currentFrameMineralAmount = BWAPI::Broodwar->self()->minerals();
@@ -259,7 +261,8 @@ void ActionZVTFactoriesUnits::getBuildOrderList(UAlbertaBot::ProductionQueue & q
 	}
 	else
 	{
-		bool isUltraliskCavernExist = BuildingManager::Instance().isBeingBuilt(BWAPI::UnitTypes::Zerg_Ultralisk_Cavern);
+		bool isUltraliskCavernExist = BuildingManager::Instance().isBeingBuilt(BWAPI::UnitTypes::Zerg_Ultralisk_Cavern) ||
+			InformationManager::Instance().getNumUnits(BWAPI::UnitTypes::Zerg_Ultralisk_Cavern, BWAPI::Broodwar->self()) > 0;
 		if (!isUltraliskCavernExist)
 		{
 			queue.add(MetaType(BWAPI::UnitTypes::Zerg_Ultralisk_Cavern), true);
@@ -267,8 +270,16 @@ void ActionZVTFactoriesUnits::getBuildOrderList(UAlbertaBot::ProductionQueue & q
 
 		// 判断需要建造多少部队
 		int need_mutalisk_count = (int)(enemy_goliath_count * 1.2 + 2) - mutalisk_count;
+		if (need_mutalisk_count <= 0 && mutalisk_count < 12)
+		{
+			need_mutalisk_count = 1;
+		}
 		int need_defiler_count = 3;
-		int need_zergling_count = enemyTerranFactoryUnitsAmount * 2 - zergling_count;
+		int need_zergling_count = (int)(enemyTerranBarrackUnitsAmount * 1.5) - zergling_count;
+		if (need_zergling_count <= 0 && zergling_count < 24)
+		{
+			need_zergling_count = 2;
+		}
 
 		// 穿插建造Mutalisk、Defiler、Zergling、Ultralisk
 		do
@@ -276,20 +287,32 @@ void ActionZVTFactoriesUnits::getBuildOrderList(UAlbertaBot::ProductionQueue & q
 			if (need_zergling_count > 0)
 			{
 				// 2个Zergling
-				queue.add(MetaType(BWAPI::UnitTypes::Zerg_Zergling));
+				if (InformationManager::Instance().getNumUnits(BWAPI::UnitTypes::Zerg_Spawning_Pool, BWAPI::Broodwar->self()) > 0)
+				{
+					queue.add(MetaType(BWAPI::UnitTypes::Zerg_Zergling));
+				}
 				need_zergling_count -= 2;
 			}
 			if (need_mutalisk_count > 0)
 			{
-				queue.add(MetaType(BWAPI::UnitTypes::Zerg_Mutalisk));
+				if (InformationManager::Instance().getNumUnits(BWAPI::UnitTypes::Zerg_Spire, BWAPI::Broodwar->self()) > 0)
+				{
+					queue.add(MetaType(BWAPI::UnitTypes::Zerg_Mutalisk));
+				}
 				need_mutalisk_count--;
 			}
 			if (need_defiler_count > 0)
 			{
-				queue.add(MetaType(BWAPI::UnitTypes::Zerg_Defiler));
+				if (InformationManager::Instance().getNumUnits(BWAPI::UnitTypes::Zerg_Defiler_Mound, BWAPI::Broodwar->self()) > 0)
+				{
+					queue.add(MetaType(BWAPI::UnitTypes::Zerg_Defiler));
+				}
 				need_defiler_count--;
 			}
-			queue.add(MetaType(BWAPI::UnitTypes::Zerg_Ultralisk));
+			if (InformationManager::Instance().getNumUnits(BWAPI::UnitTypes::Zerg_Ultralisk_Cavern, BWAPI::Broodwar->self()) > 0)
+			{
+				queue.add(MetaType(BWAPI::UnitTypes::Zerg_Ultralisk));
+			}	
 			if (need_mutalisk_count <= 0 && need_defiler_count <= 0 && need_zergling_count <= 0)
 			{
 				break;
@@ -297,12 +320,12 @@ void ActionZVTFactoriesUnits::getBuildOrderList(UAlbertaBot::ProductionQueue & q
 
 		} while (true);
 
-		int extractorUpperBound = std::min(hatch_count, 3);
-		int currentExtractorCount = (int)InformationManager::Instance().getNumUnits(BWAPI::UnitTypes::Zerg_Extractor, BWAPI::Broodwar->self());
-		if (currentExtractorCount < extractorUpperBound)
-		{
-			queue.add(MetaType(BWAPI::UnitTypes::Zerg_Extractor), true);
-		}
+		//int extractorUpperBound = std::min(hatch_count, 3);
+		//int currentExtractorCount = (int)InformationManager::Instance().getNumUnits(BWAPI::UnitTypes::Zerg_Extractor, BWAPI::Broodwar->self());
+		//if (currentExtractorCount < extractorUpperBound)
+		//{
+		//	queue.add(MetaType(BWAPI::UnitTypes::Zerg_Extractor), true);
+		//}
 	}
 }
 

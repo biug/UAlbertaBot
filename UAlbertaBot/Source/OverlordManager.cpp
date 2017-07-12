@@ -48,22 +48,19 @@ void OverlordManager::executeMove(const SquadOrder & inputOrder)
         {
             BWAPI::Position fleeVec(enemyBaseLocation->getPosition() - ourBaseLocation);
             double fleeAngle = atan2(fleeVec.y, fleeVec.x);
-            fleeVec = BWAPI::Position(static_cast<int>(352 * cos(fleeAngle)), static_cast<int>(352 * sin(fleeAngle)));
-			BWAPI::Position aimPosition(fleeVec);
-            switch(current){
-                case 0:
-                    aimPosition = BWAPI::Position(enemyBaseLocation->getPosition() - fleeVec);
-                    Micro::SmartMove(overlordUnit, aimPosition);
-                    break;
-                case 1:
-                    aimPosition = BWAPI::Position(ourBaseLocation + fleeVec);
-                    Micro::SmartMove(overlordUnit, aimPosition);
-                    break;
-                case 2:
-                    aimPosition = BWAPI::Position((ourBaseLocation + enemyBaseLocation->getPosition())/2);
-                    Micro::SmartMove(overlordUnit, aimPosition);
-                    break;
-                default:break;
+
+            fleeVec = BWAPI::Position(static_cast<int>(384 * cos(fleeAngle)), static_cast<int>(384 * sin(fleeAngle)));
+
+			BWAPI::Position movePosition(static_cast<int>(640 * sin(fleeAngle)), static_cast<int>(-640 * cos(fleeAngle)));
+
+            BWAPI::Position aimPosition(fleeVec);
+
+            aimPosition = BWAPI::Position((ourBaseLocation * current + enemyBaseLocation->getPosition() * (numOverlord - current)) / numOverlord + movePosition * flag - fleeVec);
+            Micro::SmartMove(overlordUnit, aimPosition);
+            
+            if (overlordUnit->getDistance(aimPosition) < 32)
+            {
+                flag *= -1;
             }
         }
         current++;
