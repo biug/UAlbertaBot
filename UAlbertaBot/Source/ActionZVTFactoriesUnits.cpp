@@ -30,7 +30,7 @@ void ActionZVTFactoriesUnits::init()
 
 bool ActionZVTFactoriesUnits::canDeployAction()
 {
-	if (enemyTerranMechanizationRate >= 1)
+	if (enemyTerranMechanizationRate >= 0.8)
 	{
 		return true;
 	}
@@ -40,7 +40,7 @@ bool ActionZVTFactoriesUnits::canDeployAction()
 
 bool ActionZVTFactoriesUnits::tick()
 {
-	if (enemyTerranMechanizationRate < 1)
+	if (enemyTerranMechanizationRate < 0.8)
 	{
 		return true;
 	}
@@ -125,39 +125,31 @@ void ActionZVTFactoriesUnits::getBuildOrderList(UAlbertaBot::ProductionQueue & q
 	{
 		if (isHiveExist)	// 若蜂巢存在
 		{
-			if (currentFrameCount > 13200)
+			if (currentFrameCount > 18000)
 			{
 				queue.add(MetaType(BWAPI::UnitTypes::Zerg_Defiler_Mound));
-				if (!isSpireExist)
-				{
-					queue.add(MetaType(BWAPI::UnitTypes::Zerg_Spire));
-				}
 			}
 		}
 		else	// // 若蜂巢不存在
 		{
 			if (isQueenNestExist)	// 若皇后巢存在
 			{
-				if (currentFrameCount > 10800)
+				if (currentFrameCount > 15000)
 				{
 					queue.add(MetaType(BWAPI::UnitTypes::Zerg_Hive));
-					if (!isSpireExist)
-					{
-						queue.add(MetaType(BWAPI::UnitTypes::Zerg_Spire));
-					}
 				}
 			}
 			else	// 若皇后巢不存在
 			{
 				if (isLairExist)	// 若兽穴存在
 				{
-					if (currentFrameCount > 9000)
+					if (currentFrameCount > 12000 && isSpireExist)
 					{
 						queue.add(MetaType(BWAPI::UnitTypes::Zerg_Queens_Nest));
-						if (!isSpireExist)
-						{
-							queue.add(MetaType(BWAPI::UnitTypes::Zerg_Spire));
-						}
+					}
+					if (!isSpireExist)
+					{
+						queue.add(MetaType(BWAPI::UnitTypes::Zerg_Spire));
 					}
 				}
 				else if (currentFrameCount > 4800)	// 若兽穴不存在
@@ -179,24 +171,48 @@ void ActionZVTFactoriesUnits::getBuildOrderList(UAlbertaBot::ProductionQueue & q
 
 	int currentFlyerCarapaceLevel = BWAPI::Broodwar->self()->getUpgradeLevel(BWAPI::UpgradeTypes::Zerg_Flyer_Carapace);
 	bool isFlyerCarapaceUpgrading = BWAPI::Broodwar->self()->isUpgrading(BWAPI::UpgradeTypes::Zerg_Flyer_Carapace);
-	if (!isFlyerCarapaceUpgrading && currentFlyerCarapaceLevel < 1 && queue.upgradeCount(BWAPI::UpgradeTypes::Zerg_Flyer_Carapace) == 0)
+	if (!isFlyerCarapaceUpgrading && currentFlyerCarapaceLevel < 1 && queue.upgradeCount(BWAPI::UpgradeTypes::Zerg_Flyer_Carapace) == 0 && spire_count > 0)
 	{
 		queue.add(MetaType(BWAPI::UpgradeTypes::Zerg_Flyer_Carapace));
+	}
+
+	bool notEnoughDrone = false;
+	if (hatch_count == 1)
+	{
+		if (drone_count < 15)
+		{
+			queue.add(MetaType(BWAPI::UnitTypes::Zerg_Drone), true);
+		}
+		notEnoughDrone = drone_count < 12;
+	}
+	else
+	{
+		if (drone_count < hatch_count * 10)
+		{
+			queue.add(MetaType(BWAPI::UnitTypes::Zerg_Drone), true);
+		}
+		notEnoughDrone = drone_count < 8 * hatch_count;
 	}
 
 	if (enemy_army_supply < escalationMark)
 	{
 		// 判断需要建造多少部队
 		int need_mutalisk_count = (int)(enemy_goliath_count * 1.2 + 2) - mutalisk_count;
-		if (need_mutalisk_count <= 0 && mutalisk_count < 12)
+		if (need_mutalisk_count <= 0 && mutalisk_count < 6)
 		{
 			need_mutalisk_count = 1;
 		}
 		int need_defiler_count = 1;
 		int need_zergling_count = (int)(enemyTerranBarrackUnitsAmount * 1.5) - zergling_count;
-		if (need_zergling_count <= 0 && zergling_count < 24)
+		if (need_zergling_count <= 0 && zergling_count < 12)
 		{
 			need_zergling_count = 2;
+		}
+		if (notEnoughDrone)
+		{
+			need_mutalisk_count = mutalisk_count < 6 ? 1 : 0;
+			need_defiler_count = 0;
+			need_zergling_count = zergling_count < 12 ? 2 : 0;
 		}
 
 		// 穿插建造Mutalisk、Defiler、Zergling
@@ -246,7 +262,6 @@ void ActionZVTFactoriesUnits::getBuildOrderList(UAlbertaBot::ProductionQueue & q
 		bool isUltraliskCavernExist = BuildingManager::Instance().isBeingBuilt(BWAPI::UnitTypes::Zerg_Ultralisk_Cavern);
 		if (!isUltraliskCavernExist)
 		{
-			queue.add(MetaType(BWAPI::UnitTypes::Zerg_Drone), true);
 			queue.add(MetaType(BWAPI::UnitTypes::Zerg_Ultralisk_Cavern), true);
 		}
 
@@ -289,11 +304,6 @@ void ActionZVTFactoriesUnits::getBuildOrderList(UAlbertaBot::ProductionQueue & q
 			queue.add(MetaType(BWAPI::UnitTypes::Zerg_Extractor), true);
 		}
 	}
-
-	if (drone_count * 15 < hatch_count)
-	{
-		queue.add(MetaType(BWAPI::UnitTypes::Zerg_Drone));
-	}
 }
 
 void ActionZVTFactoriesUnits::updateCurrentState(ProductionQueue &queue)
@@ -301,6 +311,7 @@ void ActionZVTFactoriesUnits::updateCurrentState(ProductionQueue &queue)
 	ActionZergBase::updateCurrentState(queue);
 
 	enemyTerranBarrackUnitsAmount = enemy_marine_count + enemy_firebat_count + enemy_ghost_count + enemy_medic_count;
-	enemyTerranFactoryUnitsAmount = enemy_vulture_count + enemy_tank_count + enemy_goliath_count;
+	enemyTerranFactoryUnitsAmount = enemy_vulture_count * 2 + enemy_tank_count * 2 + enemy_goliath_count * 2;
 	enemyTerranMechanizationRate = enemyTerranBarrackUnitsAmount == 0 ? 10 : (double)enemyTerranFactoryUnitsAmount / (double)enemyTerranBarrackUnitsAmount;
+	if (enemyTerranFactoryUnitsAmount == 0) enemyTerranMechanizationRate = 0;
 }
