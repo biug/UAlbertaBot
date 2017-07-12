@@ -15,6 +15,7 @@ UnitData::UnitData()
 
 	numDeadUnits	    = std::vector<int>(maxTypeID + 1, 0);
 	numUnits		    = std::vector<int>(maxTypeID + 1, 0);
+	numProductingUnits	= std::vector<int>(maxTypeID + 1, 0);
 }
 
 void UnitData::updateUnit(BWAPI::Unit unit)
@@ -29,10 +30,48 @@ void UnitData::updateUnit(BWAPI::Unit unit)
         unitMap[unit] = UnitInfo();
     }
 	// unit changed, maybe morph
-	else if (unitMap[unit].type != unit->getType())
+	else
 	{
-		firstSeen = true;
-		numUnits[unitMap[unit].type]--;
+		auto lastType = unitMap[unit].type;
+		if (lastType != unit->getType())
+		{
+			numUnits[lastType.getID()]--;
+			// morphing complete
+			if (lastType == BWAPI::UnitTypes::Zerg_Egg)
+			{
+				numProductingUnits[lastType.getID()] -= 1;
+				numUnits[unit->getType().getID()] += 1;
+			}
+			// morphing lurker complete
+			if (lastType == BWAPI::UnitTypes::Zerg_Lurker_Egg)
+			{
+				numProductingUnits[BWAPI::UnitTypes::Zerg_Lurker.getID()] -= 1;
+				numUnits[unit->getType().getID()] += 1;
+			}
+
+			// start morphing
+			if (unit->getType() == BWAPI::UnitTypes::Zerg_Egg)
+			{
+				numProductingUnits[unit->getBuildType().getID()] += 1;
+			}
+			// start morphing lurker
+			if (unit->getType() == BWAPI::UnitTypes::Zerg_Lurker_Egg)
+			{
+				numProductingUnits[BWAPI::UnitTypes::Zerg_Lurker.getID()] += 1;
+			}
+
+			// constructing building
+			if (unit->getType().isBuilding())
+			{
+				numProductingUnits[unit->getType().getID()] += 1;
+			}
+		}
+		// when building complete
+		if (unit->getType().isBuilding() && !unitMap[unit].completed && unit->isCompleted())
+		{
+			numProductingUnits[unit->getType().getID()] -= 1;
+			numUnits[unit->getType().getID()] += 1;
+		}
 	}
     
 	UnitInfo & ui   = unitMap[unit];
@@ -113,7 +152,12 @@ int UnitData::getMineralsLost() const
 
 int UnitData::getNumUnits(BWAPI::UnitType t) const 
 { 
-    return numUnits[t.getID()]; 
+	return numUnits[t.getID()] + numProductingUnits[t.getID()];
+}
+
+int UnitData::getNumCompletedUnits(BWAPI::UnitType t) const
+{
+	return numUnits[t.getID()];
 }
 
 int UnitData::getNumDeadUnits(BWAPI::UnitType t) const 
