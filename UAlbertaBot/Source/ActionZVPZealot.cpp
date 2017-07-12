@@ -52,13 +52,11 @@ bool ActionZVPZealot::tick()
 
 void ActionZVPZealot::getBuildOrderList(UAlbertaBot::ProductionQueue & queue)
 {
-	// 现有工蜂数量
-	int drone_count_exist = InformationManager::Instance().getNumUnits(BWAPI::UnitTypes::Zerg_Drone, BWAPI::Broodwar->self());
 	// 当前帧数（累计）
 	int currentFrameCount = BWAPI::Broodwar->getFrameCount();
 
 	// 判断是否需要增加母巢
-	if (hatchery_count <= 4 && currentFrameCount > 10 && currentFrameCount % 200 == 0)
+	if (hatchery_count + hatchery_in_queue + hatchery_being_built <= 4 && currentFrameCount > 10 && currentFrameCount % 200 == 0)
 	{
 		int currentFrameMineralAmount = BWAPI::Broodwar->self()->minerals();
 		int currentFrameGasAmount = BWAPI::Broodwar->self()->gas();
@@ -73,7 +71,7 @@ void ActionZVPZealot::getBuildOrderList(UAlbertaBot::ProductionQueue & queue)
 		bool mineralDequePositive;
 		bool gasDequePositive;
 
-		if (hatchery_count <= 2)
+		if (hatchery_count + hatchery_in_queue + hatchery_being_built <= 2)
 		{
 			mineralDequePositive = IsDequeAllPositive(mineralNetIncrease);
 			if (mineralDequePositive)
@@ -99,23 +97,21 @@ void ActionZVPZealot::getBuildOrderList(UAlbertaBot::ProductionQueue & queue)
 	}
 
 	// 判断前提建筑是否存在
-	bool isExtractorExist = BuildingManager::Instance().isBeingBuilt(BWAPI::UnitTypes::Zerg_Extractor) || extractor_count > 0;
-	if (!isExtractorExist && drone_count_exist >= 7 && InformationManager::Instance().getNumUnits(BWAPI::UnitTypes::Zerg_Spawning_Pool, BWAPI::Broodwar->self()))
+	bool isExtractorExist = extractor_being_built + extractor_count + extractor_in_queue > 0;
+	if (!isExtractorExist && drone_count >= 7 && spawning_pool_count > 0)
 	{
-		//queue.add(MetaType(BWAPI::UnitTypes::Zerg_Drone));
 		queue.add(MetaType(BWAPI::UnitTypes::Zerg_Extractor), true);
 	}
 
-	bool isSpawningPoolExist = BuildingManager::Instance().isBeingBuilt(BWAPI::UnitTypes::Zerg_Spawning_Pool) || spawning_pool_count > 0;
+	bool isSpawningPoolExist = spawning_pool_being_built + spawning_pool_count + spawning_pool_in_queue > 0;
 	if (!isSpawningPoolExist)
 	{
-		//queue.add(MetaType(BWAPI::UnitTypes::Zerg_Drone));
 		queue.add(MetaType(BWAPI::UnitTypes::Zerg_Spawning_Pool), true);
 	}
 
-	bool isHiveExist = BuildingManager::Instance().isBeingBuilt(BWAPI::UnitTypes::Zerg_Hive) || hive_count > 0;
-	bool isQueenNestExist = BuildingManager::Instance().isBeingBuilt(BWAPI::UnitTypes::Zerg_Queens_Nest) || queens_nest_count > 0;
-	bool isLairExist = BuildingManager::Instance().isBeingBuilt(BWAPI::UnitTypes::Zerg_Lair) || lair_count > 0;
+	bool isHiveExist = hive_being_built + hive_count + hive_in_queue > 0;
+	bool isQueenNestExist = queens_nest_being_built + queens_nest_count + queens_nest_in_queue > 0;
+	bool isLairExist = lair_being_built + lair_count + lair_in_queue > 0;
 	if (!isHiveExist)	// 若蜂巢不存在
 	{
 		if (isQueenNestExist)	// 若皇后巢存在
@@ -141,28 +137,56 @@ void ActionZVPZealot::getBuildOrderList(UAlbertaBot::ProductionQueue & queue)
 		}
 	}
 
-	bool isSpireExist = BuildingManager::Instance().isBeingBuilt(BWAPI::UnitTypes::Zerg_Spire) || spire_count > 0;
+	bool isSpireExist = spire_count + spire_in_queue + spire_being_built > 0;
 	if (!isSpireExist && currentFrameCount > 6000)	// 若飞龙塔不存在
 	{
 		queue.add(MetaType(BWAPI::UnitTypes::Zerg_Spire));
 	}
 
-	if (InformationManager::Instance().getNumUnits(BWAPI::UnitTypes::Zerg_Spawning_Pool, BWAPI::Broodwar->self()) > 0 && queue.upgradeCount(BWAPI::UpgradeTypes::Metabolic_Boost) == 0)
+	if (spawning_pool_count > 0 && queue.upgradeCount(BWAPI::UpgradeTypes::Metabolic_Boost) == 0)
 	{
 		queue.add(MetaType(BWAPI::UpgradeTypes::Metabolic_Boost));
 	}
-	if (InformationManager::Instance().getNumUnits(BWAPI::UnitTypes::Zerg_Hive, BWAPI::Broodwar->self()) > 0 && queue.upgradeCount(BWAPI::UpgradeTypes::Adrenal_Glands) == 0)
+	if (hive_count > 0 && queue.upgradeCount(BWAPI::UpgradeTypes::Adrenal_Glands) == 0)
 	{
 		queue.add(MetaType(BWAPI::UpgradeTypes::Adrenal_Glands));
 	}
 
+	bool notEnoughDrone = false;
+	if (hatchery_count == 1)
+	{
+		if (drone_count + drone_in_queue < 15)
+		{
+			queue.add(MetaType(BWAPI::UnitTypes::Zerg_Drone), true);
+		}
+		notEnoughDrone = drone_count + drone_in_queue < 12;
+	}
+	else
+	{
+		if (drone_count + drone_in_queue < hatchery_count * 10)
+		{
+			queue.add(MetaType(BWAPI::UnitTypes::Zerg_Drone), true);
+		}
+		notEnoughDrone = drone_count + drone_in_queue < 8 * hatchery_count;
+	}
+
 	// 判断需要建造多少部队
 	int need_zergling_count = enemy_zealot_count * 8 + enemy_dragoon_count * 7 - zergling_count;
-	if (need_zergling_count <= 0 && zergling_count < 24)
+	if (need_zergling_count <= 0 && zergling_count + zergling_in_queue < 12)
 	{
 		need_zergling_count = 2;
 	}
-	int need_mutalisk_count = std::min(1, need_zergling_count / 3);
+	int need_mutalisk_count = (int)(need_zergling_count / 3);
+	if (need_mutalisk_count <= 0 && mutalisk_count + mutalisk_in_queue < 5)
+	{
+		need_mutalisk_count = 1;
+	}
+
+	if (notEnoughDrone)
+	{
+		need_mutalisk_count = mutalisk_count + mutalisk_in_queue < 3 ? 1 : 0;
+		need_zergling_count = zergling_count + zergling_in_queue < 12 ? 2 : 0;
+	}
 
 	// 穿插建造Zergling和Mutalisk
 	do
@@ -170,7 +194,7 @@ void ActionZVPZealot::getBuildOrderList(UAlbertaBot::ProductionQueue & queue)
 		if (need_zergling_count > 0)
 		{
 			// 2个Zergling
-			if (InformationManager::Instance().getNumUnits(BWAPI::UnitTypes::Zerg_Spawning_Pool, BWAPI::Broodwar->self()) > 0)
+			if (spawning_pool_count > 0)
 			{
 				queue.add(MetaType(BWAPI::UnitTypes::Zerg_Zergling));
 			}
@@ -178,7 +202,7 @@ void ActionZVPZealot::getBuildOrderList(UAlbertaBot::ProductionQueue & queue)
 		}
 		if (need_mutalisk_count > 0)
 		{
-			if (InformationManager::Instance().getNumUnits(BWAPI::UnitTypes::Zerg_Spire, BWAPI::Broodwar->self()) > 0)
+			if (spire_count + greater_spire_count > 0)
 			{
 				queue.add(MetaType(BWAPI::UnitTypes::Zerg_Mutalisk));
 			}
@@ -191,9 +215,10 @@ void ActionZVPZealot::getBuildOrderList(UAlbertaBot::ProductionQueue & queue)
 
 	} while (true);
 
-	if (drone_count < hatchery_count * 15)
+	int extractorUpperBound = std::min(hatchery_count + hatchery_being_built, 3);
+	if (extractor_count + extractor_being_built + extractor_in_queue < extractorUpperBound)
 	{
-		queue.add(MetaType(BWAPI::UnitTypes::Zerg_Drone));
+		queue.add(MetaType(BWAPI::UnitTypes::Zerg_Extractor));
 	}
 }
 

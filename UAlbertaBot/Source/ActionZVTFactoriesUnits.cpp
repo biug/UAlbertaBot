@@ -1,7 +1,6 @@
 #include "ActionZVTFactoriesUnits.h"
 #include "BuildingManager.h"
 #include "ActionHelper.h"
-//#include "UnitUtil.h"
 #include "InformationManager.h"
 
 using namespace CasiaBot;
@@ -50,13 +49,11 @@ bool ActionZVTFactoriesUnits::tick()
 
 void ActionZVTFactoriesUnits::getBuildOrderList(UAlbertaBot::ProductionQueue & queue)
 {
-	// 现有工蜂数量
-	int drone_count_exist = InformationManager::Instance().getNumUnits(BWAPI::UnitTypes::Zerg_Drone, BWAPI::Broodwar->self());
 	// 当前帧数（累计）
 	int currentFrameCount = BWAPI::Broodwar->getFrameCount();
 
 	// 判断是否需要增加母巢
-	if (hatchery_count <= 4 && currentFrameCount > 10 && currentFrameCount % 200 == 0)
+	if (hatchery_count + hatchery_being_built + hatchery_in_queue <= 4 && currentFrameCount > 10 && currentFrameCount % 200 == 0)
 	{
 		int currentFrameMineralAmount = BWAPI::Broodwar->self()->minerals();
 		int currentFrameGasAmount = BWAPI::Broodwar->self()->gas();
@@ -71,7 +68,7 @@ void ActionZVTFactoriesUnits::getBuildOrderList(UAlbertaBot::ProductionQueue & q
 		bool mineralDequePositive;
 		bool gasDequePositive;
 
-		if (hatchery_count <= 2)
+		if (hatchery_count + hatchery_in_queue + hatchery_being_built <= 2)
 		{
 			mineralDequePositive = IsDequeAllPositive(mineralNetIncrease);
 			if (mineralDequePositive)
@@ -95,24 +92,24 @@ void ActionZVTFactoriesUnits::getBuildOrderList(UAlbertaBot::ProductionQueue & q
 	}
 
 	// 判断前提建筑是否存在
-	bool isExtractorExist = BuildingManager::Instance().isBeingBuilt(BWAPI::UnitTypes::Zerg_Extractor) || extractor_count > 0;
-	// extractor after spawning pool
-	if (!isExtractorExist && drone_count_exist >= 7 && InformationManager::Instance().getNumUnits(BWAPI::UnitTypes::Zerg_Spawning_Pool, BWAPI::Broodwar->self()) > 0)
+	bool isExtractorExist = extractor_being_built + extractor_count + extractor_in_queue > 0;
+	if (!isExtractorExist && drone_count >= 7 && spawning_pool_count > 0)
 	{
 		queue.add(MetaType(BWAPI::UnitTypes::Zerg_Extractor), true);
 	}
 
-	bool isSpawningPoolExist = BuildingManager::Instance().isBeingBuilt(BWAPI::UnitTypes::Zerg_Spawning_Pool) || spawning_pool_count > 0;
+	bool isSpawningPoolExist = spawning_pool_being_built + spawning_pool_count + spawning_pool_in_queue > 0;
 	if (!isSpawningPoolExist)
 	{
 		queue.add(MetaType(BWAPI::UnitTypes::Zerg_Spawning_Pool), true);
 	}
 
-	bool isDefilerMoundExist = BuildingManager::Instance().isBeingBuilt(BWAPI::UnitTypes::Zerg_Defiler_Mound) || defiler_mound_count > 0;
-	bool isSpireExist = BuildingManager::Instance().isBeingBuilt(BWAPI::UnitTypes::Zerg_Spire) || spire_count > 0;
-	bool isHiveExist = BuildingManager::Instance().isBeingBuilt(BWAPI::UnitTypes::Zerg_Hive) || hive_count > 0;
-	bool isQueenNestExist = BuildingManager::Instance().isBeingBuilt(BWAPI::UnitTypes::Zerg_Queens_Nest) || queens_nest_count > 0;
-	bool isLairExist = BuildingManager::Instance().isBeingBuilt(BWAPI::UnitTypes::Zerg_Lair) || lair_count > 0;
+	bool isDefilerMoundExist = defiler_mound_being_built + defiler_mound_count + defiler_mound_in_queue > 0;
+	bool isSpireExist =spire_being_built + spire_count + spire_in_queue > 0;
+	bool isHiveExist = hive_being_built + hive_count + hive_in_queue > 0;
+	bool isQueenNestExist = queens_nest_being_built + queens_nest_count + queens_nest_in_queue > 0;
+	bool isLairExist = lair_being_built + lair_count + lair_in_queue > 0;
+
 	if (isDefilerMoundExist)	// 若蝎子巢存在
 	{
 		if (currentFrameCount > 15000)
@@ -162,11 +159,11 @@ void ActionZVTFactoriesUnits::getBuildOrderList(UAlbertaBot::ProductionQueue & q
 		}
 	}
 
-	if (InformationManager::Instance().getNumUnits(BWAPI::UnitTypes::Zerg_Spawning_Pool, BWAPI::Broodwar->self()) > 0 && queue.upgradeCount(BWAPI::UpgradeTypes::Metabolic_Boost) == 0)
+	if (spawning_pool_count > 0 && queue.upgradeCount(BWAPI::UpgradeTypes::Metabolic_Boost) == 0)
 	{
 		queue.add(MetaType(BWAPI::UpgradeTypes::Metabolic_Boost));
 	}
-	if (InformationManager::Instance().getNumUnits(BWAPI::UnitTypes::Zerg_Hive, BWAPI::Broodwar->self()) > 0 && queue.upgradeCount(BWAPI::UpgradeTypes::Adrenal_Glands) == 0)
+	if (hive_count > 0 && queue.upgradeCount(BWAPI::UpgradeTypes::Adrenal_Glands) == 0)
 	{
 		queue.add(MetaType(BWAPI::UpgradeTypes::Adrenal_Glands));
 	}
@@ -199,22 +196,22 @@ void ActionZVTFactoriesUnits::getBuildOrderList(UAlbertaBot::ProductionQueue & q
 	if (enemy_army_supply < escalationMark)
 	{
 		// 判断需要建造多少部队
-		int need_mutalisk_count = (int)(enemy_goliath_count * 1.2 + 2) - mutalisk_count;
-		if (need_mutalisk_count <= 0 && mutalisk_count < 6)
+		int need_mutalisk_count = (int)(enemy_goliath_count * 1.2 + 2) - mutalisk_count - mutalisk_in_queue;
+		if (need_mutalisk_count <= 0 && mutalisk_count + mutalisk_in_queue < 6)
 		{
 			need_mutalisk_count = 1;
 		}
 		int need_defiler_count = 1;
-		int need_zergling_count = (int)(enemyTerranBarrackUnitsAmount * 1.5) - zergling_count;
-		if (need_zergling_count <= 0 && zergling_count < 12)
+		int need_zergling_count = (int)(enemyTerranBarrackUnitsAmount * 1.5) - zergling_count - zergling_in_queue;
+		if (need_zergling_count <= 0 && zergling_count + zergling_in_queue < 12)
 		{
 			need_zergling_count = 2;
 		}
 		if (notEnoughDrone)
 		{
-			need_mutalisk_count = mutalisk_count < 6 ? 1 : 0;
+			need_mutalisk_count = mutalisk_count + mutalisk_in_queue < 6 ? 1 : 0;
 			need_defiler_count = 0;
-			need_zergling_count = zergling_count < 12 ? 2 : 0;
+			need_zergling_count = zergling_count + zergling_in_queue < 12 ? 2 : 0;
 		}
 
 		// 穿插建造Mutalisk、Defiler、Zergling
@@ -223,7 +220,7 @@ void ActionZVTFactoriesUnits::getBuildOrderList(UAlbertaBot::ProductionQueue & q
 			if (need_zergling_count > 0)
 			{
 				// 2个Zergling
-				if (InformationManager::Instance().getNumUnits(BWAPI::UnitTypes::Zerg_Spawning_Pool, BWAPI::Broodwar->self()) > 0)
+				if (spawning_pool_count > 0)
 				{
 					queue.add(MetaType(BWAPI::UnitTypes::Zerg_Zergling));
 				}
@@ -231,7 +228,7 @@ void ActionZVTFactoriesUnits::getBuildOrderList(UAlbertaBot::ProductionQueue & q
 			}
 			if (need_mutalisk_count > 0)
 			{
-				if (InformationManager::Instance().getNumUnits(BWAPI::UnitTypes::Zerg_Spire, BWAPI::Broodwar->self()) > 0)
+				if (spire_count + greater_spire_count > 0)
 				{
 					queue.add(MetaType(BWAPI::UnitTypes::Zerg_Mutalisk));
 				}
@@ -239,7 +236,7 @@ void ActionZVTFactoriesUnits::getBuildOrderList(UAlbertaBot::ProductionQueue & q
 			}
 			if (need_defiler_count > 0)
 			{
-				if (InformationManager::Instance().getNumUnits(BWAPI::UnitTypes::Zerg_Defiler_Mound, BWAPI::Broodwar->self()) > 0)
+				if (defiler_mound_count > 0)
 				{
 					queue.add(MetaType(BWAPI::UnitTypes::Zerg_Defiler));
 				}
@@ -252,33 +249,39 @@ void ActionZVTFactoriesUnits::getBuildOrderList(UAlbertaBot::ProductionQueue & q
 
 		} while (true);
 
-		//int extractorUpperBound = std::min(hatchery_count, 3);
-		//int currentExtractorCount = (int)InformationManager::Instance().getNumUnits(BWAPI::UnitTypes::Zerg_Extractor, BWAPI::Broodwar->self());
-		//if (currentExtractorCount < extractorUpperBound)
-		//{
-		//	queue.add(MetaType(BWAPI::UnitTypes::Zerg_Extractor));
-		//}
+		int extractorUpperBound = std::min(hatchery_count + hatchery_being_built, 3);
+		if (extractor_count + extractor_being_built + extractor_in_queue < extractorUpperBound)
+		{
+			queue.add(MetaType(BWAPI::UnitTypes::Zerg_Extractor));
+		}
 	}
 	else
 	{
-		bool isUltraliskCavernExist = BuildingManager::Instance().isBeingBuilt(BWAPI::UnitTypes::Zerg_Ultralisk_Cavern) ||
-			InformationManager::Instance().getNumUnits(BWAPI::UnitTypes::Zerg_Ultralisk_Cavern, BWAPI::Broodwar->self()) > 0;
+		bool isUltraliskCavernExist = ultralisk_cavern_being_built + ultralisk_cavern_count + ultralisk_cavern_in_queue > 0;
 		if (!isUltraliskCavernExist)
 		{
 			queue.add(MetaType(BWAPI::UnitTypes::Zerg_Ultralisk_Cavern), true);
 		}
 
 		// 判断需要建造多少部队
-		int need_mutalisk_count = (int)(enemy_goliath_count * 1.2 + 2) - mutalisk_count;
-		if (need_mutalisk_count <= 0 && mutalisk_count < 12)
+		int need_mutalisk_count = (int)(enemy_goliath_count * 1.2 + 2) - mutalisk_count - mutalisk_in_queue;
+		int need_defiler_count = 1;
+		int need_zergling_count = (int)(enemyTerranBarrackUnitsAmount * 1.5) - zergling_count - zergling_in_queue;
+
+		if (need_mutalisk_count <= 0 && mutalisk_count + mutalisk_in_queue < 6)
 		{
 			need_mutalisk_count = 1;
 		}
-		int need_defiler_count = 3;
-		int need_zergling_count = (int)(enemyTerranBarrackUnitsAmount * 1.5) - zergling_count;
-		if (need_zergling_count <= 0 && zergling_count < 24)
+
+		if (need_zergling_count <= 0 && zergling_count + zergling_in_queue < 12)
 		{
 			need_zergling_count = 2;
+		}
+		if (notEnoughDrone)
+		{
+			need_mutalisk_count = mutalisk_count + mutalisk_in_queue < 6 ? 1 : 0;
+			need_defiler_count = 0;
+			need_zergling_count = zergling_count + zergling_in_queue < 12 ? 2 : 0;
 		}
 
 		// 穿插建造Mutalisk、Defiler、Zergling、Ultralisk
@@ -287,7 +290,7 @@ void ActionZVTFactoriesUnits::getBuildOrderList(UAlbertaBot::ProductionQueue & q
 			if (need_zergling_count > 0)
 			{
 				// 2个Zergling
-				if (InformationManager::Instance().getNumUnits(BWAPI::UnitTypes::Zerg_Spawning_Pool, BWAPI::Broodwar->self()) > 0)
+				if (spawning_pool_count > 0)
 				{
 					queue.add(MetaType(BWAPI::UnitTypes::Zerg_Zergling));
 				}
@@ -295,7 +298,7 @@ void ActionZVTFactoriesUnits::getBuildOrderList(UAlbertaBot::ProductionQueue & q
 			}
 			if (need_mutalisk_count > 0)
 			{
-				if (InformationManager::Instance().getNumUnits(BWAPI::UnitTypes::Zerg_Spire, BWAPI::Broodwar->self()) > 0)
+				if (spire_count > 0)
 				{
 					queue.add(MetaType(BWAPI::UnitTypes::Zerg_Mutalisk));
 				}
@@ -303,13 +306,13 @@ void ActionZVTFactoriesUnits::getBuildOrderList(UAlbertaBot::ProductionQueue & q
 			}
 			if (need_defiler_count > 0)
 			{
-				if (InformationManager::Instance().getNumUnits(BWAPI::UnitTypes::Zerg_Defiler_Mound, BWAPI::Broodwar->self()) > 0)
+				if (defiler_mound_count > 0)
 				{
 					queue.add(MetaType(BWAPI::UnitTypes::Zerg_Defiler));
 				}
 				need_defiler_count--;
 			}
-			if (InformationManager::Instance().getNumUnits(BWAPI::UnitTypes::Zerg_Ultralisk_Cavern, BWAPI::Broodwar->self()) > 0)
+			if (ultralisk_cavern_count > 0)
 			{
 				queue.add(MetaType(BWAPI::UnitTypes::Zerg_Ultralisk));
 			}	
@@ -320,12 +323,11 @@ void ActionZVTFactoriesUnits::getBuildOrderList(UAlbertaBot::ProductionQueue & q
 
 		} while (true);
 
-		//int extractorUpperBound = std::min(hatchery_count, 3);
-		//int currentExtractorCount = (int)InformationManager::Instance().getNumUnits(BWAPI::UnitTypes::Zerg_Extractor, BWAPI::Broodwar->self());
-		//if (currentExtractorCount < extractorUpperBound)
-		//{
-		//	queue.add(MetaType(BWAPI::UnitTypes::Zerg_Extractor), true);
-		//}
+		int extractorUpperBound = std::min(hatchery_count + hatchery_being_built, 3);
+		if (extractor_count + extractor_being_built + extractor_in_queue < extractorUpperBound)
+		{
+			queue.add(MetaType(BWAPI::UnitTypes::Zerg_Extractor));
+		}
 	}
 }
 
