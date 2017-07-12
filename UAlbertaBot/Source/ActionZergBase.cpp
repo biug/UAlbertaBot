@@ -1,4 +1,6 @@
 #include "ActionZergBase.h"
+#include "BuildingManager.h"
+
 using namespace UAlbertaBot;
 using namespace CasiaBot;
 
@@ -14,60 +16,85 @@ ActionZergBase::~ActionZergBase()
 void ActionZergBase::updateCurrentState(ProductionQueue &queue)
 {
 	//我方
-	larva_count = InformationManager::Instance().getNumUnits(BWAPI::UnitTypes::Zerg_Larva, BWAPI::Broodwar->self())
-		+ queue.unitCount(BWAPI::UnitTypes::Zerg_Larva);		//幼虫
-	drone_count = InformationManager::Instance().getNumUnits(BWAPI::UnitTypes::Zerg_Drone, BWAPI::Broodwar->self())
-		+ queue.unitCount(BWAPI::UnitTypes::Zerg_Drone);		//工蜂
-	zergling_count = InformationManager::Instance().getNumUnits(BWAPI::UnitTypes::Zerg_Zergling, BWAPI::Broodwar->self())
-		+ queue.unitCount(BWAPI::UnitTypes::Zerg_Zergling) * 2;	//小狗
-	hydralisk_count = InformationManager::Instance().getNumUnits(BWAPI::UnitTypes::Zerg_Hydralisk, BWAPI::Broodwar->self())
-		+ queue.unitCount(BWAPI::UnitTypes::Zerg_Hydralisk);//刺蛇
-	lurker_count = InformationManager::Instance().getNumUnits(BWAPI::UnitTypes::Zerg_Lurker, BWAPI::Broodwar->self())
-		+ queue.unitCount(BWAPI::UnitTypes::Zerg_Lurker)
-		+ InformationManager::Instance().getNumUnits(BWAPI::UnitTypes::Zerg_Lurker_Egg, BWAPI::Broodwar->self())
-		+ queue.unitCount(BWAPI::UnitTypes::Zerg_Lurker_Egg);		//地刺
-	ultralisk_count = InformationManager::Instance().getNumUnits(BWAPI::UnitTypes::Zerg_Ultralisk, BWAPI::Broodwar->self())
-		+ queue.unitCount(BWAPI::UnitTypes::Zerg_Ultralisk);//雷兽
-	defiler_count = InformationManager::Instance().getNumUnits(BWAPI::UnitTypes::Zerg_Defiler, BWAPI::Broodwar->self())
-		+ queue.unitCount(BWAPI::UnitTypes::Zerg_Defiler);	//蝎子
-	overlord_count = InformationManager::Instance().getNumUnits(BWAPI::UnitTypes::Zerg_Overlord, BWAPI::Broodwar->self())
-		+ queue.unitCount(BWAPI::UnitTypes::Zerg_Overlord);	//领主
-	mutalisk_count = InformationManager::Instance().getNumUnits(BWAPI::UnitTypes::Zerg_Mutalisk, BWAPI::Broodwar->self())
-		+ queue.unitCount(BWAPI::UnitTypes::Zerg_Mutalisk);	//飞龙
-	scourge_count = InformationManager::Instance().getNumUnits(BWAPI::UnitTypes::Zerg_Scourge, BWAPI::Broodwar->self())
-		+ queue.unitCount(BWAPI::UnitTypes::Zerg_Scourge) * 2;	//自爆蚊
-	queen_count = InformationManager::Instance().getNumUnits(BWAPI::UnitTypes::Zerg_Queen, BWAPI::Broodwar->self())
-		+ queue.unitCount(BWAPI::UnitTypes::Zerg_Queen);		//女王
-	guardian_count = InformationManager::Instance().getNumUnits(BWAPI::UnitTypes::Zerg_Guardian, BWAPI::Broodwar->self())
-		+ queue.unitCount(BWAPI::UnitTypes::Zerg_Guardian);	//守卫者
-	devourer_count = InformationManager::Instance().getNumUnits(BWAPI::UnitTypes::Zerg_Devourer, BWAPI::Broodwar->self())
-		+ queue.unitCount(BWAPI::UnitTypes::Zerg_Devourer);	//吞噬者
+	larva_count = InformationManager::Instance().getNumUnits(BWAPI::UnitTypes::Zerg_Larva, BWAPI::Broodwar->self());
+	drone_count = InformationManager::Instance().getNumUnits(BWAPI::UnitTypes::Zerg_Drone, BWAPI::Broodwar->self());
+	zergling_count = InformationManager::Instance().getNumUnits(BWAPI::UnitTypes::Zerg_Zergling, BWAPI::Broodwar->self());
+	hydralisk_count = InformationManager::Instance().getNumUnits(BWAPI::UnitTypes::Zerg_Hydralisk, BWAPI::Broodwar->self());
+	lurker_count = InformationManager::Instance().getNumUnits(BWAPI::UnitTypes::Zerg_Lurker, BWAPI::Broodwar->self());
+	ultralisk_count = InformationManager::Instance().getNumUnits(BWAPI::UnitTypes::Zerg_Ultralisk, BWAPI::Broodwar->self());
+	defiler_count = InformationManager::Instance().getNumUnits(BWAPI::UnitTypes::Zerg_Defiler, BWAPI::Broodwar->self());
+	overlord_count = InformationManager::Instance().getNumUnits(BWAPI::UnitTypes::Zerg_Overlord, BWAPI::Broodwar->self());
+	mutalisk_count = InformationManager::Instance().getNumUnits(BWAPI::UnitTypes::Zerg_Mutalisk, BWAPI::Broodwar->self());
+	scourge_count = InformationManager::Instance().getNumUnits(BWAPI::UnitTypes::Zerg_Scourge, BWAPI::Broodwar->self());
+	queen_count = InformationManager::Instance().getNumUnits(BWAPI::UnitTypes::Zerg_Queen, BWAPI::Broodwar->self());
+	guardian_count = InformationManager::Instance().getNumUnits(BWAPI::UnitTypes::Zerg_Guardian, BWAPI::Broodwar->self());
+	devourer_count = InformationManager::Instance().getNumUnits(BWAPI::UnitTypes::Zerg_Devourer, BWAPI::Broodwar->self());
+
+	larva_in_queue = queue.unitCount(BWAPI::UnitTypes::Zerg_Larva);		//幼虫
+	drone_in_queue = queue.unitCount(BWAPI::UnitTypes::Zerg_Drone);		//工蜂
+	zergling_in_queue = queue.unitCount(BWAPI::UnitTypes::Zerg_Zergling) * 2;	//小狗
+	hydralisk_in_queue = queue.unitCount(BWAPI::UnitTypes::Zerg_Hydralisk);//刺蛇
+	lurker_in_queue = queue.unitCount(BWAPI::UnitTypes::Zerg_Lurker);		//地刺
+	ultralisk_in_queue = queue.unitCount(BWAPI::UnitTypes::Zerg_Ultralisk);//雷兽
+	defiler_in_queue = queue.unitCount(BWAPI::UnitTypes::Zerg_Defiler);	//蝎子
+	overlord_in_queue = queue.unitCount(BWAPI::UnitTypes::Zerg_Overlord);	//领主
+	mutalisk_in_queue = queue.unitCount(BWAPI::UnitTypes::Zerg_Mutalisk);	//飞龙
+	scourge_in_queue = queue.unitCount(BWAPI::UnitTypes::Zerg_Scourge) * 2;	//自爆蚊
+	queen_in_queue = queue.unitCount(BWAPI::UnitTypes::Zerg_Queen);		//女王
+	guardian_in_queue = queue.unitCount(BWAPI::UnitTypes::Zerg_Guardian);	//守卫者
+	devourer_in_queue = queue.unitCount(BWAPI::UnitTypes::Zerg_Devourer);	//吞噬者
+
+
 
 	//建筑
-	hatch_count = InformationManager::Instance().getNumUnits(BWAPI::UnitTypes::Zerg_Hatchery, BWAPI::Broodwar->self())
-		+ InformationManager::Instance().getNumUnits(BWAPI::UnitTypes::Zerg_Lair, BWAPI::Broodwar->self())
-		+ InformationManager::Instance().getNumUnits(BWAPI::UnitTypes::Zerg_Hive, BWAPI::Broodwar->self())
-		+ queue.unitCount(BWAPI::UnitTypes::Zerg_Hatchery)
-		+ queue.unitCount(BWAPI::UnitTypes::Zerg_Lair)
-		+ queue.unitCount(BWAPI::UnitTypes::Zerg_Hive);						//母巢
-	completed_hatch_count = 0;
-	sunken_count = InformationManager::Instance().getNumUnits(BWAPI::UnitTypes::Zerg_Sunken_Colony, BWAPI::Broodwar->self())
-		+ queue.unitCount(BWAPI::UnitTypes::Zerg_Sunken_Colony);	//地刺塔
-	spore_count = InformationManager::Instance().getNumUnits(BWAPI::UnitTypes::Zerg_Spore_Colony, BWAPI::Broodwar->self())
-		+ queue.unitCount(BWAPI::UnitTypes::Zerg_Spore_Colony);		//孢子塔
+	hatchery_count = InformationManager::Instance().getNumUnits(BWAPI::UnitTypes::Zerg_Hatchery, BWAPI::Broodwar->self()) + InformationManager::Instance().getNumUnits(BWAPI::UnitTypes::Zerg_Lair, BWAPI::Broodwar->self()) + InformationManager::Instance().getNumUnits(BWAPI::UnitTypes::Zerg_Hive, BWAPI::Broodwar->self());
+	extractor_count = InformationManager::Instance().getNumUnits(BWAPI::UnitTypes::Zerg_Extractor, BWAPI::Broodwar->self());
+	creep_colony_count = InformationManager::Instance().getNumUnits(BWAPI::UnitTypes::Zerg_Creep_Colony, BWAPI::Broodwar->self());
+	sunken_colony_count = InformationManager::Instance().getNumUnits(BWAPI::UnitTypes::Zerg_Sunken_Colony, BWAPI::Broodwar->self());
+	spore_colony_count = InformationManager::Instance().getNumUnits(BWAPI::UnitTypes::Zerg_Spore_Colony, BWAPI::Broodwar->self());
+	spawning_pool_count = InformationManager::Instance().getNumUnits(BWAPI::UnitTypes::Zerg_Spawning_Pool, BWAPI::Broodwar->self());
+	hydralisk_den_count = InformationManager::Instance().getNumUnits(BWAPI::UnitTypes::Zerg_Hydralisk_Den, BWAPI::Broodwar->self());
+	lair_count = InformationManager::Instance().getNumUnits(BWAPI::UnitTypes::Zerg_Lair, BWAPI::Broodwar->self());
+	queens_nest_count = InformationManager::Instance().getNumUnits(BWAPI::UnitTypes::Zerg_Queens_Nest, BWAPI::Broodwar->self());
+	hive_count = InformationManager::Instance().getNumUnits(BWAPI::UnitTypes::Zerg_Hive, BWAPI::Broodwar->self());
+	defiler_mound_count = InformationManager::Instance().getNumUnits(BWAPI::UnitTypes::Zerg_Defiler_Mound, BWAPI::Broodwar->self());
+	spire_count = InformationManager::Instance().getNumUnits(BWAPI::UnitTypes::Zerg_Spire, BWAPI::Broodwar->self()) + InformationManager::Instance().getNumUnits(BWAPI::UnitTypes::Zerg_Greater_Spire, BWAPI::Broodwar->self());
+	greater_spire_count = InformationManager::Instance().getNumUnits(BWAPI::UnitTypes::Zerg_Greater_Spire, BWAPI::Broodwar->self());
+	nydus_canal_count = InformationManager::Instance().getNumUnits(BWAPI::UnitTypes::Zerg_Nydus_Canal, BWAPI::Broodwar->self());
+	ultralisk_cavern_count = InformationManager::Instance().getNumUnits(BWAPI::UnitTypes::Zerg_Ultralisk_Cavern, BWAPI::Broodwar->self());
 
-	spawning_pool_count = InformationManager::Instance().getNumUnits(BWAPI::UnitTypes::Zerg_Spawning_Pool, BWAPI::Broodwar->self())
-		+ queue.unitCount(BWAPI::UnitTypes::Zerg_Spawning_Pool);
-	hydralisk_den_count = InformationManager::Instance().getNumUnits(BWAPI::UnitTypes::Zerg_Hydralisk_Den, BWAPI::Broodwar->self())
-		+ queue.unitCount(BWAPI::UnitTypes::Zerg_Hydralisk_Den);
-	queens_nest_count = InformationManager::Instance().getNumUnits(BWAPI::UnitTypes::Zerg_Queens_Nest, BWAPI::Broodwar->self())
-		+ queue.unitCount(BWAPI::UnitTypes::Zerg_Queens_Nest);
-	lair_count = InformationManager::Instance().getNumUnits(BWAPI::UnitTypes::Zerg_Lair, BWAPI::Broodwar->self())
-		+ queue.unitCount(BWAPI::UnitTypes::Zerg_Lair);
-	hive_count = InformationManager::Instance().getNumUnits(BWAPI::UnitTypes::Zerg_Hive, BWAPI::Broodwar->self())
-		+ queue.unitCount(BWAPI::UnitTypes::Zerg_Hive);
-	extractor_count = InformationManager::Instance().getNumUnits(BWAPI::UnitTypes::Zerg_Extractor, BWAPI::Broodwar->self())
-		+ queue.unitCount(BWAPI::UnitTypes::Zerg_Extractor);
+	hatchery_in_queue = queue.unitCount(BWAPI::UnitTypes::Zerg_Hatchery);
+	extractor_in_queue = queue.unitCount(BWAPI::UnitTypes::Zerg_Extractor);
+	creep_colony_in_queue = queue.unitCount(BWAPI::UnitTypes::Zerg_Creep_Colony);
+	sunken_colony_in_queue = queue.unitCount(BWAPI::UnitTypes::Zerg_Sunken_Colony);	
+	spore_colony_in_queue = queue.unitCount(BWAPI::UnitTypes::Zerg_Spore_Colony);
+	spawning_pool_in_queue = queue.unitCount(BWAPI::UnitTypes::Zerg_Spawning_Pool);
+	hydralisk_den_in_queue = queue.unitCount(BWAPI::UnitTypes::Zerg_Hydralisk_Den);
+	lair_in_queue = queue.unitCount(BWAPI::UnitTypes::Zerg_Lair);
+	queens_nest_in_queue = queue.unitCount(BWAPI::UnitTypes::Zerg_Queens_Nest);
+	hive_in_queue = queue.unitCount(BWAPI::UnitTypes::Zerg_Hive);
+	defiler_mound_in_queue = queue.unitCount(BWAPI::UnitTypes::Zerg_Defiler_Mound);
+	spire_in_queue = queue.unitCount(BWAPI::UnitTypes::Zerg_Spire);
+	greater_spire_in_queue = queue.unitCount(BWAPI::UnitTypes::Zerg_Greater_Spire);
+	nydus_canal_in_queue = queue.unitCount(BWAPI::UnitTypes::Zerg_Nydus_Canal);
+	ultralisk_cavern_in_queue = queue.unitCount(BWAPI::UnitTypes::Zerg_Ultralisk_Cavern);
+
+	hatchery_being_built = BuildingManager::Instance().isBeingBuilt(BWAPI::UnitTypes::Zerg_Hatchery);
+	extractor_being_built = BuildingManager::Instance().isBeingBuilt(BWAPI::UnitTypes::Zerg_Extractor);
+	creep_colony_being_built = BuildingManager::Instance().isBeingBuilt(BWAPI::UnitTypes::Zerg_Creep_Colony);
+	sunken_colony_being_built = BuildingManager::Instance().isBeingBuilt(BWAPI::UnitTypes::Zerg_Sunken_Colony);
+	spore_colony_being_built = BuildingManager::Instance().isBeingBuilt(BWAPI::UnitTypes::Zerg_Spore_Colony);
+	spawning_pool_being_built = BuildingManager::Instance().isBeingBuilt(BWAPI::UnitTypes::Zerg_Spawning_Pool);
+	hydralisk_den_being_built = BuildingManager::Instance().isBeingBuilt(BWAPI::UnitTypes::Zerg_Hydralisk_Den);
+	lair_being_built = BuildingManager::Instance().isBeingBuilt(BWAPI::UnitTypes::Zerg_Lair);
+	queens_nest_being_built = BuildingManager::Instance().isBeingBuilt(BWAPI::UnitTypes::Zerg_Queens_Nest);
+	hive_being_built = BuildingManager::Instance().isBeingBuilt(BWAPI::UnitTypes::Zerg_Hive);
+	defiler_mound_being_built = BuildingManager::Instance().isBeingBuilt(BWAPI::UnitTypes::Zerg_Defiler_Mound);
+	spire_being_built = BuildingManager::Instance().isBeingBuilt(BWAPI::UnitTypes::Zerg_Spire);
+	greater_spire_being_built = BuildingManager::Instance().isBeingBuilt(BWAPI::UnitTypes::Zerg_Greater_Spire);
+	nydus_canal_being_built = BuildingManager::Instance().isBeingBuilt(BWAPI::UnitTypes::Zerg_Nydus_Canal);
+	ultralisk_cavern_being_built = BuildingManager::Instance().isBeingBuilt(BWAPI::UnitTypes::Zerg_Ultralisk_Cavern);
+
 
 	//军事力量
 	army_supply = 0.0;

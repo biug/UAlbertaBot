@@ -21,8 +21,7 @@ namespace CasiaBot
 		double unitPathingDistance(BWAPI::UnitType type, std::pair<BWAPI::TilePosition, BWAPI::TilePosition> fromto);
 
 	protected:
-		//己方
-		//单位
+		//己方已生成单位
 		int larva_count;						//幼虫
 		int drone_count;						//工蜂
 		int zergling_count;						//小狗
@@ -36,20 +35,76 @@ namespace CasiaBot
 		int queen_count;						//女王
 		int guardian_count;						//守卫者
 		int devourer_count;						//吞噬者
+		
+		//己方队列中单位
+		int larva_in_queue;                      //队列中幼虫
+		int drone_in_queue;                      //队列中工蜂
+		int zergling_in_queue;                   //队列中小狗
+		int hydralisk_in_queue;                  //队列中刺蛇
+		int lurker_in_queue;                     //队列中地刺
+		int ultralisk_in_queue;                  //队列中雷兽
+		int defiler_in_queue;                    //队列中蝎子
+		int overlord_in_queue;                   //队列中领主
+		int mutalisk_in_queue;                   //队列中飞龙
+		int scourge_in_queue;                    //队列中自爆蚊
+		int queen_in_queue;                      //队列中女王
+		int guardian_in_queue;                   //队列中守卫者
+		int devourer_in_queue;                    //队列中吞噬者
 
-												//建筑
-		int hatch_count;						//母巢
-		int completed_hatch_count;
-		int sunken_count;						//地刺塔
-		int spore_count;						//孢子塔
-		int spawning_pool_count;
-		int hydralisk_den_count;
-		int queens_nest_count;
-		int lair_count;
-		int hive_count;
-		int extractor_count;
-		int defiler_mount_count;
-		int spire_count;
+
+
+		//己方已建成建筑
+		int hatchery_count;						//母巢
+		int extractor_count;                    //气矿
+		int creep_colony_count;                 //殖体
+		int sunken_colony_count;			    //地刺塔
+		int spore_colony_count;			    	//孢子塔
+		int spawning_pool_count;                //血池
+		int hydralisk_den_count;                //刺蛇洞穴
+		int lair_count;                         //兽穴
+		int queens_nest_count;                  //皇后巢
+		int hive_count;                         //蜂巢
+		int defiler_mound_count;                //蝎子巢
+		int spire_count;                        //飞龙塔
+		int greater_spire_count;                //大飞龙塔
+		int nydus_canal_count;                  //蛹虫通道
+		int ultralisk_cavern_count;             //巨兽之窟
+
+		//己方建设中建筑
+		int hatchery_being_built;						//母巢
+		int extractor_being_built;                    //气矿
+		int creep_colony_being_built;                 //殖体
+		int sunken_colony_being_built;			    //地刺塔
+		int spore_colony_being_built;			   	//孢子塔
+		int spawning_pool_being_built;                //血池
+		int hydralisk_den_being_built;                //刺蛇洞穴
+		int lair_being_built;                         //兽穴
+		int queens_nest_being_built;                  //皇后巢
+		int hive_being_built;                         //蜂巢
+		int defiler_mound_being_built;                //蝎子巢
+		int spire_being_built;                        //飞龙塔
+		int greater_spire_being_built;                //大飞龙塔
+		int nydus_canal_being_built;                  //蛹虫通道
+		int ultralisk_cavern_being_built;             //巨兽之窟
+
+		//己方队列中建筑
+		int hatchery_in_queue;						//母巢
+		int extractor_in_queue;                    //气矿
+		int creep_colony_in_queue;                 //殖体
+		int sunken_colony_in_queue;			    //地刺塔
+		int spore_colony_in_queue;			    	//孢子塔
+		int spawning_pool_in_queue;                //血池
+		int hydralisk_den_in_queue;                //刺蛇洞穴
+		int lair_in_queue;                         //兽穴
+		int queens_nest_in_queue;                  //皇后巢
+		int hive_in_queue;                         //蜂巢
+		int defiler_mound_in_queue;                //蝎子巢
+		int spire_in_queue;                        //飞龙塔
+		int greater_spire_in_queue;                //大飞龙塔
+		int nydus_canal_in_queue;                  //蛹虫通道
+		int ultralisk_cavern_in_queue;             //巨兽之窟
+
+
 
 												//军事力量
 		double army_supply;
