@@ -101,7 +101,7 @@ void ActionZVTBarracksUnits::getBuildOrderList(UAlbertaBot::ProductionQueue & qu
 	}
 
 	bool isHydraliskDenExist = hydralisk_den_being_built + hydralisk_den_count +hydralisk_den_in_queue > 0;
-	if (!isHydraliskDenExist)
+	if (!isHydraliskDenExist && extractor_count > 0)
 	{
 		queue.add(MetaType(BWAPI::UnitTypes::Zerg_Hydralisk_Den));
 	}

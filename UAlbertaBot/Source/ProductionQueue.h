@@ -14,6 +14,7 @@ namespace UAlbertaBot
 		std::deque<ProductionItem>	_buildingQueue;
 		std::deque<ProductionItem>	_armyQueue;
 		std::deque<ProductionItem>	_workerQueue;
+		std::deque<ProductionItem>	_overlordQueue;
 		// tech & upgrade
 		std::deque<ProductionItem>	_techUpgradeQueue;
 		// priority queue
@@ -28,6 +29,8 @@ namespace UAlbertaBot
 		int					_straightBuildingCount;
 		int					_straightArmyCount;
 		int					_straightWorkerCount;
+
+		void updateCount(const MetaType & unit, int offset);
 
 	public:
 		ProductionQueue();

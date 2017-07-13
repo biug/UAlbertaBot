@@ -8,38 +8,11 @@ ProductionQueue::ProductionQueue()
 	clear();
 }
 
-void ProductionQueue::add(const ProductionItem & item, bool priority)
+void ProductionQueue::updateCount(const MetaType & unit, int offset)
 {
-	const MetaType & unit = item._unit;
-
-	if (unit.isUnit()) _unitCount[unit.getUnitType().getID()] += 1;
-	else if (unit.isTech()) _techCount[unit.getTechType().getID()] += 1;
-	else if (unit.isUpgrade()) _upgradeCount[unit.getUpgradeType().getID()] += 1;
-
-	if (priority)
-	{
-		_priorityQueue.push_back(item);
-	}
-	else if (unit.getUnitType() == BWAPI::UnitTypes::Zerg_Overlord)
-	{
-		_priorityQueue.push_back(item);
-	}
-	else if (unit.isBuilding())
-	{
-		_buildingQueue.push_back(item);
-	}
-	else if (unit.getUnitType().isWorker())
-	{
-		_workerQueue.push_back(item);
-	}
-	else if (unit.isUnit())
-	{
-		_armyQueue.push_back(item);
-	}
-	else
-	{
-		_techUpgradeQueue.push_back(item);
-	}
+	if (unit.isUnit()) _unitCount[unit.getUnitType().getID()] += offset;
+	else if (unit.isTech()) _techCount[unit.getTechType().getID()] += offset;
+	else if (unit.isUpgrade()) _upgradeCount[unit.getUpgradeType().getID()] += offset;
 }
 
 void ProductionQueue::checkSupply()
@@ -76,13 +49,43 @@ void ProductionQueue::checkSupply()
 	}
 }
 
+void ProductionQueue::add(const ProductionItem & item, bool priority)
+{
+	const MetaType & unit = item._unit;
+
+	updateCount(unit, 1);
+
+	if (priority)
+	{
+		_priorityQueue.push_back(item);
+	}
+	else if (unit.getUnitType() == BWAPI::UnitTypes::Zerg_Overlord)
+	{
+		_overlordQueue.push_back(item);
+	}
+	else if (unit.isBuilding())
+	{
+		_buildingQueue.push_back(item);
+	}
+	else if (unit.getUnitType().isWorker())
+	{
+		_workerQueue.push_back(item);
+	}
+	else if (unit.isUnit())
+	{
+		_armyQueue.push_back(item);
+	}
+	else
+	{
+		_techUpgradeQueue.push_back(item);
+	}
+}
+
 void ProductionQueue::retreat(const ProductionItem & item, bool priority)
 {
 	const MetaType & unit = item._unit;
 
-	if (unit.isUnit()) _unitCount[unit.getUnitType().getID()] += 1;
-	else if (unit.isTech()) _techCount[unit.getTechType().getID()] += 1;
-	else if (unit.isUpgrade()) _upgradeCount[unit.getUpgradeType().getID()] += 1;
+	updateCount(unit, 1);
 
 	if (priority)
 	{
@@ -90,7 +93,7 @@ void ProductionQueue::retreat(const ProductionItem & item, bool priority)
 	}
 	else if (unit.getUnitType() == BWAPI::UnitTypes::Zerg_Overlord)
 	{
-		_priorityQueue.push_front(item);
+		_overlordQueue.push_front(item);
 	}
 	else if (unit.isBuilding())
 	{
@@ -110,12 +113,68 @@ void ProductionQueue::retreat(const ProductionItem & item, bool priority)
 	}
 }
 
+ProductionItem ProductionQueue::popItem()
+{
+	MetaType meta;
+	ProductionItem retItem(meta);
+	if (!_overlordQueue.empty())
+	{
+		retItem = _overlordQueue.front();
+		_overlordQueue.pop_front();
+	}
+	else if (!_priorityQueue.empty())
+	{
+		retItem = _priorityQueue.front();
+		_priorityQueue.pop_front();
+	}
+	else
+	{
+		_buildID += 1;
+		if (_buildID == ProductionTypeID::TYPE_MAX) _buildID = 0;
+		switch (_buildID)
+		{
+		case ProductionTypeID::BUILDING:
+			if (!_buildingQueue.empty())
+			{
+				retItem = _buildingQueue.front();
+				std::string name = retItem._unit.getName();
+				_buildingQueue.pop_front();
+			}
+			break;
+		case ProductionTypeID::ARMY:
+			if (!_armyQueue.empty())
+			{
+				retItem = _armyQueue.front();
+				_armyQueue.pop_front();
+			}
+			break;
+		case ProductionTypeID::WORKER:
+			if (!_workerQueue.empty())
+			{
+				retItem = _workerQueue.front();
+				_workerQueue.pop_front();
+			}
+			break;
+		case ProductionTypeID::TECH:
+			if (!_techUpgradeQueue.empty())
+			{
+				retItem = _techUpgradeQueue.front();
+				_techUpgradeQueue.pop_front();
+			}
+			break;
+		}
+	}
+	updateCount(retItem._unit, -1);
+	return retItem;
+}
+
 void ProductionQueue::clear()
 {
 	_buildID = -1;
 	_buildingQueue.clear();
 	_armyQueue.clear();
 	_workerQueue.clear();
+	_overlordQueue.clear();
 	_techUpgradeQueue.clear();
 	_priorityQueue.clear();
 	_lastUnit = nullptr;
@@ -160,56 +219,6 @@ int ProductionQueue::techCount(BWAPI::TechType type)
 int ProductionQueue::upgradeCount(BWAPI::UpgradeType type)
 {
 	return _upgradeCount[type.getID()];
-}
-
-ProductionItem ProductionQueue::popItem()
-{
-	if (!_priorityQueue.empty())
-	{
-		ProductionItem item = _priorityQueue.front();
-		_priorityQueue.pop_front();
-		return item;
-	}
-	_buildID += 1;
-	MetaType meta;
-	ProductionItem retItem(meta);
-	if (_buildID == ProductionTypeID::TYPE_MAX) _buildID = 0;
-	switch (_buildID)
-	{
-	case ProductionTypeID::BUILDING:
-		if (!_buildingQueue.empty())
-		{
-			retItem = _buildingQueue.front();
-			_buildingQueue.pop_front();
-		}
-		break;
-	case ProductionTypeID::ARMY:
-		if(!_armyQueue.empty())
-		{
-			retItem = _armyQueue.front();
-			_armyQueue.pop_front();
-		}
-		break;
-	case ProductionTypeID::WORKER:
-		if (!_workerQueue.empty())
-		{
-			retItem = _workerQueue.front();
-			_workerQueue.pop_front();
-		}
-		break;
-	case ProductionTypeID::TECH:
-		if (!_techUpgradeQueue.empty())
-		{
-			retItem = _techUpgradeQueue.front();
-			_techUpgradeQueue.pop_front();
-		}
-		break;
-	}
-	MetaType unit = retItem._unit;
-	if (unit.isUnit()) _unitCount[unit.getUnitType().getID()] -= 1;
-	else if (unit.isTech()) _techCount[unit.getTechType().getID()] -= 1;
-	else if (unit.isUpgrade()) _upgradeCount[unit.getUpgradeType().getID()] -= 1;
-	return retItem;
 }
 
 bool ProductionQueue::empty()

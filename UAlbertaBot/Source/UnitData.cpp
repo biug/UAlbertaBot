@@ -11,6 +11,10 @@ UnitData::UnitData()
 	for (const BWAPI::UnitType & t : BWAPI::UnitTypes::allUnitTypes())
 	{
 		maxTypeID = maxTypeID > t.getID() ? maxTypeID : t.getID();
+		if (t.getID() == 36)
+		{
+			UAB_ASSERT(false, t.getName().c_str());
+		}
 	}
 
 	numDeadUnits			= std::vector<int>(maxTypeID + 1, 0);
@@ -35,18 +39,21 @@ void UnitData::updateUnit(BWAPI::Unit unit)
 		auto lastType = unitMap[unit].type;
 		if (lastType != unit->getType())
 		{
-			numConstructedUnits[lastType.getID()]--;
+			if (lastType != BWAPI::UnitTypes::Zerg_Egg && lastType != BWAPI::UnitTypes::Zerg_Lurker_Egg)
+			{
+				numConstructedUnits[lastType.getID()]--;
+			}
 			// morphing complete
 			if (lastType == BWAPI::UnitTypes::Zerg_Egg)
 			{
-				numConstructingUnits[lastType.getID()] -= 1;
+				numConstructingUnits[unit->getType().getID()] -= 1;
 				numConstructedUnits[unit->getType().getID()] += 1;
 			}
 			// morphing lurker complete
 			if (lastType == BWAPI::UnitTypes::Zerg_Lurker_Egg)
 			{
 				numConstructingUnits[BWAPI::UnitTypes::Zerg_Lurker.getID()] -= 1;
-				numConstructedUnits[unit->getType().getID()] += 1;
+				numConstructedUnits[BWAPI::UnitTypes::Zerg_Lurker.getID()] += 1;
 			}
 
 			// start morphing
