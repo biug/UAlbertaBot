@@ -13,9 +13,9 @@ UnitData::UnitData()
 		maxTypeID = maxTypeID > t.getID() ? maxTypeID : t.getID();
 	}
 
-	numDeadUnits	    = std::vector<int>(maxTypeID + 1, 0);
-	numUnits		    = std::vector<int>(maxTypeID + 1, 0);
-	numProductingUnits	= std::vector<int>(maxTypeID + 1, 0);
+	numDeadUnits			= std::vector<int>(maxTypeID + 1, 0);
+	numConstructedUnits		= std::vector<int>(maxTypeID + 1, 0);
+	numConstructingUnits	= std::vector<int>(maxTypeID + 1, 0);
 }
 
 void UnitData::updateUnit(BWAPI::Unit unit)
@@ -35,42 +35,42 @@ void UnitData::updateUnit(BWAPI::Unit unit)
 		auto lastType = unitMap[unit].type;
 		if (lastType != unit->getType())
 		{
-			numUnits[lastType.getID()]--;
+			numConstructedUnits[lastType.getID()]--;
 			// morphing complete
 			if (lastType == BWAPI::UnitTypes::Zerg_Egg)
 			{
-				numProductingUnits[lastType.getID()] -= 1;
-				numUnits[unit->getType().getID()] += 1;
+				numConstructingUnits[lastType.getID()] -= 1;
+				numConstructedUnits[unit->getType().getID()] += 1;
 			}
 			// morphing lurker complete
 			if (lastType == BWAPI::UnitTypes::Zerg_Lurker_Egg)
 			{
-				numProductingUnits[BWAPI::UnitTypes::Zerg_Lurker.getID()] -= 1;
-				numUnits[unit->getType().getID()] += 1;
+				numConstructingUnits[BWAPI::UnitTypes::Zerg_Lurker.getID()] -= 1;
+				numConstructedUnits[unit->getType().getID()] += 1;
 			}
 
 			// start morphing
 			if (unit->getType() == BWAPI::UnitTypes::Zerg_Egg)
 			{
-				numProductingUnits[unit->getBuildType().getID()] += 1;
+				numConstructingUnits[unit->getBuildType().getID()] += 1;
 			}
 			// start morphing lurker
 			if (unit->getType() == BWAPI::UnitTypes::Zerg_Lurker_Egg)
 			{
-				numProductingUnits[BWAPI::UnitTypes::Zerg_Lurker.getID()] += 1;
+				numConstructingUnits[BWAPI::UnitTypes::Zerg_Lurker.getID()] += 1;
 			}
 
 			// constructing building
 			if (unit->getType().isBuilding())
 			{
-				numProductingUnits[unit->getType().getID()] += 1;
+				numConstructingUnits[unit->getType().getID()] += 1;
 			}
 		}
 		// when building complete
 		if (unit->getType().isBuilding() && !unitMap[unit].completed && unit->isCompleted())
 		{
-			numProductingUnits[unit->getType().getID()] -= 1;
-			numUnits[unit->getType().getID()] += 1;
+			numConstructingUnits[unit->getType().getID()] -= 1;
+			numConstructedUnits[unit->getType().getID()] += 1;
 		}
 	}
     
@@ -86,7 +86,7 @@ void UnitData::updateUnit(BWAPI::Unit unit)
 
     if (firstSeen)
     {
-        numUnits[unit->getType().getID()]++;
+        numConstructedUnits[unit->getType().getID()]++;
     }
 }
 
@@ -96,7 +96,7 @@ void UnitData::removeUnit(BWAPI::Unit unit)
 
 	mineralsLost += unit->getType().mineralPrice();
 	gasLost += unit->getType().gasPrice();
-	numUnits[unit->getType().getID()]--;
+	numConstructedUnits[unit->getType().getID()]--;
 	numDeadUnits[unit->getType().getID()]++;
 		
 	unitMap.erase(unit);
@@ -108,7 +108,7 @@ void UnitData::removeBadUnits()
 	{
 		if (badUnitInfo(iter->second))
 		{
-			numUnits[iter->second.type.getID()]--;
+			numConstructedUnits[iter->second.type.getID()]--;
 			iter = unitMap.erase(iter);
 		}
 		else
@@ -152,12 +152,17 @@ int UnitData::getMineralsLost() const
 
 int UnitData::getNumUnits(BWAPI::UnitType t) const 
 { 
-	return numUnits[t.getID()] + numProductingUnits[t.getID()];
+	return numConstructedUnits[t.getID()] + numConstructingUnits[t.getID()];
 }
 
-int UnitData::getNumCompletedUnits(BWAPI::UnitType t) const
+int UnitData::getNumConstructedUnits(BWAPI::UnitType t) const
 {
-	return numUnits[t.getID()];
+	return numConstructedUnits[t.getID()];
+}
+
+int UnitData::getNumConstructingUnits(BWAPI::UnitType t) const
+{
+	return numConstructingUnits[t.getID()];
 }
 
 int UnitData::getNumDeadUnits(BWAPI::UnitType t) const 

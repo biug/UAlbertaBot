@@ -550,6 +550,16 @@ int InformationManager::getNumUnits(BWAPI::UnitType t, BWAPI::Player player)
 	return getUnitData(player).getNumUnits(t);
 }
 
+int InformationManager::getNumConstructedUnits(BWAPI::UnitType t, BWAPI::Player player)
+{
+	return getUnitData(player).getNumConstructedUnits(t);
+}
+
+int InformationManager::getNumConstructingUnits(BWAPI::UnitType t, BWAPI::Player player)
+{
+	return getUnitData(player).getNumConstructingUnits(t);
+}
+
 const UnitData & InformationManager::getUnitData(BWAPI::Player player) const
 {
     return _unitData.find(player)->second;

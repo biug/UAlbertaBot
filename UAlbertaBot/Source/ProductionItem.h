@@ -14,5 +14,6 @@ namespace UAlbertaBot
 	public:
 		ProductionItem(const MetaType & unit);
 		ProductionItem(const ProductionItem & item);
+		ProductionItem &operator=(const ProductionItem & item);
 	};
 }

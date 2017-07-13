@@ -51,6 +51,8 @@ public:
 
     bool					isEnemyBuildingInRegion(BWTA::Region * region);
     int						getNumUnits(BWAPI::UnitType type,BWAPI::Player player);
+	int						getNumConstructedUnits(BWAPI::UnitType type, BWAPI::Player player);
+	int						getNumConstructingUnits(BWAPI::UnitType type, BWAPI::Player player);
     bool					nearbyForceHasCloaked(BWAPI::Position p,BWAPI::Player player,int radius);
     bool					isCombatUnit(BWAPI::UnitType type) const;
 

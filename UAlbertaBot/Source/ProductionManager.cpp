@@ -82,91 +82,54 @@ void ProductionManager::onUnitDestroy(BWAPI::Unit unit)
 
 void ProductionManager::manageBuildOrderQueue() 
 {
-	int supply = BWAPI::Broodwar->self()->supplyTotal() / 2;
-	int supplyUsed = (BWAPI::Broodwar->self()->supplyUsed() + 1) / 2;
-	int overlordInQueue = _queue.unitCount(BWAPI::UnitTypes::Zerg_Overlord.getID());
-	if (supply - supplyUsed < 3 && _morphingOverlords.empty() && overlordInQueue <= 1)
-	{
-		if (supply <= 9)
-		{
-			if (supplyUsed == 9 && overlordInQueue == 0)
-			{
-				_queue.add(MetaType(BWAPI::UnitTypes::Zerg_Overlord), true);
-			}
-		}
-		else if (supply <= 27)
-		{
-			if (overlordInQueue == 0)
-			{
-				_queue.add(MetaType(BWAPI::UnitTypes::Zerg_Overlord), true);
-			}
-		}
-		else
-		{
-			_queue.add(MetaType(BWAPI::UnitTypes::Zerg_Overlord), true);
-		}
-	}
-	if (!_morphingOverlords.empty())
-	{
-		if (!(*_morphingOverlords.begin())->isMorphing())
-		{
-			_morphingOverlords.pop_front();
-		}
-	}
-	_queue.launchReady();
-	// if there is nothing in the _queue, oh well
-	if (_queue._readyQueue.empty()) 
+	_queue.checkSupply();
+	ProductionItem item = _queue.popItem();
+	if (item._unit.type() == MetaTypes::Default)
 	{
 		return;
 	}
+	MetaType & unit = item._unit;
+	// this is the unit which can produce the currentItem
+    BWAPI::Unit producer = getProducer(unit);
 
-	// while there is still something left in the _queue
-	while (!_queue._readyQueue.empty()) 
+	// check to see if we can make it right now
+	bool canMake = canMakeNow(producer, unit);
+
+	// if the next item in the list is a building and we can't yet make it
+    if (unit.isBuilding() && !(producer && canMake) && unit.whatBuilds().isWorker() && !item._assigned)
 	{
-		ProductionItem item = _queue.popReady();
-		MetaType & unit = item._unit;
-		// this is the unit which can produce the currentItem
-        BWAPI::Unit producer = getProducer(unit);
+		// construct a temporary building object
+		Building b(unit.getUnitType(), BWAPI::Broodwar->self()->getStartLocation());
+        b.isGasSteal = false;
 
-		// check to see if we can make it right now
-		bool canMake = canMakeNow(producer, unit);
+		// set the producer as the closest worker, but do not set its job yet
+		producer = WorkerManager::Instance().getBuilder(b, false);
 
-		// if the next item in the list is a building and we can't yet make it
-        if (unit.isBuilding() && !(producer && canMake) && unit.whatBuilds().isWorker() && !item._assigned)
+		// predict the worker movement to that building location
+		predictWorkerMovement(b);
+		item._assigned = true;
+	}
+
+	// if we can make the current item
+	if (producer && canMake) 
+	{
+		// create it
+		create(producer, unit);
+		_assignedWorkerForThisBuilding = false;
+		_haveLocationForThisBuilding = false;
+	}
+	else 
+	{
+		// retreat
+		if (unit.type() == MetaTypes::Tech && BWAPI::Broodwar->self()->hasResearched(unit.getTechType()))
 		{
-			// construct a temporary building object
-			Building b(unit.getUnitType(), BWAPI::Broodwar->self()->getStartLocation());
-            b.isGasSteal = false;
-
-			// set the producer as the closest worker, but do not set its job yet
-			producer = WorkerManager::Instance().getBuilder(b, false);
-
-			// predict the worker movement to that building location
-			predictWorkerMovement(b);
-			item._assigned = true;
+			return;
 		}
-
-		// if we can make the current item
-		if (producer && canMake) 
+		if (unit.type() == MetaTypes::Upgrade && BWAPI::Broodwar->self()->getUpgradeLevel(unit.getUpgradeType()) > 0)
 		{
-			// create it
-			create(producer, unit);
-			_assignedWorkerForThisBuilding = false;
-			_haveLocationForThisBuilding = false;
+			return;
 		}
-		else 
-		{
-			// retreat
-			if (unit.type() == MetaTypes::Tech && BWAPI::Broodwar->self()->hasResearched(unit.getTechType()))
-			{
-				continue;
-			}
-			if (unit.type() == MetaTypes::Upgrade && BWAPI::Broodwar->self()->getUpgradeLevel(unit.getUpgradeType()) > 0)
-			{
-				continue;
-			}
-			_queue.retreat(unit);
-		}
+		_queue.retreat(unit);
 	}
 }
 
@@ -250,10 +213,6 @@ void ProductionManager::create(BWAPI::Unit producer, MetaType & item)
     {
         // if the race is zerg, morph the unit
 		producer->morph(item.getUnitType());
-		if (item.getUnitType() == BWAPI::UnitTypes::Zerg_Overlord)
-		{
-			_morphingOverlords.push_back(producer);
-		}
     }
     // if we're dealing with a tech research
 	else if (item.isTech())

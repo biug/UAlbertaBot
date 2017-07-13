@@ -57,8 +57,8 @@ class UnitData
     const bool badUnitInfo(const UnitInfo & ui) const;
 
     std::vector<int>						numDeadUnits;
-    std::vector<int>						numUnits;
-	std::vector<int>						numProductingUnits;
+    std::vector<int>						numConstructedUnits;
+	std::vector<int>						numConstructingUnits;
 	std::map<BWAPI::Unit, std::set<BWAPI::Unit>>	baseLarva;
 
     int										mineralsLost;
@@ -75,7 +75,8 @@ public:
     int		getGasLost()                                const;
     int		getMineralsLost()                           const;
     int		getNumUnits(BWAPI::UnitType t)              const;
-	int		getNumCompletedUnits(BWAPI::UnitType t)		const;
+	int		getNumConstructingUnits(BWAPI::UnitType t)	const;
+	int		getNumConstructedUnits(BWAPI::UnitType t)	const;
     int		getNumDeadUnits(BWAPI::UnitType t)          const;
     const	std::map<BWAPI::Unit,UnitInfo> & getUnits() const;
 };

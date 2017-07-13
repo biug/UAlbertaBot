@@ -64,7 +64,7 @@ void ActionZVTFactoriesUnits::getBuildOrderList(UAlbertaBot::ProductionQueue & q
 		bool mineralDequePositive;
 		bool gasDequePositive;
 
-		if (base_count + base_in_queue + base_being_built <= 2)
+		if (base_count + base_in_queue + base_being_built <= 1)
 		{
 			mineralDequePositive = IsDequeAllPositive(mineralNetIncrease);
 			if (mineralDequePositive)
@@ -88,16 +88,16 @@ void ActionZVTFactoriesUnits::getBuildOrderList(UAlbertaBot::ProductionQueue & q
 	}
 
 	// 判断前提建筑是否存在
-	bool isExtractorExist = extractor_being_built + extractor_count + extractor_in_queue > 0;
-	if (!isExtractorExist && drone_count >= 7 && spawning_pool_count > 0)
-	{
-		queue.add(MetaType(BWAPI::UnitTypes::Zerg_Extractor), true);
-	}
-
 	bool isSpawningPoolExist = spawning_pool_being_built + spawning_pool_count + spawning_pool_in_queue > 0;
 	if (!isSpawningPoolExist)
 	{
 		queue.add(MetaType(BWAPI::UnitTypes::Zerg_Spawning_Pool), true);
+	}
+
+	bool isExtractorExist = extractor_being_built + extractor_count + extractor_in_queue > 0;
+	if (!isExtractorExist && drone_count >= 7 && spawning_pool_count > 0)
+	{
+		queue.add(MetaType(BWAPI::UnitTypes::Zerg_Extractor), true);
 	}
 
 	bool isDefilerMoundExist = defiler_mound_being_built + defiler_mound_count + defiler_mound_in_queue > 0;
@@ -176,7 +176,7 @@ void ActionZVTFactoriesUnits::getBuildOrderList(UAlbertaBot::ProductionQueue & q
 	{
 		if (drone_count < 15)
 		{
-			queue.add(MetaType(BWAPI::UnitTypes::Zerg_Drone), true);
+			queue.add(MetaType(BWAPI::UnitTypes::Zerg_Drone));
 		}
 		notEnoughDrone = drone_count < 12;
 	}
@@ -184,7 +184,7 @@ void ActionZVTFactoriesUnits::getBuildOrderList(UAlbertaBot::ProductionQueue & q
 	{
 		if (drone_count < hatchery_count * 10)
 		{
-			queue.add(MetaType(BWAPI::UnitTypes::Zerg_Drone), true);
+			queue.add(MetaType(BWAPI::UnitTypes::Zerg_Drone));
 		}
 		notEnoughDrone = drone_count < 8 * hatchery_count;
 	}
@@ -256,7 +256,7 @@ void ActionZVTFactoriesUnits::getBuildOrderList(UAlbertaBot::ProductionQueue & q
 		bool isUltraliskCavernExist = ultralisk_cavern_being_built + ultralisk_cavern_count + ultralisk_cavern_in_queue > 0;
 		if (!isUltraliskCavernExist)
 		{
-			queue.add(MetaType(BWAPI::UnitTypes::Zerg_Ultralisk_Cavern), true);
+			queue.add(MetaType(BWAPI::UnitTypes::Zerg_Ultralisk_Cavern));
 		}
 
 		// 判断需要建造多少部队
