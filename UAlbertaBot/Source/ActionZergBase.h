@@ -64,9 +64,7 @@ namespace CasiaBot
 		int spore_colony_count;			    	//æß×ÓËş
 		int spawning_pool_count;                //Ñª³Ø
 		int hydralisk_den_count;                //´ÌÉß¶´Ñ¨
-		int lair_count;                         //ÊŞÑ¨
 		int queens_nest_count;                  //»Êºó³²
-		int hive_count;                         //·ä³²
 		int defiler_mound_count;                //Ğ«×Ó³²
 		int spire_count;                        //·ÉÁúËş
 		int greater_spire_count;                //´ó·ÉÁúËş
@@ -84,9 +82,7 @@ namespace CasiaBot
 		int spore_colony_being_built;			   	//æß×ÓËş
 		int spawning_pool_being_built;                //Ñª³Ø
 		int hydralisk_den_being_built;                //´ÌÉß¶´Ñ¨
-		int lair_being_built;                         //ÊŞÑ¨
 		int queens_nest_being_built;                  //»Êºó³²
-		int hive_being_built;                         //·ä³²
 		int defiler_mound_being_built;                //Ğ«×Ó³²
 		int spire_being_built;                        //·ÉÁúËş
 		int greater_spire_being_built;                //´ó·ÉÁúËş
@@ -104,9 +100,7 @@ namespace CasiaBot
 		int spore_colony_in_queue;			    	//æß×ÓËş
 		int spawning_pool_in_queue;                //Ñª³Ø
 		int hydralisk_den_in_queue;                //´ÌÉß¶´Ñ¨
-		int lair_in_queue;                         //ÊŞÑ¨
 		int queens_nest_in_queue;                  //»Êºó³²
-		int hive_in_queue;                         //·ä³²
 		int defiler_mound_in_queue;                //Ğ«×Ó³²
 		int spire_in_queue;                        //·ÉÁúËş
 		int greater_spire_in_queue;                //´ó·ÉÁúËş
