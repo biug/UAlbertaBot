@@ -69,7 +69,7 @@ void ActionZVTBarracksUnits::getBuildOrderList(UAlbertaBot::ProductionQueue & qu
 			mineralDequePositive = IsDequeAllPositive(mineralNetIncrease);
 			if (mineralDequePositive)
 			{
-				queue.add(MetaType(BWAPI::UnitTypes::Zerg_Hatchery), true);
+				queue.add(MetaType(BWAPI::UnitTypes::Zerg_Hatchery));
 			}
 		}
 		else
@@ -78,7 +78,7 @@ void ActionZVTBarracksUnits::getBuildOrderList(UAlbertaBot::ProductionQueue & qu
 			gasDequePositive = IsDequeAllPositive(gasNetIncrease);
 			if (mineralDequePositive && gasDequePositive)
 			{
-				queue.add(MetaType(BWAPI::UnitTypes::Zerg_Hatchery), true);
+				queue.add(MetaType(BWAPI::UnitTypes::Zerg_Hatchery));
 			}
 		}
 
@@ -97,7 +97,7 @@ void ActionZVTBarracksUnits::getBuildOrderList(UAlbertaBot::ProductionQueue & qu
 	bool isExtractorExist = extractor_being_built + extractor_count + extractor_in_queue > 0;
 	if (!isExtractorExist && drone_count >= 7 && spawning_pool_count > 0)
 	{
-		queue.add(MetaType(BWAPI::UnitTypes::Zerg_Extractor), true);
+		queue.add(MetaType(BWAPI::UnitTypes::Zerg_Extractor));
 	}
 
 	bool isHydraliskDenExist = hydralisk_den_being_built + hydralisk_den_count +hydralisk_den_in_queue > 0;

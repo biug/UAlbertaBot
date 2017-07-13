@@ -205,6 +205,10 @@ ProductionItem ProductionQueue::popItem()
 		}
 		break;
 	}
+	MetaType unit = retItem._unit;
+	if (unit.isUnit()) _unitCount[unit.getUnitType().getID()] -= 1;
+	else if (unit.isTech()) _techCount[unit.getTechType().getID()] -= 1;
+	else if (unit.isUpgrade()) _upgradeCount[unit.getUpgradeType().getID()] -= 1;
 	return retItem;
 }
 
