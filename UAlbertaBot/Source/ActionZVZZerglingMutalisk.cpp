@@ -68,13 +68,12 @@ void ActionZVZZerglingMutalisk::getBuildOrderList(UAlbertaBot::ProductionQueue &
 		bool mineralDequePositive;
 		bool gasDequePositive;
 
-		if (base_count + base_in_queue + base_being_built <= 2)
+		if (base_count + base_in_queue + base_being_built <= 1)
 		{
 			mineralDequePositive = IsDequeAllPositive(mineralNetIncrease);
 			if (mineralDequePositive)
 			{
-				//queue.add(MetaType(BWAPI::UnitTypes::Zerg_Drone), true);
-				queue.add(MetaType(BWAPI::UnitTypes::Zerg_Hatchery), true);
+				queue.add(MetaType(BWAPI::UnitTypes::Zerg_Hatchery));
 			}
 		}
 		else
@@ -83,8 +82,7 @@ void ActionZVZZerglingMutalisk::getBuildOrderList(UAlbertaBot::ProductionQueue &
 			gasDequePositive = IsDequeAllPositive(gasNetIncrease);
 			if (mineralDequePositive && gasDequePositive)
 			{
-				//queue.add(MetaType(BWAPI::UnitTypes::Zerg_Drone), true);
-				queue.add(MetaType(BWAPI::UnitTypes::Zerg_Hatchery), true);
+				queue.add(MetaType(BWAPI::UnitTypes::Zerg_Hatchery));
 			}
 		}
 
@@ -94,16 +92,16 @@ void ActionZVZZerglingMutalisk::getBuildOrderList(UAlbertaBot::ProductionQueue &
 	}
 
 	// 判断前提建筑是否存在
-	bool isExtractorExist = extractor_being_built + extractor_count + extractor_in_queue > 0;
-	if (!isExtractorExist && drone_count >= 7 && spawning_pool_count > 0)
-	{
-		queue.add(MetaType(BWAPI::UnitTypes::Zerg_Extractor), true);
-	}
-
 	bool isSpawningPoolExist = spawning_pool_being_built + spawning_pool_count + spawning_pool_in_queue > 0;
 	if (!isSpawningPoolExist)
 	{
 		queue.add(MetaType(BWAPI::UnitTypes::Zerg_Spawning_Pool), true);
+	}
+
+	bool isExtractorExist = extractor_being_built + extractor_count + extractor_in_queue > 0;
+	if (!isExtractorExist && drone_count >= 7 && spawning_pool_count > 0)
+	{
+		queue.add(MetaType(BWAPI::UnitTypes::Zerg_Extractor));
 	}
 
 	bool isHiveExist = hive_being_built + hive_count + hive_in_queue > 0;
@@ -154,7 +152,7 @@ void ActionZVZZerglingMutalisk::getBuildOrderList(UAlbertaBot::ProductionQueue &
 	{
 		if (drone_count + drone_in_queue < 15)
 		{
-			queue.add(MetaType(BWAPI::UnitTypes::Zerg_Drone), true);
+			queue.add(MetaType(BWAPI::UnitTypes::Zerg_Drone));
 		}
 		notEnoughDrone = drone_count + drone_in_queue < 12;
 	}
@@ -162,7 +160,7 @@ void ActionZVZZerglingMutalisk::getBuildOrderList(UAlbertaBot::ProductionQueue &
 	{
 		if (drone_count + drone_in_queue < hatchery_count * 10)
 		{
-			queue.add(MetaType(BWAPI::UnitTypes::Zerg_Drone), true);
+			queue.add(MetaType(BWAPI::UnitTypes::Zerg_Drone));
 		}
 		notEnoughDrone = drone_count + drone_in_queue < 8 * hatchery_count;
 	}
