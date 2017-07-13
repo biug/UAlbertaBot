@@ -101,48 +101,48 @@ void ActionZVTBarracksUnits::getBuildOrderList(UAlbertaBot::ProductionQueue & qu
 	}
 
 	bool isHydraliskDenExist = hydralisk_den_being_built + hydralisk_den_count +hydralisk_den_in_queue > 0;
-	if (!isHydraliskDenExist && extractor_count > 0)
+	if (!isHydraliskDenExist && extractor_completed > 0)
 	{
 		queue.add(MetaType(BWAPI::UnitTypes::Zerg_Hydralisk_Den));
 	}
 
-	bool isHiveExist = hive_being_built + hive_count + hive_in_queue > 0;
-	bool isQueenNestExist = queens_nest_being_built + queens_nest_count + queens_nest_in_queue > 0;
-	bool isLairExist = lair_being_built + lair_count + lair_in_queue > 0;
-	if (!isHiveExist)	// 若蜂巢不存在
+	if (lair_count + lair_being_built + lair_in_queue == 0)
 	{
-		if (isQueenNestExist)	// 若皇后巢存在
+		if (currentFrameCount > 4320)
 		{
-			if (currentFrameCount > 10800)
+			queue.add(MetaType(BWAPI::UnitTypes::Zerg_Lair));
+		}
+	}
+	if (lair_completed > 0)
+	{
+		if (queens_nest_count + queens_nest_being_built + queens_nest_in_queue == 0)
+		{
+			if (currentFrameCount > 17280)
 			{
-				queue.add(MetaType(BWAPI::UnitTypes::Zerg_Hive));
+				queue.add(MetaType(BWAPI::UnitTypes::Zerg_Queens_Nest));
 			}
 		}
-		else	// 若皇后巢不存在
+		if (queens_nest_completed > 0)
 		{
-			if (isLairExist)	// 若兽穴存在
+			if (hive_count + hive_being_built + hive_in_queue == 0)
 			{
-				if (currentFrameCount > 9000)
+				if (currentFrameCount > 21600)
 				{
-					queue.add(MetaType(BWAPI::UnitTypes::Zerg_Queens_Nest));
+					queue.add(MetaType(BWAPI::UnitTypes::Zerg_Hive));
 				}
-			}
-			else if (currentFrameCount > 4800)	// 若兽穴不存在
-			{
-				queue.add(MetaType(BWAPI::UnitTypes::Zerg_Lair));
 			}
 		}
 	}
 
-	if (spawning_pool_count > 0 && queue.upgradeCount(BWAPI::UpgradeTypes::Metabolic_Boost) == 0)
+	if (spawning_pool_completed > 0 && metabolic_boost_count == 0)
 	{
 		queue.add(MetaType(BWAPI::UpgradeTypes::Metabolic_Boost));
 	}
-	if (hydralisk_den_count > 0 && lair_count > 0 && queue.techCount(BWAPI::TechTypes::Lurker_Aspect) == 0)
+	if (hydralisk_den_completed > 0 && lair_completed > 0 && lurker_aspect_count == 0)
 	{
 		queue.add(MetaType(BWAPI::TechTypes::Lurker_Aspect));
 	}
-	if (hive_count > 0 && queue.upgradeCount(BWAPI::UpgradeTypes::Adrenal_Glands) == 0)
+	if (hive_completed > 0 && adrenal_glands_count == 0)
 	{
 		queue.add(MetaType(BWAPI::UpgradeTypes::Adrenal_Glands));
 	}
@@ -154,15 +154,15 @@ void ActionZVTBarracksUnits::getBuildOrderList(UAlbertaBot::ProductionQueue & qu
 		{
 			queue.add(MetaType(BWAPI::UnitTypes::Zerg_Drone));
 		}
-		notEnoughDrone = drone_count + drone_in_queue < 12;
+		notEnoughDrone = (drone_count + drone_in_queue) < 10;
 	}
 	else
 	{
-		if (drone_count +drone_in_queue < hatchery_count * 10)
+		if (drone_count + drone_in_queue < hatchery_count * 10)
 		{
 			queue.add(MetaType(BWAPI::UnitTypes::Zerg_Drone));
 		}
-		notEnoughDrone = drone_count + drone_in_queue < 8 * hatchery_count;
+		notEnoughDrone = ((drone_count + drone_in_queue) < 7 * base_count);
 	}
 
 	// 判断需要建造多少部队
@@ -172,7 +172,7 @@ void ActionZVTBarracksUnits::getBuildOrderList(UAlbertaBot::ProductionQueue & qu
 		need_zergling_count = 2;
 	}
 
-	int need_lurker_count = (int)(enemyTerranBarrackUnitsAmount * 0.75) - lurker_count;
+	int need_lurker_count = (int)(enemyTerranBarrackUnitsAmount * 0.75) - lurker_count - lurker_in_queue;
 	if (need_lurker_count <= 0 && lurker_count + lurker_in_queue < 5)
 	{
 		need_lurker_count = 1;
@@ -190,7 +190,7 @@ void ActionZVTBarracksUnits::getBuildOrderList(UAlbertaBot::ProductionQueue & qu
 		if (need_zergling_count > 0)
 		{
 			// 2个Zergling
-			if (spawning_pool_count > 0)
+			if (BWAPI::Broodwar->self()->isUnitAvailable(BWAPI::UnitTypes::Zerg_Zergling))
 			{
 				queue.add(MetaType(BWAPI::UnitTypes::Zerg_Zergling));
 			}
@@ -198,11 +198,14 @@ void ActionZVTBarracksUnits::getBuildOrderList(UAlbertaBot::ProductionQueue & qu
 		}
 		if (need_lurker_count > 0)
 		{
-			if (hydralisk_den_count > 0 && hydralisk_count + hydralisk_in_queue < 5)
+			if (BWAPI::Broodwar->self()->isUnitAvailable(BWAPI::UnitTypes::Zerg_Hydralisk)
+				&& (hydralisk_count + hydralisk_in_queue) <= 5
+				&& (hydralisk_count + hydralisk_in_queue - lurker_count - lurker_in_queue <= 1))
 			{
 				queue.add(MetaType(BWAPI::UnitTypes::Zerg_Hydralisk));
 			}
-			if (BWAPI::Broodwar->self()->hasResearched(BWAPI::TechTypes::Lurker_Aspect) && lurker_count < hydralisk_count)
+			if (BWAPI::Broodwar->self()->isUnitAvailable(BWAPI::UnitTypes::Zerg_Lurker)
+				&& lurker_count + lurker_in_queue < hydralisk_completed)
 			{
 				queue.add(MetaType(BWAPI::UnitTypes::Zerg_Lurker));
 			}
@@ -215,7 +218,7 @@ void ActionZVTBarracksUnits::getBuildOrderList(UAlbertaBot::ProductionQueue & qu
 
 	} while (true);
 
-	int extractorUpperBound = std::min(base_count + base_being_built, 3);
+	int extractorUpperBound = std::min(base_completed, 3);
 	if (extractor_count + extractor_being_built + extractor_in_queue < extractorUpperBound)
 	{
 		queue.add(MetaType(BWAPI::UnitTypes::Zerg_Extractor));

@@ -36,6 +36,11 @@ namespace CasiaBot
 		int guardian_count = 0;						//守卫者
 		int devourer_count = 0;						//吞噬者
 
+		int zergling_completed = 0;
+		int hydralisk_completed = 0;
+		int lurker_completed = 0;
+		int mutalisk_completed = 0;
+
 		//己方队列中单位
 		int larva_in_queue = 0;                      //队列中幼虫
 		int drone_in_queue = 0;                      //队列中工蜂
@@ -51,7 +56,9 @@ namespace CasiaBot
 		int guardian_in_queue = 0;                   //队列中守卫者
 		int devourer_in_queue = 0;                   //队列中吞噬者
 
-
+		int metabolic_boost_count;
+		int lurker_aspect_count;
+		int adrenal_glands_count;
 
 		//己方已建成建筑
 		int base_count;						//基地
@@ -70,6 +77,16 @@ namespace CasiaBot
 		int greater_spire_count;                //大飞龙塔
 		int nydus_canal_count;                  //蛹虫通道
 		int ultralisk_cavern_count;             //巨兽之窟
+
+		int base_completed;
+		int hatchery_completed;
+		int lair_completed;
+		int hive_completed;
+		int extractor_completed;
+		int spawning_pool_completed;
+		int hydralisk_den_completed;
+		int queens_nest_completed;
+		int spire_completed;
 
 		//己方建设中建筑
 		int base_being_built;						//基地

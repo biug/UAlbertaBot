@@ -17,7 +17,11 @@ void ProductionQueue::updateCount(const MetaType & unit, int offset)
 
 void ProductionQueue::checkSupply()
 {
-	int supply = BWAPI::Broodwar->self()->supplyTotal() / 2;
+	int supply =
+		InformationManager::Instance().getNumConstructedUnits(BWAPI::UnitTypes::Zerg_Overlord, BWAPI::Broodwar->self()) * 8
+		+ InformationManager::Instance().getNumConstructedUnits(BWAPI::UnitTypes::Zerg_Hatchery, BWAPI::Broodwar->self())
+		+ InformationManager::Instance().getNumConstructedUnits(BWAPI::UnitTypes::Zerg_Lair, BWAPI::Broodwar->self())
+		+ InformationManager::Instance().getNumConstructedUnits(BWAPI::UnitTypes::Zerg_Hive, BWAPI::Broodwar->self());
 	int supplyUsed = (BWAPI::Broodwar->self()->supplyUsed() + 1) / 2;
 	int overlordInQueue = unitCount(BWAPI::UnitTypes::Zerg_Overlord.getID());
 	int overlordInConstructing =
@@ -54,6 +58,13 @@ void ProductionQueue::add(const ProductionItem & item, bool priority)
 	const MetaType & unit = item._unit;
 
 	updateCount(unit, 1);
+
+	UAB_ASSERT(_priorityQueue.size() < 1000, "priority queue overflow");
+	UAB_ASSERT(_overlordQueue.size() < 1000, "overlord queue overflow");
+	UAB_ASSERT(_buildingQueue.size() < 1000, "building queue overflow");
+	UAB_ASSERT(_workerQueue.size() < 1000, "worker queue overflow");
+	UAB_ASSERT(_armyQueue.size() < 1000, "army queue overflow");
+	UAB_ASSERT(_techUpgradeQueue.size() < 1000, "tech queue overflow");
 
 	if (priority)
 	{
