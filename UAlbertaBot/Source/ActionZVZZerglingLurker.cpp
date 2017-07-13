@@ -51,26 +51,25 @@ void ActionZVZZerglingLurker::getBuildOrderList(UAlbertaBot::ProductionQueue & q
 {
 	// 当前帧数（累计）
 	int currentFrameCount = BWAPI::Broodwar->getFrameCount();
+	int currentFrameMineralAmount = BWAPI::Broodwar->self()->minerals();
+	int currentFrameGasAmount = BWAPI::Broodwar->self()->gas();
+	int diffMineralAmount = currentFrameMineralAmount - lastFrameMineralAmount;
+	int diffGasAmount = currentFrameGasAmount - lastFrameGasAmount;
 
+	mineralNetIncrease.pop_front();
+	mineralNetIncrease.push_back(diffMineralAmount);
+	gasNetIncrease.pop_front();
+	gasNetIncrease.push_back(diffGasAmount);
+
+	bool mineralDequePositive = IsDequeAllPositive(mineralNetIncrease);
+	bool gasDequePositive = IsDequeNoneNegative(gasNetIncrease);
 	// 判断是否需要增加母巢
 	if (base_count + base_in_queue + base_being_built <= 4 && currentFrameCount > 10 && currentFrameCount % 200 == 0)
 	{
-		int currentFrameMineralAmount = BWAPI::Broodwar->self()->minerals();
-		int currentFrameGasAmount = BWAPI::Broodwar->self()->gas();
-		int diffMineralAmount = currentFrameMineralAmount - lastFrameMineralAmount;
-		int diffGasAmount = currentFrameGasAmount - lastFrameGasAmount;
+		
 
-		mineralNetIncrease.pop_front();
-		mineralNetIncrease.push_back(diffMineralAmount);
-		gasNetIncrease.pop_front();
-		gasNetIncrease.push_back(diffGasAmount);
-
-		bool mineralDequePositive;
-		bool gasDequePositive;
-
-		if (base_count + base_in_queue + base_being_built <= 1)
+		if (base_count + base_in_queue + base_being_built <= 2)
 		{
-			mineralDequePositive = IsDequeAllPositive(mineralNetIncrease);
 			if (mineralDequePositive)
 			{
 				queue.add(MetaType(BWAPI::UnitTypes::Zerg_Hatchery));
@@ -78,8 +77,6 @@ void ActionZVZZerglingLurker::getBuildOrderList(UAlbertaBot::ProductionQueue & q
 		}
 		else
 		{
-			mineralDequePositive = IsDequeAllPositive(mineralNetIncrease);
-			gasDequePositive = IsDequeAllPositive(gasNetIncrease);
 			if (mineralDequePositive && gasDequePositive)
 			{
 				queue.add(MetaType(BWAPI::UnitTypes::Zerg_Hatchery));
@@ -170,22 +167,34 @@ void ActionZVZZerglingLurker::getBuildOrderList(UAlbertaBot::ProductionQueue & q
 	}
 
 	// 判断需要建造多少部队
-	int need_zergling_count = (int)(enemy_zergling_count * 1.5) - zergling_count -zergling_in_queue;
-	if (need_zergling_count <= 0 && zergling_count + zergling_in_queue < 12)
+	int need_zergling_count = 0;
+	if (isSpawningPoolExist)
 	{
-		need_zergling_count = 2;
+		//首先根据敌方单位数量判断
+		need_zergling_count = std::max(need_zergling_count, (int)(enemy_zergling_count * 1.5) - zergling_count - zergling_in_queue);
+		//在资源富余的情况下继续生产
+		if (mineralDequePositive && gasDequePositive && need_zergling_count < 2 && zergling_in_queue < 6)
+			need_zergling_count = 2;
+		//优先补农民
+		if (notEnoughDrone && zergling_count + zergling_in_queue >= 12)
+		{
+			need_zergling_count = 0;
+		}
 	}
 
-	int need_lurker_count = (int)(need_zergling_count / 3);
-	if (need_lurker_count <= 0 && lurker_count + lurker_in_queue < 5)
+	int need_lurker_count = 0;
+	if (isHydraliskDenExist)
 	{
-		need_lurker_count = 1;
-	}
-
-	if (notEnoughDrone)
-	{
-		need_lurker_count = lurker_count + lurker_in_queue < 3 ? 1 : 0;
-		need_zergling_count = zergling_count + zergling_in_queue < 12 ? 2 : 0;
+		//首先根据敌方单位数量判断
+		need_lurker_count = std::max(need_lurker_count, need_zergling_count / 3);
+		//在资源富余的情况下继续生产
+		if (mineralDequePositive && gasDequePositive && lurker_in_queue < 2)
+			need_lurker_count = 1;
+		//优先补农民
+		if (notEnoughDrone && lurker_count + lurker_in_queue >= 3)
+		{
+			need_lurker_count = 0;
+		}
 	}
 
 	// 穿插建造Zergling和Lurker

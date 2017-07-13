@@ -18,5 +18,18 @@ namespace CasiaBot
 			}
 			return true;
 		}
+
+		template<typename T>
+		bool IsDequeNoneNegative(std::deque<T> &queue)
+		{
+			for (size_t i = 0; i < queue.size(); i++)
+			{
+				if (queue[i] < 0)
+				{
+					return false;
+				}
+			}
+			return true;
+		}
 	}
 }
