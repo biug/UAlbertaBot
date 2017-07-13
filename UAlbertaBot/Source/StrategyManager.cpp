@@ -14,6 +14,10 @@ StrategyManager::StrategyManager()
 {
 	_actionZVTBarracks.init();
 	_actionZVTFactories.init();
+	_actionZVZLurker.init();
+	_actionZVZMutalisk.init();
+	_actionZVPZealot.init();
+	_actionZVPDragoon.init();
 }
 
 // get an instance of this
@@ -92,34 +96,90 @@ void StrategyManager::addStrategy(const std::string & name, Strategy & strategy)
 
 void StrategyManager::updateProductionQueue(ProductionQueue & queue)
 {
-	_actionZVTBarracks.updateCurrentState(queue);
-	_actionZVTFactories.updateCurrentState(queue);
 	int currentFrame = BWAPI::Broodwar->getFrameCount();
-	// need to be update
-	if (_action == nullptr)
-	{
-		_action = &_actionZVTBarracks;
-	}
-	if (currentFrame - _lastChangeFrame >= 1000 || queue.empty())
-	{
-		_lastChangeFrame = currentFrame;
-		if (_action->tick())
+	if (_enemyRace == BWAPI::Races::Terran) {
+		_actionZVTBarracks.updateCurrentState(queue);
+		_actionZVTFactories.updateCurrentState(queue);
+
+		// need to be update
+		if (_action == nullptr)
 		{
-			queue.clear();
-			bool useBarracks = _actionZVTBarracks.canDeployAction();
-			bool useFactories = _actionZVTFactories.canDeployAction();
 			_action = &_actionZVTBarracks;
-			if (useBarracks)
+		}
+		if (currentFrame - _lastChangeFrame >= 1000 || queue.empty())
+		{
+			_lastChangeFrame = currentFrame;
+			if (_action->tick())
 			{
+				queue.clear();
+				bool useBarracks = _actionZVTBarracks.canDeployAction();
+				bool useFactories = _actionZVTFactories.canDeployAction();
 				_action = &_actionZVTBarracks;
-			}
-			else if (useFactories)
-			{
-				_action = &_actionZVTFactories;
+				if (useBarracks)
+				{
+					_action = &_actionZVTBarracks;
+				}
+				else if (useFactories)
+				{
+					_action = &_actionZVTFactories;
+				}
 			}
 		}
+		_action->getBuildOrderList(queue);
 	}
-	_action->getBuildOrderList(queue);
+	else if (_enemyRace == BWAPI::Races::Zerg) {
+		_actionZVZLurker.updateCurrentState(queue);
+		_actionZVZMutalisk.updateCurrentState(queue);
+
+		// to do
+		if (_action == nullptr) {
+			_action = &_actionZVZLurker;
+		}
+		if (currentFrame - _lastChangeFrame >= 1000 || queue.empty()) {
+			_lastChangeFrame = currentFrame;
+			if (_action->tick()) {
+				queue.clear();
+				bool useLurker = _actionZVZLurker.canDeployAction();
+				bool useMutalisk = _actionZVZMutalisk.canDeployAction();
+				_action = &_actionZVTBarracks;
+				if (useLurker) {
+					_action = &_actionZVZLurker;
+				}
+				else if (useMutalisk) {
+					_action = &_actionZVZMutalisk;
+				}
+			}
+		}
+		_action->getBuildOrderList(queue);
+	}
+	else if (_enemyRace == BWAPI::Races::Protoss) {
+		_actionZVPZealot.updateCurrentState(queue);
+		_actionZVPDragoon.updateCurrentState(queue);
+
+		//to do
+		if (_action == nullptr) {
+			_action = &_actionZVPZealot;
+		}
+		if (currentFrame - _lastChangeFrame >= 1000 || queue.empty()) {
+			_lastChangeFrame = currentFrame;
+			if (_action->tick()) {
+				queue.clear();
+				bool useZealot = _actionZVPZealot.canDeployAction();
+				bool useDragoon = _actionZVPDragoon.canDeployAction();
+				_action = &_actionZVTBarracks;
+				if (useZealot) {
+					_action = &_actionZVPZealot;
+				}
+				else if (useDragoon) {
+					_action = &_actionZVPDragoon;
+				}
+			}
+		}
+		_action->getBuildOrderList(queue);
+	}
+	else {
+
+	}
 }
 
 const MetaPairVector StrategyManager::getZergBuildOrderGoal() const

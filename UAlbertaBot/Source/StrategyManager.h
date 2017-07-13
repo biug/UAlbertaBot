@@ -9,6 +9,10 @@
 #include "ProductionQueue.h"
 #include "ActionZVTBarracksUnits.h"
 #include "ActionZVTFactoriesUnits.h"
+#include "ActionZVZZerglingLurker.h"
+#include "ActionZVZZerglingMutalisk.h"
+#include "ActionZVPZealot.h"
+#include "ActionZVPDragoon.h"
 
 namespace UAlbertaBot
 {
@@ -57,6 +61,10 @@ class StrategyManager
 	int								_lastChangeFrame;
 	ActionZVTBarracksUnits			_actionZVTBarracks;
 	ActionZVTFactoriesUnits			_actionZVTFactories;
+	ActionZVZZerglingLurker			_actionZVZLurker;
+	ActionZVZZerglingMutalisk		_actionZVZMutalisk;
+	ActionZVPZealot					_actionZVPZealot;
+	ActionZVPDragoon				_actionZVPDragoon;
 
 	        void	                writeResults();
 	const	int					    getScore(BWAPI::Player player) const;

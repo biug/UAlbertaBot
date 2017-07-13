@@ -395,8 +395,8 @@ void BuildingManager::removeBuildings(const std::vector<Building> & toRemove)
 
         if (it != _buildings.end())
         {
-            _buildings.erase(it);
 			_numBuildings[it->type.getID()] -= 1;
+            _buildings.erase(it);	
         }
     }
 }
