@@ -13,6 +13,7 @@ class BuildingManager
     BuildingManager();
 
     std::vector<Building> _buildings;
+	std::vector<int>	  _numBuildings;
 
     bool            _debugMode;
     int             _reservedMinerals;				// minerals reserved for planned buildings
@@ -45,7 +46,7 @@ public:
     int                 getReservedMinerals();
     int                 getReservedGas();
 
-    bool                isBeingBuilt(BWAPI::UnitType type);
+	int					numBeingBuilt(BWAPI::UnitType type);
 
     std::vector<BWAPI::UnitType> buildingsQueued();
 };

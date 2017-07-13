@@ -47,7 +47,10 @@ void ActionZergBase::updateCurrentState(ProductionQueue &queue)
 
 
 	//建筑
-	hatchery_count = InformationManager::Instance().getNumUnits(BWAPI::UnitTypes::Zerg_Hatchery, BWAPI::Broodwar->self()) + InformationManager::Instance().getNumUnits(BWAPI::UnitTypes::Zerg_Lair, BWAPI::Broodwar->self()) + InformationManager::Instance().getNumUnits(BWAPI::UnitTypes::Zerg_Hive, BWAPI::Broodwar->self());
+	hatchery_count = InformationManager::Instance().getNumUnits(BWAPI::UnitTypes::Zerg_Hatchery, BWAPI::Broodwar->self());
+	lair_count = InformationManager::Instance().getNumUnits(BWAPI::UnitTypes::Zerg_Lair, BWAPI::Broodwar->self());
+	hive_count = InformationManager::Instance().getNumUnits(BWAPI::UnitTypes::Zerg_Hive, BWAPI::Broodwar->self());
+	base_count = hatchery_count + lair_count + hive_count;
 	extractor_count = InformationManager::Instance().getNumUnits(BWAPI::UnitTypes::Zerg_Extractor, BWAPI::Broodwar->self());
 	creep_colony_count = InformationManager::Instance().getNumUnits(BWAPI::UnitTypes::Zerg_Creep_Colony, BWAPI::Broodwar->self());
 	sunken_colony_count = InformationManager::Instance().getNumUnits(BWAPI::UnitTypes::Zerg_Sunken_Colony, BWAPI::Broodwar->self());
@@ -64,6 +67,9 @@ void ActionZergBase::updateCurrentState(ProductionQueue &queue)
 	ultralisk_cavern_count = InformationManager::Instance().getNumUnits(BWAPI::UnitTypes::Zerg_Ultralisk_Cavern, BWAPI::Broodwar->self());
 
 	hatchery_in_queue = queue.unitCount(BWAPI::UnitTypes::Zerg_Hatchery);
+	lair_in_queue = queue.unitCount(BWAPI::UnitTypes::Zerg_Lair);
+	hive_in_queue = queue.unitCount(BWAPI::UnitTypes::Zerg_Hive);
+	base_in_queue = hatchery_in_queue + lair_in_queue + hive_in_queue;
 	extractor_in_queue = queue.unitCount(BWAPI::UnitTypes::Zerg_Extractor);
 	creep_colony_in_queue = queue.unitCount(BWAPI::UnitTypes::Zerg_Creep_Colony);
 	sunken_colony_in_queue = queue.unitCount(BWAPI::UnitTypes::Zerg_Sunken_Colony);	
@@ -79,21 +85,24 @@ void ActionZergBase::updateCurrentState(ProductionQueue &queue)
 	nydus_canal_in_queue = queue.unitCount(BWAPI::UnitTypes::Zerg_Nydus_Canal);
 	ultralisk_cavern_in_queue = queue.unitCount(BWAPI::UnitTypes::Zerg_Ultralisk_Cavern);
 
-	hatchery_being_built = BuildingManager::Instance().isBeingBuilt(BWAPI::UnitTypes::Zerg_Hatchery) ? 1 : 0;
-	extractor_being_built = BuildingManager::Instance().isBeingBuilt(BWAPI::UnitTypes::Zerg_Extractor) ? 1 : 0;
-	creep_colony_being_built = BuildingManager::Instance().isBeingBuilt(BWAPI::UnitTypes::Zerg_Creep_Colony) ? 1 : 0;
-	sunken_colony_being_built = BuildingManager::Instance().isBeingBuilt(BWAPI::UnitTypes::Zerg_Sunken_Colony) ? 1 : 0;
-	spore_colony_being_built = BuildingManager::Instance().isBeingBuilt(BWAPI::UnitTypes::Zerg_Spore_Colony) ? 1 : 0;
-	spawning_pool_being_built = BuildingManager::Instance().isBeingBuilt(BWAPI::UnitTypes::Zerg_Spawning_Pool) ? 1 : 0;
-	hydralisk_den_being_built = BuildingManager::Instance().isBeingBuilt(BWAPI::UnitTypes::Zerg_Hydralisk_Den) ? 1 : 0;
-	lair_being_built = BuildingManager::Instance().isBeingBuilt(BWAPI::UnitTypes::Zerg_Lair) ? 1 : 0;
-	queens_nest_being_built = BuildingManager::Instance().isBeingBuilt(BWAPI::UnitTypes::Zerg_Queens_Nest) ? 1 : 0;
-	hive_being_built = BuildingManager::Instance().isBeingBuilt(BWAPI::UnitTypes::Zerg_Hive) ? 1 : 0;
-	defiler_mound_being_built = BuildingManager::Instance().isBeingBuilt(BWAPI::UnitTypes::Zerg_Defiler_Mound) ? 1 : 0;
-	spire_being_built = BuildingManager::Instance().isBeingBuilt(BWAPI::UnitTypes::Zerg_Spire) ? 1 : 0;
-	greater_spire_being_built = BuildingManager::Instance().isBeingBuilt(BWAPI::UnitTypes::Zerg_Greater_Spire) ? 1 : 0;
-	nydus_canal_being_built = BuildingManager::Instance().isBeingBuilt(BWAPI::UnitTypes::Zerg_Nydus_Canal) ? 1 : 0;
-	ultralisk_cavern_being_built = BuildingManager::Instance().isBeingBuilt(BWAPI::UnitTypes::Zerg_Ultralisk_Cavern) ? 1 : 0;
+	hatchery_being_built = BuildingManager::Instance().numBeingBuilt(BWAPI::UnitTypes::Zerg_Hatchery);
+	lair_being_built = BuildingManager::Instance().numBeingBuilt(BWAPI::UnitTypes::Zerg_Lair);
+	hive_being_built = BuildingManager::Instance().numBeingBuilt(BWAPI::UnitTypes::Zerg_Hive);
+	base_being_built = hatchery_being_built + lair_being_built + hive_being_built;
+	extractor_being_built = BuildingManager::Instance().numBeingBuilt(BWAPI::UnitTypes::Zerg_Extractor);
+	creep_colony_being_built = BuildingManager::Instance().numBeingBuilt(BWAPI::UnitTypes::Zerg_Creep_Colony);
+	sunken_colony_being_built = BuildingManager::Instance().numBeingBuilt(BWAPI::UnitTypes::Zerg_Sunken_Colony);
+	spore_colony_being_built = BuildingManager::Instance().numBeingBuilt(BWAPI::UnitTypes::Zerg_Spore_Colony);
+	spawning_pool_being_built = BuildingManager::Instance().numBeingBuilt(BWAPI::UnitTypes::Zerg_Spawning_Pool);
+	hydralisk_den_being_built = BuildingManager::Instance().numBeingBuilt(BWAPI::UnitTypes::Zerg_Hydralisk_Den);
+	lair_being_built = BuildingManager::Instance().numBeingBuilt(BWAPI::UnitTypes::Zerg_Lair);
+	queens_nest_being_built = BuildingManager::Instance().numBeingBuilt(BWAPI::UnitTypes::Zerg_Queens_Nest);
+	hive_being_built = BuildingManager::Instance().numBeingBuilt(BWAPI::UnitTypes::Zerg_Hive);
+	defiler_mound_being_built = BuildingManager::Instance().numBeingBuilt(BWAPI::UnitTypes::Zerg_Defiler_Mound);
+	spire_being_built = BuildingManager::Instance().numBeingBuilt(BWAPI::UnitTypes::Zerg_Spire);
+	greater_spire_being_built = BuildingManager::Instance().numBeingBuilt(BWAPI::UnitTypes::Zerg_Greater_Spire);
+	nydus_canal_being_built = BuildingManager::Instance().numBeingBuilt(BWAPI::UnitTypes::Zerg_Nydus_Canal);
+	ultralisk_cavern_being_built = BuildingManager::Instance().numBeingBuilt(BWAPI::UnitTypes::Zerg_Ultralisk_Cavern);
 	
 	
 	//军事力量

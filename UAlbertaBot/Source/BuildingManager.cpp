@@ -10,7 +10,13 @@ BuildingManager::BuildingManager()
     , _reservedMinerals(0)
     , _reservedGas(0)
 {
+	int maxTypeID(0);
+	for (const BWAPI::UnitType & t : BWAPI::UnitTypes::allUnitTypes())
+	{
+		maxTypeID = maxTypeID > t.getID() ? maxTypeID : t.getID();
+	}
 
+	_numBuildings = std::vector<int>(maxTypeID + 1, 0);
 }
 
 // gets called every frame from GameCommander
@@ -23,17 +29,9 @@ void BuildingManager::update()
     checkForCompletedBuildings();           // check to see if any buildings have completed and update data structures
 }
 
-bool BuildingManager::isBeingBuilt(BWAPI::UnitType type)
+int	BuildingManager::numBeingBuilt(BWAPI::UnitType type)
 {
-    for (auto & b : _buildings)
-    {
-        if (b.type == type)
-        {
-            return true;
-        }
-    }
-
-    return false;
+	return _numBuildings[type.getID()];
 }
 
 // STEP 1: DO BOOK KEEPING ON WORKERS WHICH MAY HAVE DIED
@@ -248,6 +246,7 @@ void BuildingManager::addBuildingTask(BWAPI::UnitType type, BWAPI::TilePosition 
     b.status = BuildingStatus::Unassigned;
 
     _buildings.push_back(b);
+	_numBuildings[b.type.getID()] += 1;
 }
 
 bool BuildingManager::isBuildingPositionExplored(const Building & b) const
@@ -397,6 +396,7 @@ void BuildingManager::removeBuildings(const std::vector<Building> & toRemove)
         if (it != _buildings.end())
         {
             _buildings.erase(it);
+			_numBuildings[it->type.getID()] -= 1;
         }
     }
 }

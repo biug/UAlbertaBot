@@ -54,7 +54,10 @@ namespace CasiaBot
 
 
 		//己方已建成建筑
-		int hatchery_count;						//母巢
+		int base_count;						//基地
+		int hatchery_count;					//母巢
+		int lair_count;						//蜂房
+		int hive_count;						//兽穴
 		int extractor_count;                    //气矿
 		int creep_colony_count;                 //殖体
 		int sunken_colony_count;			    //地刺塔
@@ -71,7 +74,10 @@ namespace CasiaBot
 		int ultralisk_cavern_count;             //巨兽之窟
 
 		//己方建设中建筑
-		int hatchery_being_built;						//母巢
+		int base_being_built;						//基地
+		int hatchery_being_built;					//母巢
+		int lair_being_built;						//蜂房
+		int hive_being_built;						//兽穴
 		int extractor_being_built;                    //气矿
 		int creep_colony_being_built;                 //殖体
 		int sunken_colony_being_built;			    //地刺塔
@@ -88,7 +94,10 @@ namespace CasiaBot
 		int ultralisk_cavern_being_built;             //巨兽之窟
 
 		//己方队列中建筑
-		int hatchery_in_queue;						//母巢
+		int base_in_queue;						//基地
+		int hatchery_in_queue;					//母巢
+		int lair_in_queue;						//蜂房
+		int hive_in_queue;						//兽穴
 		int extractor_in_queue;                    //气矿
 		int creep_colony_in_queue;                 //殖体
 		int sunken_colony_in_queue;			    //地刺塔
