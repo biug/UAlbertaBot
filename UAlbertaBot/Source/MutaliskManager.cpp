@@ -148,10 +148,7 @@ int MutaliskManager::getAttackPriority(BWAPI::Unit mutaliskUnit, BWAPI::Unit tar
 	BWAPI::UnitType type(targetType);
 	double hpRatio = (type.maxHitPoints() > 0) ? target->getHitPoints() / type.maxHitPoints() : 1.0; 
 	//low hp
-	if (hpRatio < 0.33)
-	{
-		priority = 5;
-	}
+	priority = (int)((1 - hpRatio) * 10);
 
     //Medic
     if (targetType == BWAPI::UnitTypes::Terran_Medic)
@@ -178,7 +175,7 @@ int MutaliskManager::getAttackPriority(BWAPI::Unit mutaliskUnit, BWAPI::Unit tar
     // next priority is worker
     else if (targetType.isWorker())
     {
-        return 9;
+        return priority + 9;
     }
     //can attack us
     else if (targetType.airWeapon() != BWAPI::WeaponTypes::None)

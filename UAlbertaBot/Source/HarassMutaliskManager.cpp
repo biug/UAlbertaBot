@@ -24,43 +24,60 @@ void HarassMutaliskManager::assignTargetsOld(const BWAPI::Unitset & targets)
 
     for (auto & mutaliskUnit : mutaliskUnits)
 	{
-		// if the order is to attack or defend
-		if (order.getType() == SquadOrderTypes::Attack || order.getType() == SquadOrderTypes::Defend) 
+        bool flee = false;
+        if (mutaliskUnit->getHitPoints() < BWAPI::UnitTypes::Zerg_Mutalisk.maxHitPoints() * 0.5)
         {
-			// if there are targets
-			if (!mutaliskUnitTargets.empty())
-			{
-				// find the best target for this zealot
-				BWAPI::Unit target = getTarget(mutaliskUnit, mutaliskUnitTargets);
-                
-                if (target && Config::Debug::DrawUnitTargetInfo) 
-	            {
-		            BWAPI::Broodwar->drawLineMap(mutaliskUnit->getPosition(), mutaliskUnit->getTargetPosition(), BWAPI::Colors::Purple);
-	            }
-
-
-				// attack it
-                if (Config::Micro::KiteWithRangedUnits)
+            for (auto & target : targets)
+            {
+                if (target->getType().groundWeapon() != BWAPI::WeaponTypes::None && !target->getType().isWorker())
                 {
-                    Micro::SmartKiteTarget(mutaliskUnit, target);
+                    BWAPI::Position fleeTo(BWAPI::Broodwar->self()->getStartLocation());
+                    Micro::SmartMove(mutaliskUnit, fleeTo);
+                    flee = true;
+                    break;
                 }
+            }
+        }
+        if(!flee)
+        {
+            // if the order is to attack or defend
+            if (order.getType() == SquadOrderTypes::Attack || order.getType() == SquadOrderTypes::Defend) 
+            {
+                // if there are targets
+                if (!mutaliskUnitTargets.empty())
+                {
+                    // find the best target for this zealot
+                    BWAPI::Unit target = getTarget(mutaliskUnit, mutaliskUnitTargets);
+                    
+                    if (target && Config::Debug::DrawUnitTargetInfo) 
+                    {
+                        BWAPI::Broodwar->drawLineMap(mutaliskUnit->getPosition(), mutaliskUnit->getTargetPosition(), BWAPI::Colors::Purple);
+                    }
+
+
+                    // attack it
+                    if (Config::Micro::KiteWithRangedUnits)
+                    {
+                        Micro::SmartKiteTarget(mutaliskUnit, target);
+                    }
+                    else
+                    {
+                        Micro::SmartAttackUnit(mutaliskUnit, target);
+                    }
+                }
+                // if there are no targets
                 else
                 {
-                    Micro::SmartAttackUnit(mutaliskUnit, target);
+                    // if we're not near the order position
+                    BWAPI::Position ourBasePosition = BWAPI::Position(BWAPI::Broodwar->self()->getStartLocation());
+                    if (mutaliskUnit->getDistance(ourBasePosition) > 1000)
+                    {
+                        // move to it
+                        Micro::SmartAttackMove(mutaliskUnit, ourBasePosition);
+                    }
                 }
-			}
-			// if there are no targets
-			else
-			{
-				// if we're not near the order position
-				BWAPI::Position ourBasePosition = BWAPI::Position(BWAPI::Broodwar->self()->getStartLocation());
-				if (mutaliskUnit->getDistance(ourBasePosition) > 1000)
-				{
-					// move to it
-					Micro::SmartAttackMove(mutaliskUnit, ourBasePosition);
-				}
-			}
-		}
+            }  
+        }
 	}
 }
 
@@ -148,62 +165,84 @@ int HarassMutaliskManager::getAttackPriority(BWAPI::Unit mutaliskUnit, BWAPI::Un
 	BWAPI::UnitType type(targetType);
 	double hpRatio = (type.maxHitPoints() > 0) ? target->getHitPoints() / type.maxHitPoints() : 1.0; 
 	//low hp
-	if (hpRatio < 0.33)
-	{
-		priority = 5;
-	}
+	priority = (int)((1 - hpRatio) * 10);
 
-    //Medic
-    if (targetType == BWAPI::UnitTypes::Terran_Medic)
+    if (mutaliskUnit->getHitPoints() > BWAPI::UnitTypes::Zerg_Mutalisk.maxHitPoints() * 0.5)
     {
-        return priority + 15;
-    }
-    //Science Vessel, Shuttle
-    else if (targetType == BWAPI::UnitTypes::Terran_Science_Vessel ||
-            targetType == BWAPI::UnitTypes::Protoss_Shuttle)
-    {
-		return priority + 14;
-    }
-    //Tank, Reaver, High Templar, Bunker
-    else if (targetType == BWAPI::UnitTypes::Terran_Siege_Tank_Siege_Mode || 
-        targetType == BWAPI::UnitTypes::Terran_Siege_Tank_Tank_Mode ||
-        targetType == BWAPI::UnitTypes::Protoss_Reaver ||
-        targetType == BWAPI::UnitTypes::Protoss_High_Templar ||
-        targetType == BWAPI::UnitTypes::Terran_Bunker
-        )
-	{
-		return priority + 13;
-	}
+        //Medic
+        if (targetType == BWAPI::UnitTypes::Terran_Medic)
+        {
+            return priority + 15;
+        }
+        //Science Vessel, Shuttle
+        else if (targetType == BWAPI::UnitTypes::Terran_Science_Vessel ||
+                targetType == BWAPI::UnitTypes::Protoss_Shuttle)
+        {
+            return priority + 14;
+        }
+        //Tank, Reaver, High Templar, Bunker
+        else if (targetType == BWAPI::UnitTypes::Terran_Siege_Tank_Siege_Mode || 
+            targetType == BWAPI::UnitTypes::Terran_Siege_Tank_Tank_Mode ||
+            targetType == BWAPI::UnitTypes::Protoss_Reaver ||
+            targetType == BWAPI::UnitTypes::Protoss_High_Templar ||
+            targetType == BWAPI::UnitTypes::Terran_Bunker
+            )
+        {
+            return priority + 13;
+        }
 
-    // next priority is worker
-    else if (targetType.isWorker())
-    {
-        return 9;
+        // next priority is worker
+        else if (targetType.isWorker())
+        {
+            return priority + 9;
+        }
+        //can attack us
+        else if (targetType.airWeapon() != BWAPI::WeaponTypes::None)
+        {
+            return priority + 11;
+        }
+        else if (targetType.groundWeapon() != BWAPI::WeaponTypes::None)
+        {
+            return priority + 10;
+        }
+        else if (targetType == BWAPI::UnitTypes::Zerg_Spawning_Pool ||
+                targetType == BWAPI::UnitTypes::Protoss_Pylon)
+        {
+            return 7;
+        }
+        // next is buildings that cost
+        else if (targetType.gasPrice() > 0 || targetType.mineralPrice() > 0)
+        {
+            return targetType.gasPrice() / 50 + targetType.mineralPrice() / 100;
+        }
+        // then everything else
+        else
+        {
+            return 1;
+        }
     }
-    //can attack us
-    else if (targetType.airWeapon() != BWAPI::WeaponTypes::None)
+    else
     {
-        return priority + 11;
+        if (targetType.isWorker())
+        {
+            return priority + 9;
+        }
+        else if (targetType == BWAPI::UnitTypes::Zerg_Spawning_Pool ||
+                targetType == BWAPI::UnitTypes::Protoss_Pylon)
+        {
+            return 7;
+        }
+        // next is buildings that cost
+        else if (targetType.gasPrice() > 0 || targetType.mineralPrice() > 0)
+        {
+            return targetType.gasPrice() / 50 + targetType.mineralPrice() / 100;
+        }
+        // then everything else
+        else
+        {
+            return 1;
+        }
     }
-    else if (targetType.groundWeapon() != BWAPI::WeaponTypes::None)
-    {
-        return priority + 10;
-    }
-    else if (targetType == BWAPI::UnitTypes::Zerg_Spawning_Pool ||
-            targetType == BWAPI::UnitTypes::Protoss_Pylon)
-    {
-        return 7;
-    }
-	// next is buildings that cost
-    else if (targetType.gasPrice() > 0 || targetType.mineralPrice() > 0)
-    {
-        return targetType.gasPrice() / 50 + targetType.mineralPrice() / 100;
-    }
-	// then everything else
-	else
-	{
-		return 1;
-	}
 }
 
 BWAPI::Unit HarassMutaliskManager::closestrangedUnit(BWAPI::Unit target, std::set<BWAPI::Unit> & mutaliskUnitsToAssign)

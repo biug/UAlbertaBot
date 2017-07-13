@@ -35,33 +35,50 @@ void HarassZerglingManager::assignTargetsOld(const BWAPI::Unitset & targets)
 	// for each zerglingUnit
 	for (auto & zerglingUnit : zerglingUnits)
 	{
-		// if the order is to attack or defend
-		if (order.getType() == SquadOrderTypes::Attack || order.getType() == SquadOrderTypes::Defend) 
-        {
-            // run away if we meet the retreat critereon
-            if (zerglingUnitShouldRetreat(zerglingUnit, targets))
-            {
-                BWAPI::Position fleeTo(BWAPI::Broodwar->self()->getStartLocation());
-
-                Micro::SmartMove(zerglingUnit, fleeTo);
-            }
-			// if there are targets
-			else if (!zerglingUnitTargets.empty())
+		bool flee = false;
+		if (zerglingUnit->getHitPoints() < BWAPI::UnitTypes::Zerg_Zergling.maxHitPoints() * 0.5)
+		{
+			for (auto & target : targets)
 			{
-				// find the best target for this zerglingUnit
-				BWAPI::Unit target = getTarget(zerglingUnit, zerglingUnitTargets);
-
-				// attack it
-				Micro::SmartAttackUnit(zerglingUnit, target);
-			}
-			// if there are no targets
-			else
-			{
-				// if we're not near the order position
-				if (zerglingUnit->getDistance(order.getPosition()) > 100)
+				if (target->getType().groundWeapon() != BWAPI::WeaponTypes::None && !target->getType().isWorker())
 				{
-					// move to it
-					Micro::SmartMove(zerglingUnit, order.getPosition());
+					BWAPI::Position fleeTo(BWAPI::Broodwar->self()->getStartLocation());
+	                Micro::SmartMove(zerglingUnit, fleeTo);
+	                flee = true;
+	                break;
+				}
+			}
+		}
+		if(!flee)
+		{
+			// if the order is to attack or defend
+			if (order.getType() == SquadOrderTypes::Attack || order.getType() == SquadOrderTypes::Defend) 
+	        {
+	            // run away if we meet the retreat critereon
+	            if (zerglingUnitShouldRetreat(zerglingUnit, targets))
+	            {
+	                BWAPI::Position fleeTo(BWAPI::Broodwar->self()->getStartLocation());
+
+	                Micro::SmartMove(zerglingUnit, fleeTo);
+	            }
+				// if there are targets
+				else if (!zerglingUnitTargets.empty())
+				{
+					// find the best target for this zerglingUnit
+					BWAPI::Unit target = getTarget(zerglingUnit, zerglingUnitTargets);
+
+					// attack it
+					Micro::SmartAttackUnit(zerglingUnit, target);
+				}
+				// if there are no targets
+				else
+				{
+					// if we're not near the order position
+					if (zerglingUnit->getDistance(order.getPosition()) > 100)
+					{
+						// move to it
+						Micro::SmartMove(zerglingUnit, order.getPosition());
+					}
 				}
 			}
 		}
@@ -137,58 +154,82 @@ int HarassZerglingManager::getAttackPriority(BWAPI::Unit zerglingUnit, BWAPI::Un
 	BWAPI::UnitType type(targetType);
 	double hpRatio = (type.maxHitPoints() > 0) ? target->getHitPoints() / type.maxHitPoints() : 1.0; 
 	//low hp
-	if (hpRatio < 0.33)
-	{
-		priority = 5;
-	}
+	priority = (int)((1 - hpRatio) * 10);
 
-    //Medic
-    if (targetType == BWAPI::UnitTypes::Terran_Medic)
-    {
-        return priority + 15;
-    }
-    //Science Vessel, Shuttle
-    else if (targetType == BWAPI::UnitTypes::Terran_Science_Vessel ||
-            targetType == BWAPI::UnitTypes::Protoss_Shuttle)
-    {
-		return priority + 14;
-    }
-	//Tank, Reaver, High Templar, Bunker
-	else if (targetType == BWAPI::UnitTypes::Terran_Siege_Tank_Siege_Mode || 
-		targetType == BWAPI::UnitTypes::Terran_Siege_Tank_Tank_Mode ||
-		targetType == BWAPI::UnitTypes::Protoss_Reaver ||
-		targetType == BWAPI::UnitTypes::Protoss_High_Templar ||
-		targetType == BWAPI::UnitTypes::Terran_Bunker
-		)
+	if (zerglingUnit->getHitPoints() > BWAPI::UnitTypes::Zerg_Zergling.maxHitPoints() * 0.5)
 	{
-		return priority + 13;
+	    //Medic
+	    if (targetType == BWAPI::UnitTypes::Terran_Medic)
+	    {
+	        return priority + 15;
+	    }
+	    //Science Vessel, Shuttle
+	    else if (targetType == BWAPI::UnitTypes::Terran_Science_Vessel ||
+	            targetType == BWAPI::UnitTypes::Protoss_Shuttle)
+	    {
+			return priority + 14;
+	    }
+		//Tank, Reaver, High Templar, Bunker
+		else if (targetType == BWAPI::UnitTypes::Terran_Siege_Tank_Siege_Mode || 
+			targetType == BWAPI::UnitTypes::Terran_Siege_Tank_Tank_Mode ||
+			targetType == BWAPI::UnitTypes::Protoss_Reaver ||
+			targetType == BWAPI::UnitTypes::Protoss_High_Templar ||
+			targetType == BWAPI::UnitTypes::Terran_Bunker
+			)
+		{
+			return priority + 13;
+		}
+		// next priority is worker
+		else if (targetType.isWorker())
+		{
+			return priority + 9;
+		}
+		//can attack us
+		else if (isThreat)
+		{
+			return priority + 11;
+		}
+		// next is special buildings
+		else if (targetType == BWAPI::UnitTypes::Zerg_Spawning_Pool ||
+				targetType == BWAPI::UnitTypes::Protoss_Pylon)
+		{
+			return 7;
+		}
+		// next is buildings that cost
+		else if (targetType.gasPrice() > 0 || targetType.mineralPrice() > 0)
+		{
+			return targetType.gasPrice() / 50 + targetType.mineralPrice() / 100;
+		}
+		// then everything else
+		else
+		{
+			return 1;
+		}
 	}
-	// next priority is worker
-	else if (targetType.isWorker())
-	{
-		return 9;
-	}
-	//can attack us
-	else if (isThreat)
-	{
-		return priority + 11;
-	}
-	// next is special buildings
-	else if (targetType == BWAPI::UnitTypes::Zerg_Spawning_Pool ||
-			targetType == BWAPI::UnitTypes::Protoss_Pylon)
-	{
-		return 7;
-	}
-	// next is buildings that cost
-	else if (targetType.gasPrice() > 0 || targetType.mineralPrice() > 0)
-	{
-		return targetType.gasPrice() / 50 + targetType.mineralPrice() / 100;
-	}
-	// then everything else
 	else
 	{
-		return 1;
+		if (targetType.isWorker())
+		{
+			return priority + 9;
+		}
+		// next is special buildings
+		else if (targetType == BWAPI::UnitTypes::Zerg_Spawning_Pool ||
+				targetType == BWAPI::UnitTypes::Protoss_Pylon)
+		{
+			return 7;
+		}
+		// next is buildings that cost
+		else if (targetType.gasPrice() > 0 || targetType.mineralPrice() > 0)
+		{
+			return targetType.gasPrice() / 50 + targetType.mineralPrice() / 100;
+		}
+		// then everything else
+		else
+		{
+			return 1;
+		}	
 	}
+
 }
 
 BWAPI::Unit HarassZerglingManager::closestzerglingUnit(BWAPI::Unit target, const BWAPI::Unitset & zerglingUnitsToAssign)

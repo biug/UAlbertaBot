@@ -163,10 +163,7 @@ int HydraliskManager::getAttackPriority(BWAPI::Unit hydraliskUnit, BWAPI::Unit t
 	BWAPI::UnitType type(targetType);
 	double hpRatio = (type.maxHitPoints() > 0) ? target->getHitPoints() / type.maxHitPoints() : 1.0; 
 	//low hp
-	if (hpRatio < 0.33)
-	{
-		priority = 5;
-	}
+	priority = (int)((1 - hpRatio) * 10);
 
     //Medic
     if (targetType == BWAPI::UnitTypes::Terran_Medic)
@@ -194,15 +191,15 @@ int HydraliskManager::getAttackPriority(BWAPI::Unit hydraliskUnit, BWAPI::Unit t
     {
         return priority + 12;
     }
-    //can attack us
-    else if (targetType.groundWeapon() != BWAPI::WeaponTypes::None)
-    {
-        return 11;
-    }
     // next priority is worker
     else if (targetType.isWorker())
     {
-        return 9;
+        return priority + 9;
+    }
+    //can attack us
+    else if (targetType.groundWeapon() != BWAPI::WeaponTypes::None)
+    {
+        return priority + 11;
     }
     // next is special buildings
     else if (targetType == BWAPI::UnitTypes::Zerg_Spawning_Pool ||

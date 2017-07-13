@@ -46,22 +46,32 @@ void OverlordManager::executeMove(const SquadOrder & inputOrder)
         // sent to move around it's area
         if (!isFlee)
         {
-            BWAPI::Position fleeVec(enemyBaseLocation->getPosition() - ourBaseLocation);
-            double fleeAngle = atan2(fleeVec.y, fleeVec.x);
-
-            fleeVec = BWAPI::Position(static_cast<int>(384 * cos(fleeAngle)), static_cast<int>(384 * sin(fleeAngle)));
-
-			BWAPI::Position movePosition(static_cast<int>(640 * sin(fleeAngle)), static_cast<int>(-640 * cos(fleeAngle)));
-
-            BWAPI::Position aimPosition(fleeVec);
-
-            aimPosition = BWAPI::Position((ourBaseLocation * current + enemyBaseLocation->getPosition() * (numOverlord - current)) / numOverlord + movePosition * flag - fleeVec);
-            Micro::SmartMove(overlordUnit, aimPosition);
-            
-            if (overlordUnit->getDistance(aimPosition) < 32)
+            if (overlordUnit->getHitPoints() < BWAPI::UnitTypes::Zerg_Overlord.maxHitPoints() * 0.5)
             {
-                flag *= -1;
+                BWAPI::Position fleeTo(BWAPI::Broodwar->self()->getStartLocation());
+				Micro::SmartMove(overlordUnit, fleeTo);
+                current--;
             }
+            else
+            {
+               BWAPI::Position fleeVec(enemyBaseLocation->getPosition() - ourBaseLocation);
+                double fleeAngle = atan2(fleeVec.y, fleeVec.x);
+
+                fleeVec = BWAPI::Position(static_cast<int>(384 * cos(fleeAngle)), static_cast<int>(384 * sin(fleeAngle)));
+
+                BWAPI::Position movePosition(static_cast<int>(640 * sin(fleeAngle)), static_cast<int>(-640 * cos(fleeAngle)));
+
+                BWAPI::Position aimPosition(fleeVec);
+
+                aimPosition = BWAPI::Position((ourBaseLocation * current + enemyBaseLocation->getPosition() * (numOverlord - current)) / numOverlord + movePosition * flag - fleeVec);
+                Micro::SmartMove(overlordUnit, aimPosition);
+                
+                if (overlordUnit->getDistance(aimPosition) < 32)
+                {
+                    flag *= -1;
+                }
+            }
+
         }
         current++;
     }

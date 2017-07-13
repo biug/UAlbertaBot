@@ -198,7 +198,7 @@ int LurkerManager::getAttackPriority(BWAPI::Unit rangedUnit, BWAPI::Unit target)
 	BWAPI::UnitType type(targetType);
 	double hpRatio = (type.maxHitPoints() > 0) ? target->getHitPoints() / type.maxHitPoints() : 1.0; 
 	//low hp
-	priority = (1 - hpRatio) * 10;
+	priority = (int)((1 - hpRatio) * 10);
 
     //Medic
     if (targetType == BWAPI::UnitTypes::Terran_Medic ||
