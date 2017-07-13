@@ -83,6 +83,7 @@ void ProductionManager::onUnitDestroy(BWAPI::Unit unit)
 void ProductionManager::manageBuildOrderQueue() 
 {
 	_queue.checkSupply();
+	_queue.popReserve();
 	ProductionItem item = _queue.popItem();
 	if (item._unit.type() == MetaTypes::Default)
 	{
@@ -129,7 +130,7 @@ void ProductionManager::manageBuildOrderQueue()
 		{
 			return;
 		}
-		_queue.retreat(unit);
+		_queue.retreat();
 	}
 }
 

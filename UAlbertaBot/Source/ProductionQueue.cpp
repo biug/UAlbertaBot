@@ -81,11 +81,11 @@ void ProductionQueue::add(const ProductionItem & item, bool priority)
 	}
 }
 
-void ProductionQueue::retreat(const ProductionItem & item, bool priority)
+void ProductionQueue::retreat(bool priority)
 {
+	ProductionItem item = _reserveQueue.back().first;
 	const MetaType & unit = item._unit;
-
-	updateCount(unit, 1);
+	_reserveQueue.pop_back();
 
 	if (priority)
 	{
@@ -110,6 +110,20 @@ void ProductionQueue::retreat(const ProductionItem & item, bool priority)
 	else
 	{
 		_techUpgradeQueue.push_front(item);
+	}
+}
+
+void ProductionQueue::popReserve()
+{
+	int frame = BWAPI::Broodwar->getFrameCount();
+	while (!_reserveQueue.empty())
+	{
+		if (frame - _reserveQueue.front().second < _reserveFrame)
+		{
+			break;
+		}
+		updateCount(_reserveQueue.front().first._unit, -1);
+		_reserveQueue.pop_front();
 	}
 }
 
@@ -164,7 +178,10 @@ ProductionItem ProductionQueue::popItem()
 			break;
 		}
 	}
-	updateCount(retItem._unit, -1);
+	if (retItem._unit.type() != MetaTypes::Default)
+	{
+		_reserveQueue.push_back(std::pair<ProductionItem, int>(retItem, BWAPI::Broodwar->getFrameCount()));
+	}
 	return retItem;
 }
 

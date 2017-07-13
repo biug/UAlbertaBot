@@ -11,10 +11,6 @@ UnitData::UnitData()
 	for (const BWAPI::UnitType & t : BWAPI::UnitTypes::allUnitTypes())
 	{
 		maxTypeID = maxTypeID > t.getID() ? maxTypeID : t.getID();
-		if (t.getID() == 36)
-		{
-			UAB_ASSERT(false, t.getName().c_str());
-		}
 	}
 
 	numDeadUnits			= std::vector<int>(maxTypeID + 1, 0);

@@ -19,6 +19,9 @@ namespace UAlbertaBot
 		std::deque<ProductionItem>	_techUpgradeQueue;
 		// priority queue
 		std::deque<ProductionItem>	_priorityQueue;
+		// reserve for some frame
+		const int									_reserveFrame = 10;
+		std::deque<std::pair<ProductionItem, int>>	_reserveQueue;
 
 		std::vector<int>	_unitCount;
 		std::vector<int>	_techCount;
@@ -37,7 +40,8 @@ namespace UAlbertaBot
 
 		void checkSupply();
 		void add(const ProductionItem & item, bool priority = false);
-		void retreat(const ProductionItem & item, bool priority = false);
+		void retreat(bool priority = false);
+		void popReserve();
 
 		int unitCount(BWAPI::UnitType type);
 		int techCount(BWAPI::TechType type);

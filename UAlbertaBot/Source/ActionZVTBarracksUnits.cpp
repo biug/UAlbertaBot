@@ -202,7 +202,7 @@ void ActionZVTBarracksUnits::getBuildOrderList(UAlbertaBot::ProductionQueue & qu
 			{
 				queue.add(MetaType(BWAPI::UnitTypes::Zerg_Hydralisk));
 			}
-			if (BWAPI::Broodwar->self()->hasResearched(BWAPI::TechTypes::Lurker_Aspect) && hydralisk_count > 0)
+			if (BWAPI::Broodwar->self()->hasResearched(BWAPI::TechTypes::Lurker_Aspect) && lurker_count < hydralisk_count)
 			{
 				queue.add(MetaType(BWAPI::UnitTypes::Zerg_Lurker));
 			}
