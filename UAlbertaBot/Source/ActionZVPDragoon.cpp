@@ -10,15 +10,12 @@ using namespace std;
 
 ActionZVPDragoon::ActionZVPDragoon()
 {
-	init();
 }
 
 void ActionZVPDragoon::init()
 {
 	if (!isInitialized)
 	{
-		mineralNetIncrease = { 0,0,0,0,0 };
-		gasNetIncrease = { 0,0,0,0,0 };
 		lastFrameCount = BWAPI::Broodwar->getFrameCount();
 		lastFrameMineralAmount = BWAPI::Broodwar->self()->minerals();
 		lastFrameGasAmount = BWAPI::Broodwar->self()->gas();

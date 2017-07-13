@@ -6,6 +6,8 @@ using namespace CasiaBot;
 
 ActionZergBase::ActionZergBase()
 {
+	mineralNetIncrease = { 0,0,0,0,0 };
+	gasNetIncrease = { 0,0,0,0,0 };
 }
 
 
