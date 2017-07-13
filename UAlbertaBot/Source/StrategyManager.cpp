@@ -141,7 +141,7 @@ void StrategyManager::updateProductionQueue(ProductionQueue & queue)
 				queue.clear();
 				bool useLurker = _actionZVZLurker.canDeployAction();
 				bool useMutalisk = _actionZVZMutalisk.canDeployAction();
-				_action = &_actionZVTBarracks;
+				_action = &_actionZVZLurker;
 				if (useLurker) {
 					_action = &_actionZVZLurker;
 				}
@@ -166,7 +166,7 @@ void StrategyManager::updateProductionQueue(ProductionQueue & queue)
 				queue.clear();
 				bool useZealot = _actionZVPZealot.canDeployAction();
 				bool useDragoon = _actionZVPDragoon.canDeployAction();
-				_action = &_actionZVTBarracks;
+				_action = &_actionZVPZealot;
 				if (useZealot) {
 					_action = &_actionZVPZealot;
 				}

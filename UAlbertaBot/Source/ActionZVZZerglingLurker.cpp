@@ -68,12 +68,12 @@ void ActionZVZZerglingLurker::getBuildOrderList(UAlbertaBot::ProductionQueue & q
 		bool mineralDequePositive;
 		bool gasDequePositive;
 
-		if (base_count + base_in_queue + base_being_built <= 2)
+		if (base_count + base_in_queue + base_being_built <= 1)
 		{
 			mineralDequePositive = IsDequeAllPositive(mineralNetIncrease);
 			if (mineralDequePositive)
 			{
-				queue.add(MetaType(BWAPI::UnitTypes::Zerg_Hatchery), true);
+				queue.add(MetaType(BWAPI::UnitTypes::Zerg_Hatchery));
 			}
 		}
 		else
@@ -82,7 +82,7 @@ void ActionZVZZerglingLurker::getBuildOrderList(UAlbertaBot::ProductionQueue & q
 			gasDequePositive = IsDequeAllPositive(gasNetIncrease);
 			if (mineralDequePositive && gasDequePositive)
 			{
-				queue.add(MetaType(BWAPI::UnitTypes::Zerg_Hatchery), true);
+				queue.add(MetaType(BWAPI::UnitTypes::Zerg_Hatchery));
 			}
 		}
 
@@ -92,22 +92,22 @@ void ActionZVZZerglingLurker::getBuildOrderList(UAlbertaBot::ProductionQueue & q
 	}
 
 	// 判断前提建筑是否存在
-	bool isExtractorExist = extractor_being_built + extractor_count + extractor_in_queue > 0;
-	if (!isExtractorExist && drone_count >= 7 && spawning_pool_count > 0)
-	{
-		queue.add(MetaType(BWAPI::UnitTypes::Zerg_Extractor), true);
-	}
-
 	bool isSpawningPoolExist = spawning_pool_being_built + spawning_pool_count + spawning_pool_in_queue > 0;
 	if (!isSpawningPoolExist)
 	{
 		queue.add(MetaType(BWAPI::UnitTypes::Zerg_Spawning_Pool), true);
 	}
 
+	bool isExtractorExist = extractor_being_built + extractor_count + extractor_in_queue > 0;
+	if (!isExtractorExist && drone_count >= 7 && spawning_pool_count > 0)
+	{
+		queue.add(MetaType(BWAPI::UnitTypes::Zerg_Extractor));
+	}
+
 	bool isHydraliskDenExist = hydralisk_den_being_built + hydralisk_den_count + hydralisk_den_in_queue > 0;
 	if (!isHydraliskDenExist)
 	{
-		queue.add(MetaType(BWAPI::UnitTypes::Zerg_Hydralisk_Den), true);
+		queue.add(MetaType(BWAPI::UnitTypes::Zerg_Hydralisk_Den));
 	}
 
 	bool isHiveExist = hive_being_built + hive_count + hive_in_queue > 0;
@@ -156,7 +156,7 @@ void ActionZVZZerglingLurker::getBuildOrderList(UAlbertaBot::ProductionQueue & q
 	{
 		if (drone_count + drone_in_queue < 15)
 		{
-			queue.add(MetaType(BWAPI::UnitTypes::Zerg_Drone), true);
+			queue.add(MetaType(BWAPI::UnitTypes::Zerg_Drone));
 		}
 		notEnoughDrone = drone_count + drone_in_queue < 12;
 	}
@@ -164,13 +164,13 @@ void ActionZVZZerglingLurker::getBuildOrderList(UAlbertaBot::ProductionQueue & q
 	{
 		if (drone_count + drone_in_queue < hatchery_count * 10)
 		{
-			queue.add(MetaType(BWAPI::UnitTypes::Zerg_Drone), true);
+			queue.add(MetaType(BWAPI::UnitTypes::Zerg_Drone));
 		}
 		notEnoughDrone = drone_count + drone_in_queue < 8 * hatchery_count;
 	}
 
 	// 判断需要建造多少部队
-	int need_zergling_count = (int)(enemy_zergling_count * 1.7) - zergling_count -zergling_in_queue;
+	int need_zergling_count = (int)(enemy_zergling_count * 1.5) - zergling_count -zergling_in_queue;
 	if (need_zergling_count <= 0 && zergling_count + zergling_in_queue < 12)
 	{
 		need_zergling_count = 2;
