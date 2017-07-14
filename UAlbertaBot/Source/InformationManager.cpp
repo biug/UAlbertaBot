@@ -423,19 +423,19 @@ void InformationManager::drawMapInformation()
 	}
 
 	//we will iterate through all the regions and draw the polygon outline of it in green.
-	for (std::set<BWTA::Region*>::const_iterator r = BWTA::getRegions().begin(); r != BWTA::getRegions().end(); r++)
+	for (std::vector<BWTA::Region*>::const_iterator r = BWTA::getRegions().begin(); r != BWTA::getRegions().end(); r++)
 	{
-		BWTA::Polygon p = (*r)->getPolygon();
-		for (int j = 0; j<(int)p.size(); j++)
+		const BWTA::Polygon *p = &((*r)->getPolygon());
+		for (int j = 0; j<(int)p->size(); j++)
 		{
-			BWAPI::Position point1 = p[j];
-			BWAPI::Position point2 = p[(j + 1) % p.size()];
+			BWAPI::Position point1 = (*p)[j];
+			BWAPI::Position point2 = (*p)[(j + 1) % p->size()];
 			BWAPI::Broodwar->drawLineMap(point1, point2, BWAPI::Colors::Green);
 		}
 	}
 
 	//we will visualize the chokepoints with red lines
-	for (std::set<BWTA::Region*>::const_iterator r = BWTA::getRegions().begin(); r != BWTA::getRegions().end(); r++)
+	for (std::vector<BWTA::Region*>::const_iterator r = BWTA::getRegions().begin(); r != BWTA::getRegions().end(); r++)
 	{
 		for (std::set<BWTA::Chokepoint*>::const_iterator c = (*r)->getChokepoints().begin(); c != (*r)->getChokepoints().end(); c++)
 		{
