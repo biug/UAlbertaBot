@@ -4,7 +4,6 @@
 #include "InformationManager.h"
 
 using namespace CasiaBot;
-using namespace CasiaBot;
 using namespace CasiaBot::ActionHelper;
 using namespace std;
 
