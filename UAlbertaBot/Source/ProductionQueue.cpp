@@ -29,9 +29,9 @@ void ProductionQueue::checkSupply()
 	int overlordReady = overlordInQueue + overlordInConstructing;
 	if (supply - supplyUsed <= 6)
 	{
-		if (supply <= 9)
+		if (supply <= 18)
 		{
-			if (supply - supplyUsed <= 0 && overlordReady == 0)
+			if (supply - supplyUsed <= 0 && overlordReady == 0 && (!_armyQueue.empty() || !_workerQueue.empty()))
 			{
 				add(MetaType(BWAPI::UnitTypes::Zerg_Overlord));
 			}
