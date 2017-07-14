@@ -64,11 +64,37 @@ void ActionZVZZerglingMutalisk::getBuildOrderList(UAlbertaBot::ProductionQueue &
 	bool mineralDequePositive = IsDequeAllPositive(mineralNetIncrease);
 	bool gasDequePositive = IsDequeNoneNegative(gasNetIncrease);;
 
-	// 判断是否需要增加母巢
-	if (base_count + base_in_queue + base_being_built <= 4 && currentFrameCount > 10 && currentFrameCount % 200 == 0)
+	if (currentFrameCount % 200 == 0)
 	{
-		
+		lastFrameCount = currentFrameCount;
+		lastFrameMineralAmount = currentFrameMineralAmount;
+		lastFrameGasAmount = currentFrameGasAmount;
+	}
 
+	// 判断前提建筑是否存在
+	bool isHiveExist = hive_being_built + hive_count + hive_in_queue > 0;
+	bool isQueenNestExist = queens_nest_being_built + queens_nest_count + queens_nest_in_queue > 0;
+	bool isLairExist = lair_being_built + lair_count + lair_in_queue > 0;
+	bool isSpawningPoolExist = spawning_pool_being_built + spawning_pool_count + spawning_pool_in_queue > 0;
+	if (!isSpawningPoolExist)
+	{
+		queue.add(MetaType(BWAPI::UnitTypes::Zerg_Spawning_Pool), true);
+	}
+
+	bool isExtractorExist = extractor_being_built + extractor_count + extractor_in_queue > 0;
+	if (!isExtractorExist && drone_count >= 12 && zergling_count > 8)
+	{
+		queue.add(MetaType(BWAPI::UnitTypes::Zerg_Extractor), true);
+	}
+
+	bool isSpireExist = spire_count + spire_being_built + spire_in_queue > 0;
+	if (!isSpireExist && isHiveExist && currentFrameCount > 6000)	// 若飞龙塔不存在
+	{
+		queue.add(MetaType(BWAPI::UnitTypes::Zerg_Spire));
+	}
+
+	// 判断是否需要增加母巢
+	if (currentFrameCount % 200 == 0 && base_count + base_in_queue + base_being_built <= 4 && currentFrameCount > 10) {
 		if (base_count + base_in_queue + base_being_built <= 2)
 		{
 			if (mineralDequePositive)
@@ -78,33 +104,104 @@ void ActionZVZZerglingMutalisk::getBuildOrderList(UAlbertaBot::ProductionQueue &
 		}
 		else
 		{
-			if (mineralDequePositive && gasDequePositive)
+			if (isHiveExist && mineralDequePositive && gasDequePositive)
 			{
 				queue.add(MetaType(BWAPI::UnitTypes::Zerg_Hatchery));
 			}
 		}
-
-		lastFrameCount = currentFrameCount;
-		lastFrameMineralAmount = currentFrameMineralAmount;
-		lastFrameGasAmount = currentFrameGasAmount;
 	}
 
-	// 判断前提建筑是否存在
-	bool isSpawningPoolExist = spawning_pool_being_built + spawning_pool_count + spawning_pool_in_queue > 0;
-	if (!isSpawningPoolExist)
+	bool notEnoughDrone = false;
+	if (base_count == 1)
 	{
-		queue.add(MetaType(BWAPI::UnitTypes::Zerg_Spawning_Pool), true);
+		if (drone_count + drone_in_queue < 9)
+			queue.add(MetaType(BWAPI::UnitTypes::Zerg_Drone));
+		else if (zergling_count >= 4 && drone_count + drone_in_queue < 15)
+			queue.add(MetaType(BWAPI::UnitTypes::Zerg_Drone));
+		notEnoughDrone = drone_count + drone_in_queue < 12;
 	}
-
-	bool isExtractorExist = extractor_being_built + extractor_count + extractor_in_queue > 0;
-	if (!isExtractorExist && drone_count >= 7 && spawning_pool_count > 0)
+	else
 	{
-		queue.add(MetaType(BWAPI::UnitTypes::Zerg_Extractor));
+		if (drone_count + drone_in_queue < base_count * 10)
+		{
+			queue.add(MetaType(BWAPI::UnitTypes::Zerg_Drone));
+		}
+		notEnoughDrone = drone_count + drone_in_queue < 8 * base_count;
 	}
 
-	bool isHiveExist = hive_being_built + hive_count + hive_in_queue > 0;
-	bool isQueenNestExist = queens_nest_being_built + queens_nest_count + queens_nest_in_queue > 0;
-	bool isLairExist = lair_being_built + lair_count + lair_in_queue > 0;
+	// 判断需要建造多少部队
+	int need_zergling_count = 0;
+	if (isSpawningPoolExist)
+	{
+		//首先根据敌方单位数量判断
+		need_zergling_count = std::max(need_zergling_count, (int)(enemy_zergling_count * 1.5) - zergling_count - zergling_in_queue);
+		if (need_zergling_count < 2) {
+			//保证数量
+			if (zergling_count + zergling_in_queue < 20)
+				need_zergling_count = 2;
+			//在资源富余的情况下继续生产
+			if (mineralDequePositive && isExtractorExist && gasDequePositive && zergling_in_queue < 6)
+				need_zergling_count = 2;
+		}
+
+		//优先补农民
+		if (notEnoughDrone && zergling_count + zergling_in_queue >= 15)
+		{
+			need_zergling_count = 0;
+		}
+	}
+	int need_mutalisk_count = 0;
+	if (isSpireExist)
+	{
+		//首先根据敌方单位数量判断
+		need_mutalisk_count = std::max(need_mutalisk_count, need_zergling_count / 3);
+		if (need_mutalisk_count < 1) {
+			//保证数量
+			if (mutalisk_count + mutalisk_in_queue < 6)
+				need_mutalisk_count = 1;
+			//在资源富余的情况下继续生产
+			if (mineralDequePositive && isExtractorExist && gasDequePositive && mutalisk_in_queue < 2)
+				need_mutalisk_count = 1;
+		}
+		//优先补农民
+		if (notEnoughDrone && mutalisk_count + mutalisk_in_queue >= 3)
+		{
+			need_mutalisk_count = 0;
+		}
+	}
+
+
+
+	// 穿插建造Zergling和Mutalisk
+	do
+	{
+		if (need_zergling_count > 0)
+		{
+			// 2个Zergling
+			if (spawning_pool_count > 0)
+			{
+				if (currentFrameCount < 1500 && zergling_count + zergling_in_queue < 8)
+					queue.add(MetaType(BWAPI::UnitTypes::Zerg_Zergling), true);
+				else
+					queue.add(MetaType(BWAPI::UnitTypes::Zerg_Zergling));
+			}
+			need_zergling_count -= 2;
+		}
+		if (need_mutalisk_count > 0)
+		{
+			if (spire_count + greater_spire_count > 0)
+			{
+				queue.add(MetaType(BWAPI::UnitTypes::Zerg_Mutalisk));
+			}
+			need_mutalisk_count--;
+		}
+		if (need_zergling_count <= 0 && need_mutalisk_count <= 0)
+		{
+			break;
+		}
+
+	} while (true);
+
 	if (!isHiveExist)	// 若蜂巢不存在
 	{
 		if (isQueenNestExist)	// 若皇后巢存在
@@ -130,12 +227,6 @@ void ActionZVZZerglingMutalisk::getBuildOrderList(UAlbertaBot::ProductionQueue &
 		}
 	}
 
-	bool isSpireExist = spire_count + spire_being_built + spire_in_queue > 0;
-	if (!isSpireExist && currentFrameCount > 6000)	// 若飞龙塔不存在
-	{
-		queue.add(MetaType(BWAPI::UnitTypes::Zerg_Spire));
-	}
-
 	if (spawning_pool_count > 0 && queue.upgradeCount(BWAPI::UpgradeTypes::Metabolic_Boost) == 0)
 	{
 		queue.add(MetaType(BWAPI::UpgradeTypes::Metabolic_Boost));
@@ -145,85 +236,9 @@ void ActionZVZZerglingMutalisk::getBuildOrderList(UAlbertaBot::ProductionQueue &
 		queue.add(MetaType(BWAPI::UpgradeTypes::Adrenal_Glands));
 	}
 
-	bool notEnoughDrone = false;
-	if (base_count == 1)
-	{
-		if (drone_count + drone_in_queue < 15)
-		{
-			queue.add(MetaType(BWAPI::UnitTypes::Zerg_Drone));
-		}
-		notEnoughDrone = drone_count + drone_in_queue < 12;
-	}
-	else
-	{
-		if (drone_count + drone_in_queue < hatchery_count * 10)
-		{
-			queue.add(MetaType(BWAPI::UnitTypes::Zerg_Drone));
-		}
-		notEnoughDrone = drone_count + drone_in_queue < 8 * hatchery_count;
-	}
-
-	// 判断需要建造多少部队
-	int need_zergling_count = 0;
-	if (isSpawningPoolExist)
-	{
-		//首先根据敌方单位数量判断
-		need_zergling_count = std::max(need_zergling_count, (int)(enemy_zergling_count * 1.5) - zergling_count - zergling_in_queue);
-		//在资源富余的情况下继续生产
-		if (mineralDequePositive && gasDequePositive  && need_zergling_count < 2 && zergling_in_queue < 6)
-			need_zergling_count = 2;
-		//优先补农民
-		if (notEnoughDrone && zergling_count + zergling_in_queue >= 12)
-		{
-			need_zergling_count = 0;
-		}
-	}
-	int need_mutalisk_count = 0;
-	if (isSpireExist)
-	{
-		//首先根据敌方单位数量判断
-		need_mutalisk_count = std::max(0, need_zergling_count / 3);
-		//在资源富余的情况下继续生产
-		if (mineralDequePositive && gasDequePositive  && need_mutalisk_count < 1 && mutalisk_in_queue < 3)
-			need_mutalisk_count = 1;
-		//优先补农民
-		if (notEnoughDrone && mutalisk_count + mutalisk_in_queue >= 3)
-		{
-			need_mutalisk_count = 0;
-		}
-	}
-
-	
-
-	// 穿插建造Zergling和Mutalisk
-	do
-	{
-		if (need_zergling_count > 0)
-		{
-			// 2个Zergling
-			if (spawning_pool_count > 0)
-			{
-				queue.add(MetaType(BWAPI::UnitTypes::Zerg_Zergling));
-			}
-			need_zergling_count -= 2;
-		}
-		if (need_mutalisk_count > 0)
-		{
-			if (spire_count + greater_spire_count > 0)
-			{
-				queue.add(MetaType(BWAPI::UnitTypes::Zerg_Mutalisk));
-			}
-			need_mutalisk_count--;
-		}
-		if (need_zergling_count <= 0 && need_mutalisk_count <= 0)
-		{
-			break;
-		}
-
-	} while (true);
-
-	int extractorUpperBound = std::min(base_count + base_being_built, 3);
-	if (extractor_count + extractor_being_built + extractor_in_queue < extractorUpperBound)
+	//补气矿
+	int extractorUpperBound = std::min(base_completed, 3);
+	if (isExtractorExist && extractor_count + extractor_being_built + extractor_in_queue < extractorUpperBound)
 	{
 		queue.add(MetaType(BWAPI::UnitTypes::Zerg_Extractor));
 	}

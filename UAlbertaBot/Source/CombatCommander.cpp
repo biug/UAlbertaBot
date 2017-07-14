@@ -191,27 +191,27 @@ void CombatCommander::updateScoutDefenseSquad()
     // if there's an enemy worker in our region then assign someone to chase him
     bool assignScoutDefender = enemyUnitsInRegion.size() == 1 && (*enemyUnitsInRegion.begin())->getType().isWorker();
 
-  //  // if our current squad is empty and we should assign a worker, do it
-  //  if (scoutDefenseSquad.isEmpty() && assignScoutDefender)
-  //  {
-  //      // the enemy worker that is attacking us
-  //      BWAPI::Unit enemyWorker = *enemyUnitsInRegion.begin();
+    // if our current squad is empty and we should assign a worker, do it
+    if (scoutDefenseSquad.isEmpty() && assignScoutDefender)
+    {
+        // the enemy worker that is attacking us
+        BWAPI::Unit enemyWorker = *enemyUnitsInRegion.begin();
 
-  //      // get our worker unit that is mining that is closest to it
-  //      BWAPI::Unit workerDefender = findClosestWorkerToTarget(_combatUnits, enemyWorker);
+        // get our worker unit that is mining that is closest to it
+        BWAPI::Unit workerDefender = findClosestWorkerToTarget(_combatUnits, enemyWorker);
 
-		//if (enemyWorker && workerDefender)
-		//{
-		//	// grab it from the worker manager and put it in the squad
-  //          if (_squadData.canAssignUnitToSquad(workerDefender, scoutDefenseSquad))
-  //          {
-		//	    WorkerManager::Instance().setCombatWorker(workerDefender);
-  //              _squadData.assignUnitToSquad(workerDefender, scoutDefenseSquad);
-  //          }
-		//}
-  //  }
+		if (enemyWorker && workerDefender)
+		{
+			// grab it from the worker manager and put it in the squad
+            if (_squadData.canAssignUnitToSquad(workerDefender, scoutDefenseSquad))
+            {
+			    WorkerManager::Instance().setCombatWorker(workerDefender);
+                _squadData.assignUnitToSquad(workerDefender, scoutDefenseSquad);
+            }
+		}
+    }
     // if our squad is not empty and we shouldn't have a worker chasing then take him out of the squad
-    if (!scoutDefenseSquad.isEmpty() && !assignScoutDefender)
+    else if (!scoutDefenseSquad.isEmpty() && !assignScoutDefender)
     {
         for (auto & unit : scoutDefenseSquad.getUnits())
         {
