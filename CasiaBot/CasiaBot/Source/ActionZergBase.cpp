@@ -2,7 +2,6 @@
 #include "BuildingManager.h"
 
 using namespace CasiaBot;
-using namespace CasiaBot;
 
 ActionZergBase::ActionZergBase()
 {
