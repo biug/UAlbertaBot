@@ -173,19 +173,19 @@ void ActionZVTFactoriesUnits::getBuildOrderList(CasiaBot::ProductionQueue & queu
 	bool notEnoughDrone = false;
 	if (base_count == 1)
 	{
-		if (drone_count < 15)
+		if (drone_count + drone_in_queue < 15)
 		{
 			queue.add(MetaType(BWAPI::UnitTypes::Zerg_Drone));
 		}
-		notEnoughDrone = drone_count < 12;
+		notEnoughDrone = drone_count + drone_in_queue < 12;
 	}
 	else
 	{
-		if (drone_count < hatchery_count * 10)
+		if (drone_count + drone_in_queue < base_count * 10)
 		{
 			queue.add(MetaType(BWAPI::UnitTypes::Zerg_Drone));
 		}
-		notEnoughDrone = drone_count < 8 * hatchery_count;
+		notEnoughDrone = drone_count + drone_in_queue < 8 * base_count;
 	}
 
 	if (enemy_army_supply < escalationMark)
