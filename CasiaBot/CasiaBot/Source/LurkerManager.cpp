@@ -39,11 +39,6 @@ void LurkerManager::executeMicro(const BWAPI::Unitset & targets)
 			if (!lurkerTargets.empty())
 			{
 				bool flee = false;
-				if (lurker->isDetected() && lurker->isBurrowed())
-				{
-					Micro::SmartMove(lurker, BWAPI::Position(BWAPI::Broodwar->self()->getStartLocation()));
-					flee = true;
-				}
 				for (auto & target : targets)
 				{
 					BWAPI::UnitType targetType = target->getType();
