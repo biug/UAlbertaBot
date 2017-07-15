@@ -33,23 +33,23 @@ public:
 private:
 
 	BWAPI::Unitset workers;
-	BWAPI::Unitset depots;
+	BWAPI::Unitset minerals;
+	BWAPI::Unitset refineries;
 
-	std::map<BWAPI::Unit, enum WorkerJob>         workerJobMap;
-	std::map<BWAPI::Unit, BWAPI::Unit>  workerMineralMap;
-	std::map<BWAPI::Unit, BWAPI::Unit>  workerDepotMap;
-	std::map<BWAPI::Unit, BWAPI::Unit>  workerRefineryMap;
-	std::map<BWAPI::Unit, BWAPI::Unit>  workerRepairMap;
-	std::map<BWAPI::Unit, WorkerMoveData>         workerMoveMap;
-	std::map<BWAPI::Unit, BWAPI::UnitType>        workerBuildingTypeMap;
-	std::map<BWAPI::Unit, std::set<BWAPI::Unit>>	workerInDepot;
-	std::map<BWAPI::Unit, std::set<BWAPI::Unit>>	workerInRefinery;
+	std::hash_map<BWAPI::Unit, enum WorkerJob>			workerJobMap;
+	std::hash_map<BWAPI::Unit, BWAPI::Unit>				workerMineralMap;
+	std::hash_map<BWAPI::Unit, BWAPI::Unit>				workerRefineryMap;
+	std::hash_map<BWAPI::Unit, BWAPI::Unit>				workerRepairMap;
+	std::hash_map<BWAPI::Unit, WorkerMoveData>			workerMoveMap;
+	std::hash_map<BWAPI::Unit, BWAPI::UnitType>			workerBuildingTypeMap;
+	std::hash_map<BWAPI::Unit, std::set<BWAPI::Unit>>	workersInMineral;
+	std::hash_map<BWAPI::Unit, std::set<BWAPI::Unit>>	workersInRefinery;
 
-	std::map<BWAPI::Unit, int>                    depotWorkerCount;
-	std::map<BWAPI::Unit, int>                    refineryWorkerCount;
+	std::hash_map<BWAPI::Unit, int>			mineralWorkerCount;
+	std::hash_map<BWAPI::Unit, int>			refineryWorkerCount;
 
-    std::map<BWAPI::Unit, int>                    workersOnMineralPatch;
-    std::map<BWAPI::Unit, BWAPI::Unit>  workerMineralAssignment;
+	std::hash_map<BWAPI::Unit, int>			workersOnMineralPatch;
+	std::hash_map<BWAPI::Unit, BWAPI::Unit>	workerMineralAssignment;
 
 	void clearPreviousJob(BWAPI::Unit unit);
 
@@ -57,9 +57,12 @@ public:
 
 	WorkerData();
 
+	void					checkResources();
 	void					workerDestroyed(BWAPI::Unit unit);
-	void					addDepot(BWAPI::Unit unit);
-	void					removeDepot(BWAPI::Unit unit);
+	void					addMineral(BWAPI::Unit unit);
+	void					addRefinery(BWAPI::Unit unit);
+	void					removeMineral(BWAPI::Unit unit);
+	void					removeRefinery(BWAPI::Unit unit);
 	void					addWorker(BWAPI::Unit unit);
 	void					addWorker(BWAPI::Unit unit, WorkerJob job, BWAPI::Unit jobUnit);
 	void					addWorker(BWAPI::Unit unit, WorkerJob job, BWAPI::UnitType jobUnitType);
@@ -78,24 +81,28 @@ public:
 	void					getBuildingWorkers(std::set<BWAPI::Unit> & mw);
 	void					getRepairWorkers(std::set<BWAPI::Unit> & mw);
 	
-	bool					depotIsFull(BWAPI::Unit depot);
-	int						getMineralsNearDepot(BWAPI::Unit depot);
+	bool					mineralIsFull(BWAPI::Unit mineral);
+	int						numMineralNeedWorker(BWAPI::Unit mineral);
+	int						getMineralsNearDepot(BWAPI::Unit mineral);
 
+	bool					isMineralPatchEnough();
 	int						getNumAssignedWorkers(BWAPI::Unit unit);
-	BWAPI::Unit   getMineralToMine(BWAPI::Unit worker);
+	int						getNumAssignedWorkersOnPatch(BWAPI::Unit unit);
+	BWAPI::Unit				getMineralToMine(BWAPI::Unit worker);
+	BWAPI::Unit				getLarvaDepot();
 
-	enum WorkerJob			getWorkerJob(BWAPI::Unit unit);
-	BWAPI::Unit   getWorkerResource(BWAPI::Unit unit);
-	BWAPI::Unit   getWorkerDepot(BWAPI::Unit unit);
-	BWAPI::Unit   getDepotWorker(BWAPI::Unit unit);
-	BWAPI::Unit   getRefineryWorker(BWAPI::Unit unit);
-	BWAPI::Unit   getWorkerRepairUnit(BWAPI::Unit unit);
-	BWAPI::UnitType			getWorkerBuildingType(BWAPI::Unit unit);
-	WorkerMoveData			getWorkerMoveData(BWAPI::Unit unit);
+	enum WorkerJob	getWorkerJob(BWAPI::Unit unit);
+	BWAPI::Unit		getWorkerResource(BWAPI::Unit unit);
+	BWAPI::Unit		getWorkerMineral(BWAPI::Unit unit);
+	BWAPI::Unit		getMineralWorker(BWAPI::Unit unit);
+	BWAPI::Unit		getRefineryWorker(BWAPI::Unit unit);
+	BWAPI::Unit		getWorkerRepairUnit(BWAPI::Unit unit);
+	BWAPI::UnitType	getWorkerBuildingType(BWAPI::Unit unit);
+	WorkerMoveData	getWorkerMoveData(BWAPI::Unit unit);
 
-    BWAPI::Unitset          getMineralPatchesNearDepot(BWAPI::Unit depot);
+    BWAPI::Unitset          getMineralPatchesNearDepot(BWAPI::Unitset bases);
     void                    addToMineralPatch(BWAPI::Unit unit, int num);
-	void					drawDepotDebugInfo();
+	void					drawMineralDebugInfo();
 
 	const BWAPI::Unitset & getWorkers() const { return workers; }
 

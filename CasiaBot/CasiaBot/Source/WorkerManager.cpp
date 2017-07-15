@@ -22,13 +22,14 @@ void WorkerManager::update()
 	updateWorkerStatus();
 	handleGasWorkers();
 	handleIdleWorkers();
+	handleMineralWorkers();
 	handleMoveWorkers();
 	handleCombatWorkers();
 
 	drawResourceDebugInfo();
 	drawWorkerInformation(450,20);
 
-	workerData.drawDepotDebugInfo();
+	workerData.drawMineralDebugInfo();
 }
 
 void WorkerManager::updateResourceStatus()
@@ -51,11 +52,11 @@ void WorkerManager::updateResourceStatus()
 		{
 			needMoreMineral = true;
 		}
-		if (gas > 224 && gasNotUsed)
+		if (gas > 448 && gasNotUsed)
 		{
 			needLessGas = true;
 		}
-		else if (gas == 0 && BWAPI::Broodwar->self()->gatheredGas() > 0)
+		else if (gas < 100 || !gasNotUsed)
 		{
 			needMoreGas = true;
 		}
@@ -64,6 +65,26 @@ void WorkerManager::updateResourceStatus()
 
 void WorkerManager::updateWorkerStatus() 
 {
+	for (auto & unit : BWAPI::Broodwar->self()->getUnits())
+	{
+		// add the depot if it exists
+		if (unit->getType().isResourceDepot())
+		{
+			workerData.addMineral(unit);
+		}
+
+		if (unit->getType().isRefinery())
+		{
+			workerData.addRefinery(unit);
+		}
+
+		// if something morphs into a worker, add it
+		if (unit->getType().isWorker() && unit->getHitPoints() >= 0)
+		{
+			//BWAPI::Broodwar->printf("A worker was shown %d", unit->getID());
+			workerData.addWorker(unit);
+		}
+	}
 	// for each of our Workers
 	for (auto & worker : workerData.getWorkers())
 	{
@@ -77,12 +98,13 @@ void WorkerManager::updateWorkerStatus()
 			if (worker->getType().isWorker())
 			{
 				workersPos[worker].push_back(worker->getPosition());
-				if (workersPos[worker].size() >= 6)
+				if (workersPos[worker].size() >= 7)
 				{
 					auto job = workerData.getWorkerJob(worker);
+					// 如果非采矿农民连续70帧没有位移，说明它闲置了，应该设置为Idle
 					if (workersPos[worker].front() == workersPos[worker].back() && job != WorkerData::Minerals && job != WorkerData::Gas)
 					{
-						setMineralWorker(worker);
+						workerData.setWorkerJob(worker, WorkerData::Idle, nullptr);
 					}
 					workersPos[worker].pop_front();
 				}
@@ -106,7 +128,7 @@ void WorkerManager::updateWorkerStatus()
 			// if the refinery doesn't exist anymore
 			if (!refinery || !refinery->exists() ||	refinery->getHitPoints() <= 0)
 			{
-				setMineralWorker(worker);
+				workerData.setWorkerJob(worker, WorkerData::Idle, nullptr);
 			}
 		}
 	}
@@ -125,6 +147,7 @@ void WorkerManager::stopRepairing(BWAPI::Unit worker)
 void WorkerManager::handleGasWorkers()
 {
 	// for each unit we have
+	bool firstRefinery = true;
 	for (auto & unit : BWAPI::Broodwar->self()->getUnits())
 	{
 		// if that unit is a refinery
@@ -141,10 +164,12 @@ void WorkerManager::handleGasWorkers()
 			else
 			{
 				// get the number of workers currently assigned to it
-				int numAssigned = workerData.getNumAssignedWorkers(unit);
+				int workersNeeded = Config::Macro::WorkersPerRefinery
+					- workerData.getNumAssignedWorkers(unit);
+				if (!firstRefinery && !needMoreGas) --workersNeeded;
 
 				// if it's less than we want it to be, fill 'er up
-				for (int i = 0; i < (Config::Macro::WorkersPerRefinery - numAssigned); ++i)
+				for (int i = 0; i < workersNeeded; ++i)
 				{
 					BWAPI::Unit gasWorker = getGasWorker(unit);
 					if (gasWorker)
@@ -152,6 +177,7 @@ void WorkerManager::handleGasWorkers()
 						workerData.setWorkerJob(gasWorker, WorkerData::Gas, unit);
 					}
 				}
+				firstRefinery = false;
 			}
 		}
 	}
@@ -179,6 +205,24 @@ bool WorkerManager::isGasStealRefinery(BWAPI::Unit unit)
 	}
 
     return false;
+}
+
+void WorkerManager::handleMineralWorkers()
+{
+	if (!workerData.isMineralPatchEnough()) { return; }
+	for (auto & worker : workerData.getWorkers())
+	{
+		CAB_ASSERT(worker != nullptr, "Worker was null");
+
+		if (workerData.getWorkerJob(worker) == WorkerData::Minerals)
+		{
+			int numWorkersOnPatch = workerData.getNumAssignedWorkersOnPatch(worker);
+			if (numWorkersOnPatch > 2)
+			{
+				setMineralWorker(worker);
+			}
+		}
+	}
 }
 
 void WorkerManager::handleIdleWorkers() 
@@ -311,6 +355,11 @@ BWAPI::Unit WorkerManager::getWorkerScout()
     return nullptr;
 }
 
+BWAPI::Unit WorkerManager::getLarvaDepot()
+{
+	return workerData.getLarvaDepot();
+}
+
 void WorkerManager::handleMoveWorkers() 
 {
 	// for each of our workers
@@ -333,46 +382,31 @@ void WorkerManager::setMineralWorker(BWAPI::Unit unit)
 {
     CAB_ASSERT(unit != nullptr, "Unit was null");
 
-	// check if there is a mineral available to send the worker to
-	BWAPI::Unit depot = getClosestDepot(unit);
-
-	// if there is a valid mineral
-	if (depot)
-	{
-		// update workerData with the new job
-		workerData.setWorkerJob(unit, WorkerData::Minerals, depot);
-	}
-	else
-	{
-		// BWAPI::Broodwar->printf("No valid depot for mineral worker");
-	}
+	// update workerData with the new job
+	workerData.setWorkerJob(unit, WorkerData::Minerals, nullptr);
 }
 
-BWAPI::Unit WorkerManager::getClosestDepot(BWAPI::Unit worker)
+BWAPI::Unit WorkerManager::getClosestResource(BWAPI::Unit worker, BWAPI::Unitset & poses)
 {
 	CAB_ASSERT(worker != nullptr, "Worker was null");
 
 	BWAPI::Unit closestDepot = nullptr;
 	double closestDistance = 0;
 
-	for (auto & unit : BWAPI::Broodwar->self()->getUnits())
+	for (auto & unit : poses)
 	{
-        CAB_ASSERT(unit != nullptr, "Unit was null");
+		CAB_ASSERT(unit != nullptr, "Unit was null");
 
-		if (unit->getType().isResourceDepot() && (unit->isCompleted() || unit->getType() == BWAPI::UnitTypes::Zerg_Lair) && !workerData.depotIsFull(unit))
+		double distance = unit->getDistance(worker);
+		if (!closestDepot || distance < closestDistance)
 		{
-			double distance = unit->getDistance(worker);
-			if (!closestDepot || distance < closestDistance)
-			{
-				closestDepot = unit;
-				closestDistance = distance;
-			}
+			closestDepot = unit;
+			closestDistance = distance;
 		}
 	}
 
 	return closestDepot;
 }
-
 
 // other managers that need workers call this when they're done with a unit
 void WorkerManager::finishedWithWorker(BWAPI::Unit unit) 
@@ -621,7 +655,13 @@ void WorkerManager::onUnitShow(BWAPI::Unit unit)
 	// add the depot if it exists
 	if (unit->getType().isResourceDepot() && unit->getPlayer() == BWAPI::Broodwar->self())
 	{
-		workerData.addDepot(unit);
+		workerData.addMineral(unit);
+	}
+
+	// add the refinery if it exists
+	if (unit->getType().isRefinery() && unit->getPlayer() == BWAPI::Broodwar->self())
+	{
+		workerData.addRefinery(unit);
 	}
 
 	// if something morphs into a worker, add it
@@ -645,13 +685,13 @@ void WorkerManager::rebalanceWorkers()
 			continue;
 		}
 
-		BWAPI::Unit depot = workerData.getWorkerDepot(worker);
+		BWAPI::Unit mineral = workerData.getWorkerMineral(worker);
 
-		if (depot && workerData.depotIsFull(depot))
+		if (mineral && workerData.mineralIsFull(mineral))
 		{
 			workerData.setWorkerJob(worker, WorkerData::Idle, nullptr);
 		}
-		else if (!depot)
+		else if (!mineral)
 		{
 			workerData.setWorkerJob(worker, WorkerData::Idle, nullptr);
 		}
@@ -664,7 +704,12 @@ void WorkerManager::onUnitDestroy(BWAPI::Unit unit)
 
 	if (unit->getType().isResourceDepot() && unit->getPlayer() == BWAPI::Broodwar->self())
 	{
-		workerData.removeDepot(unit);
+		workerData.removeMineral(unit);
+	}
+
+	if (unit->getType().isRefinery() && unit->getPlayer() == BWAPI::Broodwar->self())
+	{
+		workerData.removeRefinery(unit);
 	}
 
 	if (unit->getType().isWorker() && unit->getPlayer() == BWAPI::Broodwar->self()) 
@@ -697,10 +742,10 @@ void WorkerManager::drawResourceDebugInfo()
 
 		BWAPI::Broodwar->drawLineMap(worker->getPosition().x, worker->getPosition().y, pos.x, pos.y, BWAPI::Colors::Cyan);
 
-		BWAPI::Unit depot = workerData.getWorkerDepot(worker);
-		if (depot)
+		BWAPI::Unit mineral = workerData.getWorkerMineral(worker);
+		if (mineral)
 		{
-			BWAPI::Broodwar->drawLineMap(worker->getPosition().x, worker->getPosition().y, depot->getPosition().x, depot->getPosition().y, BWAPI::Colors::Orange);
+			BWAPI::Broodwar->drawLineMap(worker->getPosition().x, worker->getPosition().y, mineral->getPosition().x, mineral->getPosition().y, BWAPI::Colors::Orange);
 		}
 	}
 }

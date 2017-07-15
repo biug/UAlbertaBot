@@ -15,6 +15,8 @@
 #include <set>
 #include <map>
 #include <array>
+#include <hash_set>
+#include <hash_map>
 
 #include <BWAPI.h>
 #include <BWTA.h>

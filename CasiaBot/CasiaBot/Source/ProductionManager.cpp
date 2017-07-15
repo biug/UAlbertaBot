@@ -136,6 +136,14 @@ void ProductionManager::manageBuildOrderQueue()
 
 BWAPI::Unit ProductionManager::getProducer(MetaType t, BWAPI::Position closestTo)
 {
+	if (t.isUnit() && t.getUnitType() == BWAPI::UnitTypes::Zerg_Drone)
+	{
+		BWAPI::Unit base = WorkerManager::Instance().getLarvaDepot();
+		if (!base) { return nullptr; }
+		BWAPI::Unitset larvas = base->getLarva();
+		if (larvas.empty()) { return nullptr; }
+		return *larvas.begin();
+	}
     // get the type of unit that builds this
     BWAPI::UnitType producerType = t.whatBuilds();
 

@@ -26,6 +26,7 @@ class WorkerManager
     
     void        handleIdleWorkers();
     void        handleGasWorkers();
+	void		handleMineralWorkers();
     void        handleMoveWorkers();
     void        handleCombatWorkers();
 
@@ -58,11 +59,12 @@ public:
 
     BWAPI::Unit getBuilder(Building & b,bool setJobAsBuilder = true);
     BWAPI::Unit getMoveWorker(BWAPI::Position p);
-    BWAPI::Unit getClosestDepot(BWAPI::Unit worker);
+	BWAPI::Unit getClosestResource(BWAPI::Unit worker, BWAPI::Unitset & poses);
     BWAPI::Unit getGasWorker(BWAPI::Unit refinery);
     BWAPI::Unit getClosestEnemyUnit(BWAPI::Unit worker);
     BWAPI::Unit getClosestMineralWorkerTo(BWAPI::Unit enemyUnit);
     BWAPI::Unit getWorkerScout();
+	BWAPI::Unit getLarvaDepot();
 
     void        setBuildingWorker(BWAPI::Unit worker,Building & b);
     void        setRepairWorker(BWAPI::Unit worker,BWAPI::Unit unitToRepair);

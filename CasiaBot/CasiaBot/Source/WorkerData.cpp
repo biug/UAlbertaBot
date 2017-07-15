@@ -14,6 +14,22 @@ WorkerData::WorkerData()
 	}
 }
 
+void WorkerData::checkResources()
+{
+	for (auto & worker : workers)
+	{
+		CAB_ASSERT(worker && worker->exists(), "worker has been killed");
+		if (!worker->isGatheringGas() && workerJobMap[worker] == WorkerJob::Gas)
+		{
+			setWorkerJob(worker, Idle, nullptr);
+		}
+		if (!worker->isGatheringMinerals() && workerJobMap[worker] == WorkerJob::Minerals)
+		{
+			setWorkerJob(worker, Idle, nullptr);
+		}
+	}
+}
+
 void WorkerData::workerDestroyed(BWAPI::Unit unit)
 {
 	if (!unit) { return; }
@@ -26,8 +42,11 @@ void WorkerData::addWorker(BWAPI::Unit unit)
 {
 	if (!unit) { return; }
 
-	workers.insert(unit);
-	workerJobMap[unit] = Default;
+	if (workers.find(unit) == workers.end())
+	{
+		workers.insert(unit);
+		workerJobMap[unit] = Default;
+	}
 }
 
 void WorkerData::addWorker(BWAPI::Unit unit, WorkerJob job, BWAPI::Unit jobUnit)
@@ -49,32 +68,66 @@ void WorkerData::addWorker(BWAPI::Unit unit, enum WorkerJob job, BWAPI::UnitType
 	setWorkerJob(unit, job, jobUnitType);
 }
 
-void WorkerData::addDepot(BWAPI::Unit unit)
+void WorkerData::addMineral(BWAPI::Unit unit)
 {
 	if (!unit) { return; }
 
-	assert(depots.find(unit) == depots.end());
-	depots.insert(unit);
-	depotWorkerCount[unit] = 0;
+	if (minerals.find(unit) == minerals.end())
+	{
+		minerals.insert(unit);
+		mineralWorkerCount[unit] = 0;
+	}
 }
 
-void WorkerData::removeDepot(BWAPI::Unit unit)
+void WorkerData::addRefinery(BWAPI::Unit unit)
+{
+	if (!unit) { return; }
+
+	if (refineries.find(unit) == refineries.end())
+	{
+		refineries.insert(unit);
+		refineryWorkerCount[unit] = 0;
+	}
+}
+
+void WorkerData::removeMineral(BWAPI::Unit unit)
 {	
 	if (!unit) { return; }
 
-	depots.erase(unit);
-	depotWorkerCount.erase(unit);
+	minerals.erase(unit);
 
 	// re-balance workers in here
 	for (auto & worker : workers)
 	{
 		// if a worker was working at this depot
-		if (workerDepotMap[worker] == unit)
+		if (workerMineralMap.find(worker) != workerMineralMap.end()
+			&& workerMineralMap[worker] == unit)
 		{
 			setWorkerJob(worker, Idle, nullptr);
-			workerInDepot[unit].erase(worker);
 		}
 	}
+	mineralWorkerCount.erase(unit);
+	workersInMineral.erase(unit);
+}
+
+void WorkerData::removeRefinery(BWAPI::Unit unit)
+{
+	if (!unit) { return; }
+
+	refineries.erase(unit);
+
+	// re-balance workers in here
+	for (auto & worker : workers)
+	{
+		// if a worker was working at this depot
+		if (workerRefineryMap.find(worker) != workerRefineryMap.end()
+			&& workerRefineryMap[worker] == unit)
+		{
+			setWorkerJob(worker, Idle, nullptr);
+		}
+	}
+	refineryWorkerCount.erase(unit);
+	workersInRefinery.erase(unit);
 }
 
 void WorkerData::addToMineralPatch(BWAPI::Unit unit, int num)
@@ -85,7 +138,7 @@ void WorkerData::addToMineralPatch(BWAPI::Unit unit, int num)
     }
     else
     {
-        workersOnMineralPatch[unit] = workersOnMineralPatch[unit] + num;
+        workersOnMineralPatch[unit] += num;
     }
 }
 
@@ -98,16 +151,29 @@ void WorkerData::setWorkerJob(BWAPI::Unit unit, enum WorkerJob job, BWAPI::Unit 
 
 	if (job == Minerals)
 	{
-		// increase the number of workers assigned to this nexus
-		depotWorkerCount[jobUnit] += 1;
-
-		// set the mineral the worker is working on
-		workerDepotMap[unit] = jobUnit;
-		workerInDepot[jobUnit].insert(unit);
 
         BWAPI::Unit mineralToMine = getMineralToMine(unit);
         workerMineralAssignment[unit] = mineralToMine;
         addToMineralPatch(mineralToMine, 1);
+
+		BWAPI::Unit depot = *minerals.begin();
+		int minDis = 1000000;
+		for (auto & base : minerals)
+		{
+			int dis = base->getDistance(mineralToMine);
+			if (dis < minDis)
+			{
+				minDis = dis;
+				depot = base;
+			}
+		}
+
+		// increase the number of workers assigned to this nexus
+		mineralWorkerCount[depot] += 1;
+
+		// set the mineral the worker is working on
+		workerMineralMap[unit] = depot;
+		workersInMineral[depot].insert(unit);
 
 		// right click the mineral to start mining
 		Micro::SmartRightClick(unit, mineralToMine);
@@ -119,7 +185,7 @@ void WorkerData::setWorkerJob(BWAPI::Unit unit, enum WorkerJob job, BWAPI::Unit 
 
 		// set the refinery the worker is working on
 		workerRefineryMap[unit] = jobUnit;
-		workerInRefinery[jobUnit].insert(unit);
+		workersInRefinery[jobUnit].insert(unit);
 
 		// right click the refinery to start harvesting
 		Micro::SmartRightClick(unit, jobUnit);
@@ -174,10 +240,11 @@ void WorkerData::clearPreviousJob(BWAPI::Unit unit)
 
 	if (previousJob == Minerals)
 	{
-		depotWorkerCount[workerDepotMap[unit]] -= 1;
+		auto mineral = workerMineralMap[unit];
+		mineralWorkerCount[mineral] -= 1;
 
-		workerInDepot[workerDepotMap[unit]].erase(unit);
-		workerDepotMap.erase(unit);
+		workersInMineral[mineral].erase(unit);
+		workerMineralMap.erase(unit);
 
         // remove a worker from this unit's assigned mineral patch
         addToMineralPatch(workerMineralAssignment[unit], -1);
@@ -187,8 +254,10 @@ void WorkerData::clearPreviousJob(BWAPI::Unit unit)
 	}
 	else if (previousJob == Gas)
 	{
-		refineryWorkerCount[workerRefineryMap[unit]] -= 1;
-		workerInRefinery[workerRefineryMap[unit]].erase(unit);
+		auto refinery = workerRefineryMap[unit];
+		refineryWorkerCount[refinery] -= 1;
+
+		workersInRefinery[refinery].erase(unit);
 		workerRefineryMap.erase(unit);
 	}
 	else if (previousJob == Build)
@@ -256,7 +325,7 @@ enum WorkerData::WorkerJob WorkerData::getWorkerJob(BWAPI::Unit unit)
 {
 	if (!unit) { return Default; }
 
-	std::map<BWAPI::Unit, enum WorkerJob>::iterator it = workerJobMap.find(unit);
+	std::hash_map<BWAPI::Unit, enum WorkerJob>::iterator it = workerJobMap.find(unit);
 
 	if (it != workerJobMap.end())
 	{
@@ -266,14 +335,14 @@ enum WorkerData::WorkerJob WorkerData::getWorkerJob(BWAPI::Unit unit)
 	return Default;
 }
 
-bool WorkerData::depotIsFull(BWAPI::Unit depot)
+bool WorkerData::mineralIsFull(BWAPI::Unit mineral)
 {
-	if (!depot) { return false; }
+	if (!mineral) { return false; }
 
-	int assignedWorkers = getNumAssignedWorkers(depot);
-	int mineralsNearDepot = getMineralsNearDepot(depot);
+	int assignedWorkers = getNumAssignedWorkers(mineral);
+	int mineralsNearDepot = getMineralsNearDepot(mineral);
 
-	if (assignedWorkers >= mineralsNearDepot * 3)
+	if (assignedWorkers > mineralsNearDepot * 2)
 	{
 		return true;
 	}
@@ -283,18 +352,31 @@ bool WorkerData::depotIsFull(BWAPI::Unit depot)
 	}
 }
 
-BWAPI::Unitset WorkerData::getMineralPatchesNearDepot(BWAPI::Unit depot)
+int WorkerData::numMineralNeedWorker(BWAPI::Unit mineral)
+{
+	if (!mineral) { return false; }
+
+	int assignedWorkers = getNumAssignedWorkers(mineral);
+	int mineralsNearDepot = getMineralsNearDepot(mineral);
+
+	return mineralsNearDepot * 2 - assignedWorkers;
+}
+
+BWAPI::Unitset WorkerData::getMineralPatchesNearDepot(BWAPI::Unitset bases)
 {
     // if there are minerals near the depot, add them to the set
     BWAPI::Unitset mineralsNearDepot;
 
     int radius = 300;
 
-    for (auto & unit : BWAPI::Broodwar->getAllUnits())
+	for (auto & unit : BWAPI::Broodwar->getAllUnits())
 	{
-		if ((unit->getType() == BWAPI::UnitTypes::Resource_Mineral_Field) && unit->getDistance(depot) < radius)
+		for (auto & base : bases)
 		{
-            mineralsNearDepot.insert(unit);
+			if ((unit->getType() == BWAPI::UnitTypes::Resource_Mineral_Field) && unit->getDistance(base) < radius)
+			{
+				mineralsNearDepot.insert(unit);
+			}
 		}
 	}
 
@@ -321,7 +403,7 @@ int WorkerData::getMineralsNearDepot(BWAPI::Unit depot)
 
 	for (auto & unit : BWAPI::Broodwar->getAllUnits())
 	{
-		if ((unit->getType() == BWAPI::UnitTypes::Resource_Mineral_Field) && unit->getDistance(depot) < 200)
+		if ((unit->getType() == BWAPI::UnitTypes::Resource_Mineral_Field) && unit->getDistance(depot) < 300)
 		{
 			mineralsNearDepot++;
 		}
@@ -335,7 +417,7 @@ BWAPI::Unit WorkerData::getWorkerResource(BWAPI::Unit unit)
 	if (!unit) { return nullptr; }
 
 	// create the iterator
-	std::map<BWAPI::Unit, BWAPI::Unit>::iterator it;
+	std::hash_map<BWAPI::Unit, BWAPI::Unit>::iterator it;
 	
 	// if the worker is mining, set the iterator to the mineral map
 	if (getWorkerJob(unit) == Minerals)
@@ -365,76 +447,72 @@ BWAPI::Unit WorkerData::getMineralToMine(BWAPI::Unit worker)
 
 
 	// get the depot associated with this unit
-	BWAPI::Unit depot = getWorkerDepot(worker);
 	BWAPI::Unit bestMineral = nullptr;
 	double bestDist = 100000;
     double bestNumAssigned = 10000;
 
-	if (depot)
+	BWAPI::Unitset bases;
+	for (auto & unit : BWAPI::Broodwar->self()->getUnits())
 	{
-        BWAPI::Unitset mineralPatches = getMineralPatchesNearDepot(depot);
-
-		for (auto & mineral : mineralPatches)
+		if ((unit->getType() == BWAPI::UnitTypes::Zerg_Hatchery && unit->isCompleted())
+			|| unit->getType() == BWAPI::UnitTypes::Zerg_Lair
+			|| unit->getType() == BWAPI::UnitTypes::Zerg_Hive)
 		{
-				double dist = mineral->getDistance(depot);
-                double numAssigned = workersOnMineralPatch[mineral];
+			bases.insert(unit);
+		}
+	}
+    BWAPI::Unitset mineralPatches = getMineralPatchesNearDepot(bases);
 
-                if (numAssigned < bestNumAssigned)
-                {
-                    bestMineral = mineral;
-                    bestDist = dist;
-                    bestNumAssigned = numAssigned;
-                }
-				else if (numAssigned == bestNumAssigned)
-				{
-					if (dist < bestDist)
-                    {
-                        bestMineral = mineral;
-                        bestDist = dist;
-                        bestNumAssigned = numAssigned;
-                    }
-				}
-		
+	for (auto & mineral : mineralPatches)
+	{
+		double dist = mineral->getDistance(worker);
+        double numAssigned = workersOnMineralPatch[mineral];
+
+        if (numAssigned < bestNumAssigned)
+        {
+            bestMineral = mineral;
+            bestDist = dist;
+            bestNumAssigned = numAssigned;
+        }
+		else if (numAssigned == bestNumAssigned)
+		{
+			if (dist < bestDist)
+            {
+                bestMineral = mineral;
+                bestDist = dist;
+                bestNumAssigned = numAssigned;
+            }
 		}
 	}
 
 	return bestMineral;
 }
-/*
-BWAPI::Unit WorkerData::getMineralToMine(BWAPI::Unit worker)
+
+BWAPI::Unit WorkerData::getLarvaDepot()
 {
-	if (!worker) { return nullptr; }
-
-	// get the depot associated with this unit
-	BWAPI::Unit depot = getWorkerDepot(worker);
-	BWAPI::Unit mineral = nullptr;
-	double closestDist = 10000;
-
-	if (depot)
+	int minNum = -100;
+	BWAPI::Unit depot = nullptr;
+	for (auto & mineral : minerals)
 	{
-		BOOST_FOREACH (BWAPI::Unit unit, BWAPI::Broodwar->getAllUnits())
+		if (mineral->getType() == BWAPI::UnitTypes::Zerg_Hatchery && mineral->isConstructing())
 		{
-			if (unit->getType() == BWAPI::UnitTypes::Resource_Mineral_Field && unit->getResources() > 0)
-			{
-				double dist = unit->getDistance(depot);
-
-				if (!mineral || dist < closestDist)
-				{
-					mineral = unit;
-					closestDist = dist;
-				}
-			}
+			continue;
+		}
+		int num = numMineralNeedWorker(mineral);
+		if (num > minNum)
+		{
+			minNum = num;
+			depot = mineral;
 		}
 	}
-
-	return mineral;
-}*/
+	return depot;
+}
 
 BWAPI::Unit WorkerData::getWorkerRepairUnit(BWAPI::Unit unit)
 {
 	if (!unit) { return nullptr; }
 
-	std::map<BWAPI::Unit, BWAPI::Unit>::iterator it = workerRepairMap.find(unit);
+	std::hash_map<BWAPI::Unit, BWAPI::Unit>::iterator it = workerRepairMap.find(unit);
 
 	if (it != workerRepairMap.end())
 	{
@@ -444,13 +522,13 @@ BWAPI::Unit WorkerData::getWorkerRepairUnit(BWAPI::Unit unit)
 	return nullptr;
 }
 
-BWAPI::Unit WorkerData::getDepotWorker(BWAPI::Unit unit)
+BWAPI::Unit WorkerData::getMineralWorker(BWAPI::Unit unit)
 {
 	if (!unit) { return nullptr; }
 
-	std::map<BWAPI::Unit, std::set<BWAPI::Unit>>::iterator it = workerInDepot.find(unit);
+	std::hash_map<BWAPI::Unit, std::set<BWAPI::Unit>>::iterator it = workersInMineral.find(unit);
 
-	if (it != workerInDepot.end() && it->second.size() > 0)
+	if (it != workersInMineral.end() && it->second.size() > 0)
 	{
 		return *it->second.begin();
 	}
@@ -462,9 +540,9 @@ BWAPI::Unit WorkerData::getRefineryWorker(BWAPI::Unit unit)
 {
 	if (!unit) { return nullptr; }
 
-	std::map<BWAPI::Unit, std::set<BWAPI::Unit>>::iterator it = workerInRefinery.find(unit);
+	std::hash_map<BWAPI::Unit, std::set<BWAPI::Unit>>::iterator it = workersInRefinery.find(unit);
 
-	if (it != workerInRefinery.end() && it->second.size() > 0)
+	if (it != workersInRefinery.end() && it->second.size() > 0)
 	{
 		return *it->second.begin();
 	}
@@ -472,13 +550,13 @@ BWAPI::Unit WorkerData::getRefineryWorker(BWAPI::Unit unit)
 	return nullptr;
 }
 
-BWAPI::Unit WorkerData::getWorkerDepot(BWAPI::Unit unit)
+BWAPI::Unit WorkerData::getWorkerMineral(BWAPI::Unit unit)
 {
 	if (!unit) { return nullptr; }
 
-	std::map<BWAPI::Unit, BWAPI::Unit>::iterator it = workerDepotMap.find(unit);
+	std::hash_map<BWAPI::Unit, BWAPI::Unit>::iterator it = workerMineralMap.find(unit);
 
-	if (it != workerDepotMap.end())
+	if (it != workerMineralMap.end())
 	{
 		return it->second;
 	}	
@@ -490,7 +568,7 @@ BWAPI::UnitType	WorkerData::getWorkerBuildingType(BWAPI::Unit unit)
 {
 	if (!unit) { return BWAPI::UnitTypes::None; }
 
-	std::map<BWAPI::Unit, BWAPI::UnitType>::iterator it = workerBuildingTypeMap.find(unit);
+	std::hash_map<BWAPI::Unit, BWAPI::UnitType>::iterator it = workerBuildingTypeMap.find(unit);
 
 	if (it != workerBuildingTypeMap.end())
 	{
@@ -502,26 +580,42 @@ BWAPI::UnitType	WorkerData::getWorkerBuildingType(BWAPI::Unit unit)
 
 WorkerMoveData WorkerData::getWorkerMoveData(BWAPI::Unit unit)
 {
-	std::map<BWAPI::Unit, WorkerMoveData>::iterator it = workerMoveMap.find(unit);
+	std::hash_map<BWAPI::Unit, WorkerMoveData>::iterator it = workerMoveMap.find(unit);
 
 	assert(it != workerMoveMap.end());
 	
 	return (it->second);
 }
 
+bool WorkerData::isMineralPatchEnough()
+{
+	for (auto & mineral : minerals)
+	{
+		if (mineral->getType() == BWAPI::UnitTypes::Zerg_Hatchery && mineral->isConstructing())
+		{
+			continue;
+		}
+		if (!mineralIsFull(mineral))
+		{
+			return true;
+		}
+	}
+	return false;
+}
+
 int WorkerData::getNumAssignedWorkers(BWAPI::Unit unit)
 {
 	if (!unit) { return 0; }
 
-	std::map<BWAPI::Unit, int>::iterator it;
+	std::hash_map<BWAPI::Unit, int>::iterator it;
 	
 	// if the worker is mining, set the iterator to the mineral map
 	if (unit->getType().isResourceDepot())
 	{
-		it = depotWorkerCount.find(unit);
+		it = mineralWorkerCount.find(unit);
 
 		// if there is an entry, return it
-		if (it != depotWorkerCount.end())
+		if (it != mineralWorkerCount.end())
 		{
 			return it->second;
 		}
@@ -546,6 +640,22 @@ int WorkerData::getNumAssignedWorkers(BWAPI::Unit unit)
 	return 0;
 }
 
+int WorkerData::getNumAssignedWorkersOnPatch(BWAPI::Unit unit)
+{
+	if (!unit || workers.find(unit) == workers.end()) { return 0; }
+
+	if (workerJobMap.find(unit) == workerJobMap.end()
+		|| workerJobMap[unit] != WorkerData::Minerals) { return 0; }
+
+	if (workerMineralAssignment.find(unit) == workerMineralAssignment.end()) { return 0; }
+
+	auto & patch = workerMineralAssignment[unit];
+
+	if (workersOnMineralPatch.find(patch) == workersOnMineralPatch.end()) { return 0; }
+
+	return workersOnMineralPatch[patch];
+}
+
 char WorkerData::getJobCode(BWAPI::Unit unit)
 {
 	if (!unit) { return 'X'; }
@@ -564,28 +674,14 @@ char WorkerData::getJobCode(BWAPI::Unit unit)
 	return 'X';
 }
 
-void WorkerData::drawDepotDebugInfo()
+void WorkerData::drawMineralDebugInfo()
 {
-	for (auto & depot : depots)
+	for (auto & mineral : minerals)
 	{
-		int x = depot->getPosition().x - 64;
-		int y = depot->getPosition().y - 32;
+		int x = mineral->getPosition().x - 64;
+		int y = mineral->getPosition().y - 32;
 
 		if (Config::Debug::DrawWorkerInfo) BWAPI::Broodwar->drawBoxMap(x-2, y-1, x+75, y+14, BWAPI::Colors::Black, true);
-		if (Config::Debug::DrawWorkerInfo) BWAPI::Broodwar->drawTextMap(x, y, "\x04 Workers: %d", getNumAssignedWorkers(depot));
-
-        BWAPI::Unitset minerals = getMineralPatchesNearDepot(depot);
-
-        for (auto & mineral : minerals)
-        {
-            int x = mineral->getPosition().x;
-		    int y = mineral->getPosition().y;
-
-            if (workersOnMineralPatch.find(mineral) != workersOnMineralPatch.end())
-            {
-                 //if (Config::Debug::DRAW_UALBERTABOT_DEBUG) BWAPI::Broodwar->drawBoxMap(x-2, y-1, x+75, y+14, BWAPI::Colors::Black, true);
-                 //if (Config::Debug::DRAW_UALBERTABOT_DEBUG) BWAPI::Broodwar->drawTextMap(x, y, "\x04 Workers: %d", workersOnMineralPatch[mineral]);
-            }
-        }
+		if (Config::Debug::DrawWorkerInfo) BWAPI::Broodwar->drawTextMap(x, y, "\x04 Workers: %d", getNumAssignedWorkers(mineral));
 	}
 }

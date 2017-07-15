@@ -192,7 +192,7 @@ BWAPI::Unit GameCommander::getFirstSupplyProvider()
 void GameCommander::onUnitShow(BWAPI::Unit unit)			
 { 
 	InformationManager::Instance().onUnitShow(unit); 
-	WorkerManager::Instance().onUnitShow(unit);
+	//WorkerManager::Instance().onUnitShow(unit);
 }
 
 void GameCommander::onUnitHide(BWAPI::Unit unit)			
