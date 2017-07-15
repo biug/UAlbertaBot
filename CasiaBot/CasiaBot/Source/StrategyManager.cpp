@@ -39,7 +39,7 @@ const BuildOrder & StrategyManager::getOpeningBookBuildOrder() const
 	// 当敌方种族为神族时，不使用配置文件中的初始序列
 	if (BWAPI::Broodwar->enemy()->getRace() == BWAPI::Races::Protoss)
 	{
-		return BuildOrder();
+		return _emptyBuildOrder;
 	}
 
     // look for the build order in the build order map
