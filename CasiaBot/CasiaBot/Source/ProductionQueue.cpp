@@ -31,10 +31,14 @@ void ProductionQueue::checkSupply()
 	{
 		if (supply <= 18)
 		{
-			if (supply - supplyUsed <= 0 && overlordReady == 0 && (!_armyQueue.empty() || !_workerQueue.empty()))
-			{
-				add(MetaType(BWAPI::UnitTypes::Zerg_Overlord));
+			//BWAPI在UDP的局域网模式下supplyUsed会算错
+			int checkSupply = 1;
+			for (BWAPI::Unit unit : BWAPI::Broodwar->self()->getUnits()) {
+				checkSupply += unit->getType().supplyRequired();
 			}
+			checkSupply /= 2;
+			if (supplyUsed == checkSupply)
+				add(MetaType(BWAPI::UnitTypes::Zerg_Overlord));
 		}
 		else if (supply <= 36)
 		{
