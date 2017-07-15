@@ -216,7 +216,7 @@ bool ProductionQueue::popCheck(const ProductionItem & item)
 		else if (item._unit.getUnitType() == BWAPI::UnitTypes::Zerg_Sunken_Colony
 			|| item._unit.getUnitType() == BWAPI::UnitTypes::Zerg_Spore_Colony)
 		{
-			if (InformationManager::Instance().getNumConstructedUnits(BWAPI::UnitTypes::Zerg_Creep_Colony) == 0)
+			if (InformationManager::Instance().getNumConstructedUnits(BWAPI::UnitTypes::Zerg_Creep_Colony, BWAPI::Broodwar->self()) == 0)
 			{
 				return false;
 			}
