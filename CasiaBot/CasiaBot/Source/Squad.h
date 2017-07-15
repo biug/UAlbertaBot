@@ -43,6 +43,9 @@ class Squad
 	OverlordManager		_overlordManager;
 	HarassZerglingManager _harassZerglingManager;
 	HarassMutaliskManager _harassMutaliskManager;
+	int					_numHarassZergling;
+	int					_numHarassMutalisk;
+	int					_numZergling;
 	bool				_noAirWeapon;
 	bool				_noShowHidden;
 

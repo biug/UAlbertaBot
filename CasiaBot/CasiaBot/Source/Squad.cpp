@@ -59,7 +59,7 @@ void Squad::update()
 			/* code */
 		}
 	}
-
+	checkEnemy();
 	// if we do need to regroup, do it
 	if (needToRegroup)
 	{
@@ -74,8 +74,7 @@ void Squad::update()
         
 		_meleeManager.regroup(regroupPosition);
 		_rangedManager.regroup(regroupPosition);
-		
-		//_hydraliskManager.regroup(regroupPosition);
+		_hydraliskManager.regroup(regroupPosition);
 		_zerglingManager.regroup(regroupPosition);
 		checkEnemy();
 		if (_noAirWeapon)
@@ -94,7 +93,6 @@ void Squad::update()
 		{
 			_lurkerManager.regroup(regroupPosition);
 		}
-		_overlordManager.regroup(regroupPosition);
 	}
 	else // otherwise, execute micro
 	{
@@ -104,10 +102,26 @@ void Squad::update()
 		_hydraliskManager.execute(_order);
 		_zerglingManager.execute(_order);
 		_mutaliskManager.execute(_order);
-		_overlordManager.executeMove(_order);
 
 		_detectorManager.setUnitClosestToEnemy(unitClosestToEnemy());
 		_detectorManager.execute(_order);
+	}
+	_overlordManager.executeMove(_order);
+	if (_numHarassZergling > 5)
+	{
+		_harassZerglingManager.setPattern(true);
+	}
+	else
+	{
+		_harassZerglingManager.setPattern(false);
+	}
+	if (_numHarassMutalisk > 1 || _noAirWeapon)
+	{
+		_harassMutaliskManager.setPattern(true);
+	}
+	else
+	{
+		_harassMutaliskManager.setPattern(false);
 	}
 	_harassZerglingManager.execute(_order);
 	_harassMutaliskManager.execute(_order);
@@ -225,25 +239,9 @@ void Squad::addUnitsToMicroManagers()
 	BWAPI::Unitset overlordUnits;
 	BWAPI::Unitset harassZerglingUnits;
 	BWAPI::Unitset harassMutaliskUnits;
-	int numZergling = InformationManager::Instance().getNumUnits(BWAPI::UnitTypes::Zerg_Zergling, BWAPI::Broodwar->self());
-	int numMutalisk = InformationManager::Instance().getNumUnits(BWAPI::UnitTypes::Zerg_Mutalisk, BWAPI::Broodwar->self());
-	if (numZergling > 5)
-	{
-		numZergling = 0;
-	}
-	else
-	{
-		numZergling = 8;
-	}
-	if (numMutalisk > 1)
-	{
-		numMutalisk = 0;
-	}
-	else
-	{
-		numMutalisk = 4;
-	}
-
+	_numHarassZergling = 0;
+	_numHarassMutalisk = 0;
+	_numZergling = 0;
 	// add _units to micro managers
 	for (auto & unit : _units)
 	{
@@ -260,22 +258,23 @@ void Squad::addUnitsToMicroManagers()
 			}
 			else if (unit->getType() == BWAPI::UnitTypes::Zerg_Zergling)
 			{
-				if (numZergling < 8)
+				if (_numHarassZergling < 8)
 				{
 					harassZerglingUnits.insert(unit);
-					numZergling++;
+					_numHarassZergling++;
 				}
 				else
 				{
 					zerglingUnits.insert(unit);
+					_numZergling++;
 				}
 			}
 			else if (unit->getType() == BWAPI::UnitTypes::Zerg_Mutalisk)
 			{
-				if (numMutalisk < 4)
+				if (_numHarassMutalisk < 4)
 				{
 					harassMutaliskUnits.insert(unit);
-					numMutalisk++;
+					_numHarassMutalisk++;
 				}
 				else
 				{
