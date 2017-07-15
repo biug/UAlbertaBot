@@ -41,6 +41,24 @@ void Squad::update()
 
 		BWAPI::Unit closest = unitClosestToEnemy();
 	}
+	
+	//数量对比一下，如果ok，就上去干
+	if (needToRegroup)
+	{
+		BWAPI::Races enemy = BWAPI::Broodwar->enemy()->getRace();
+		if (enemy == BWAPI::Races::Zerg)
+		{
+			/* code */
+		}
+		else if (enemy == BWAPI::Races::Terran)
+		{
+			/* code */
+		}
+		else if (enemy == BWAPI::Races::Protoss)
+		{
+			/* code */
+		}
+	}
 
 	// if we do need to regroup, do it
 	if (needToRegroup)
@@ -61,7 +79,6 @@ void Squad::update()
 		_zerglingManager.regroup(regroupPosition);
 		_mutaliskManager.regroup(regroupPosition);
 		_overlordManager.regroup(regroupPosition);
-		
 	}
 	else // otherwise, execute micro
 	{
@@ -76,6 +93,8 @@ void Squad::update()
 		_detectorManager.setUnitClosestToEnemy(unitClosestToEnemy());
 		_detectorManager.execute(_order);
 	}
+	_harassZerglingManager.execute(_order);
+	_harassMutaliskManager.execute(_order);
 }
 
 bool Squad::isEmpty() const
@@ -153,6 +172,10 @@ void Squad::addUnitsToMicroManagers()
 	BWAPI::Unitset zerglingUnits;
 	BWAPI::Unitset mutaliskUnits;
 	BWAPI::Unitset overlordUnits;
+	BWAPI::Unitset harassZerglingUnits;
+	BWAPI::Unitset harassMutaliskUnits;
+	int numZergling = 0;
+	int numMutalisk = 0;
 
 	// add _units to micro managers
 	for (auto & unit : _units)
@@ -170,11 +193,27 @@ void Squad::addUnitsToMicroManagers()
 			}
 			else if (unit->getType() == BWAPI::UnitTypes::Zerg_Zergling)
 			{
-				zerglingUnits.insert(unit);
+				if (numZergling < 8)
+				{
+					harassZerglingUnits.insert(unit);
+					numZergling++;
+				}
+				else
+				{
+					zerglingUnits.insert(unit);
+				}
 			}
 			else if (unit->getType() == BWAPI::UnitTypes::Zerg_Mutalisk)
 			{
-				mutaliskUnits.insert(unit);
+				if (numMutalisk < 4)
+				{
+					harassMutaliskUnits.insert(unit);
+					numMutalisk++;
+				}
+				else
+				{
+					mutaliskUnits.insert(unit);
+				}
 			}
 			else if (unit->getType() == BWAPI::UnitTypes::Zerg_Overlord)
 			{
@@ -196,7 +235,6 @@ void Squad::addUnitsToMicroManagers()
 			}
 		}
 	}
-
 	_meleeManager.setUnits(meleeUnits);
 	_rangedManager.setUnits(rangedUnits);
 	_detectorManager.setUnits(detectorUnits);
@@ -205,6 +243,8 @@ void Squad::addUnitsToMicroManagers()
 	_zerglingManager.setUnits(zerglingUnits);
 	_mutaliskManager.setUnits(mutaliskUnits);
 	_overlordManager.setUnits(overlordUnits);
+	_harassZerglingManager.setUnits(harassZerglingUnits);
+	_harassMutaliskManager.setUnits(harassMutaliskUnits);
 }
 
 // calculates whether or not to regroup

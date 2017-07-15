@@ -18,6 +18,7 @@
 #include "OverlordManager.h"
 #include "HarassZerglingManager.h"
 #include "HarassMutaliskManager.h"
+#include "InformationManager.h"
 
 namespace CasiaBot
 {
@@ -40,6 +41,8 @@ class Squad
 	ZerglingManager		_zerglingManager;
 	MutaliskManager		_mutaliskManager;
 	OverlordManager		_overlordManager;
+	HarassZerglingManager _harassZerglingManager;
+	HarassMutaliskManager _harassMutaliskManager;
 
 	std::map<BWAPI::Unit, bool>	_nearEnemy;
 
