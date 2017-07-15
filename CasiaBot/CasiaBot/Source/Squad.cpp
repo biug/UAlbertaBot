@@ -42,10 +42,10 @@ void Squad::update()
 		BWAPI::Unit closest = unitClosestToEnemy();
 	}
 	
-	//æ•°é‡å¯¹æ¯”ä¸€ä¸‹ï¼Œå¦‚æžœokï¼Œå°±ä¸ŠåŽ»å¹²
+	//Èç¹ûÊýÁ¿¶Ô±ÈOK£¬¾ÍÊÇ¸É
 	if (needToRegroup)
 	{
-		BWAPI::Races enemy = BWAPI::Broodwar->enemy()->getRace();
+		BWAPI::Race enemy = BWAPI::Broodwar->enemy()->getRace();
 		if (enemy == BWAPI::Races::Zerg)
 		{
 			/* code */
@@ -77,6 +77,7 @@ void Squad::update()
 		_lurkerManager.regroup(regroupPosition);
 		//_hydraliskManager.regroup(regroupPosition);
 		_zerglingManager.regroup(regroupPosition);
+		
 		_mutaliskManager.regroup(regroupPosition);
 		_overlordManager.regroup(regroupPosition);
 	}
