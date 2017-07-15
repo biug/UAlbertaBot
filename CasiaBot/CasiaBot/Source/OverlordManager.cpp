@@ -95,7 +95,7 @@ void OverlordManager::executeMove(const SquadOrder & inputOrder)
 
                 BWAPI::Position aimPosition(fleeVec);
 
-                aimPosition = BWAPI::Position((ourBaseLocation * current + enemyBaseLocation->getPosition() * (numOverlord - current)) / numOverlord + movePosition * flag - fleeVec);
+                aimPosition = BWAPI::Position((ourBaseLocation * (current - baseCount) + enemyBaseLocation->getPosition() * (numOverlord - current + baseCount)) / numOverlord + movePosition * flag - fleeVec);
                 Micro::SmartMove(overlordUnit, aimPosition);
                 
                 if (overlordUnit->getDistance(aimPosition) < 32)
