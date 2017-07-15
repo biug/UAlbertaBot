@@ -41,7 +41,38 @@ void Squad::update()
 
 		BWAPI::Unit closest = unitClosestToEnemy();
 	}
-
+	
+	//如果数量对比OK，就是干
+	if (needToRegroup)
+	{
+		int numSelf = InformationManager::Instance().getNumUnits(BWAPI::UnitTypes::Zerg_Zergling, BWAPI::Broodwar->self())
+				+ 2 * InformationManager::Instance().getNumUnits(BWAPI::UnitTypes::Zerg_Mutalisk, BWAPI::Broodwar->self())
+				+ 2 * InformationManager::Instance().getNumUnits(BWAPI::UnitTypes::Zerg_Lurker, BWAPI::Broodwar->self());
+		int numEnemy = BWAPI::Broodwar->enemy()->getUnits().size();
+		BWAPI::Race enemy = BWAPI::Broodwar->enemy()->getRace();
+		if (enemy == BWAPI::Races::Zerg)
+		{
+			if (numSelf > numEnemy)
+			{
+				needToRegroup = false;
+			}
+		}
+		else if (enemy == BWAPI::Races::Terran)
+		{
+			if (numSelf > numEnemy * 3)
+			{
+				needToRegroup = false;
+			}
+		}
+		else if (enemy == BWAPI::Races::Protoss)
+		{
+			if (numSelf > numEnemy * 5)
+			{
+				needToRegroup = false;
+			}
+		}
+	}
+	checkEnemy();
 	// if we do need to regroup, do it
 	if (needToRegroup)
 	{
@@ -56,12 +87,25 @@ void Squad::update()
         
 		_meleeManager.regroup(regroupPosition);
 		_rangedManager.regroup(regroupPosition);
-		_lurkerManager.regroup(regroupPosition);
-		//_hydraliskManager.regroup(regroupPosition);
+		_hydraliskManager.regroup(regroupPosition);
 		_zerglingManager.regroup(regroupPosition);
-		_mutaliskManager.regroup(regroupPosition);
-		_overlordManager.regroup(regroupPosition);
-		
+		checkEnemy();
+		if (_noAirWeapon)
+		{
+			_mutaliskManager.execute(_order);
+		}
+		else
+		{
+			_mutaliskManager.regroup(regroupPosition);
+		}
+		if (_noShowHidden)
+		{
+			_lurkerManager.execute(_order);
+		}
+		else
+		{
+			_lurkerManager.regroup(regroupPosition);
+		}
 	}
 	else // otherwise, execute micro
 	{
@@ -71,13 +115,77 @@ void Squad::update()
 		_hydraliskManager.execute(_order);
 		_zerglingManager.execute(_order);
 		_mutaliskManager.execute(_order);
-		_overlordManager.executeMove(_order);
 
 		_detectorManager.setUnitClosestToEnemy(unitClosestToEnemy());
 		_detectorManager.execute(_order);
 	}
+	_overlordManager.executeMove(_order);
+	if (_numHarassZergling > 5)
+	{
+		_harassZerglingManager.setPattern(true);
+	}
+	else
+	{
+		_harassZerglingManager.setPattern(false);
+	}
+	if (_numHarassMutalisk > 1 || _noAirWeapon)
+	{
+		_harassMutaliskManager.setPattern(true);
+	}
+	else
+	{
+		_harassMutaliskManager.setPattern(false);
+	}
+	_harassZerglingManager.execute(_order);
+	_harassMutaliskManager.execute(_order);
 }
-
+void Squad::checkEnemy()
+{
+	_noAirWeapon = true;
+	_noShowHidden = true;
+	for (auto & unit : BWAPI::Broodwar->self()->getUnits())
+	{
+		if (unit->getType() == BWAPI::UnitTypes::Zerg_Lurker)
+		{
+			if (unit->isDetected())
+			{
+				_noShowHidden = false;
+				break;
+			}
+		}
+	}
+	for (auto & unit : BWAPI::Broodwar->enemy()->getUnits())
+	{
+		BWAPI::UnitType unitType = unit->getType();
+		if (_noAirWeapon)
+		{
+			if (unitType.airWeapon() != BWAPI::WeaponTypes::None)
+			{
+				_noAirWeapon = false;
+				if (!_noShowHidden)
+				{
+					return;
+				}
+			}
+		}
+		if (_noShowHidden)
+		{
+			if (unitType == BWAPI::UnitTypes::Terran_Missile_Turret ||
+				unitType == BWAPI::UnitTypes::Terran_Science_Vessel ||
+				unitType == BWAPI::UnitTypes::Protoss_Photon_Cannon ||
+				unitType == BWAPI::UnitTypes::Protoss_Observer ||
+				unitType == BWAPI::UnitTypes::Zerg_Spore_Colony ||
+				unitType == BWAPI::UnitTypes::Zerg_Overlord)
+			{
+				_noShowHidden = false;
+				if (!_noAirWeapon)
+				{
+					return;
+				}
+			}
+		}
+	}
+}
 bool Squad::isEmpty() const
 {
     return _units.empty();
@@ -153,7 +261,11 @@ void Squad::addUnitsToMicroManagers()
 	BWAPI::Unitset zerglingUnits;
 	BWAPI::Unitset mutaliskUnits;
 	BWAPI::Unitset overlordUnits;
-
+	BWAPI::Unitset harassZerglingUnits;
+	BWAPI::Unitset harassMutaliskUnits;
+	_numHarassZergling = 0;
+	_numHarassMutalisk = 0;
+	_numZergling = 0;
 	// add _units to micro managers
 	for (auto & unit : _units)
 	{
@@ -170,11 +282,28 @@ void Squad::addUnitsToMicroManagers()
 			}
 			else if (unit->getType() == BWAPI::UnitTypes::Zerg_Zergling)
 			{
-				zerglingUnits.insert(unit);
+				if (_numHarassZergling < 8)
+				{
+					harassZerglingUnits.insert(unit);
+					_numHarassZergling++;
+				}
+				else
+				{
+					zerglingUnits.insert(unit);
+					_numZergling++;
+				}
 			}
 			else if (unit->getType() == BWAPI::UnitTypes::Zerg_Mutalisk)
 			{
-				mutaliskUnits.insert(unit);
+				if (_numHarassMutalisk < 4)
+				{
+					harassMutaliskUnits.insert(unit);
+					_numHarassMutalisk++;
+				}
+				else
+				{
+					mutaliskUnits.insert(unit);
+				}
 			}
 			else if (unit->getType() == BWAPI::UnitTypes::Zerg_Overlord)
 			{
@@ -196,7 +325,6 @@ void Squad::addUnitsToMicroManagers()
 			}
 		}
 	}
-
 	_meleeManager.setUnits(meleeUnits);
 	_rangedManager.setUnits(rangedUnits);
 	_detectorManager.setUnits(detectorUnits);
@@ -205,6 +333,8 @@ void Squad::addUnitsToMicroManagers()
 	_zerglingManager.setUnits(zerglingUnits);
 	_mutaliskManager.setUnits(mutaliskUnits);
 	_overlordManager.setUnits(overlordUnits);
+	_harassZerglingManager.setUnits(harassZerglingUnits);
+	_harassMutaliskManager.setUnits(harassMutaliskUnits);
 }
 
 // calculates whether or not to regroup

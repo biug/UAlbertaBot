@@ -13,6 +13,11 @@ void HarassZerglingManager::executeMicro(const BWAPI::Unitset & targets)
 	assignTargetsOld(targets);
 }
 
+void HarassZerglingManager::setPattern(bool newPattern)
+{
+	_isAttackPattern = newPattern;
+}
+
 void HarassZerglingManager::assignTargetsOld(const BWAPI::Unitset & targets)
 {
     const BWAPI::Unitset & zerglingUnits = getUnits();
@@ -31,19 +36,23 @@ void HarassZerglingManager::assignTargetsOld(const BWAPI::Unitset & targets)
 			zerglingUnitTargets.insert(target);
 		}
 	}
-
+	BWAPI::Position ourBaseLocation = BWAPI::Position(BWAPI::Broodwar->self()->getStartLocation());
 	// for each zerglingUnit
 	for (auto & zerglingUnit : zerglingUnits)
 	{
 		bool flee = false;
-		if (zerglingUnit->getHitPoints() < BWAPI::UnitTypes::Zerg_Zergling.maxHitPoints() * 0.5)
+		if (!_isAttackPattern && zerglingUnit->getDistance(ourBaseLocation) < 500)
+		{
+			Micro::SmartMove(zerglingUnit, ourBaseLocation);
+			flee = true;
+		}
+		else if (zerglingUnit->getHitPoints() < BWAPI::UnitTypes::Zerg_Zergling.maxHitPoints() * 0.5)
 		{
 			for (auto & target : targets)
 			{
 				if (target->getType().groundWeapon() != BWAPI::WeaponTypes::None && !target->getType().isWorker())
 				{
-					BWAPI::Position fleeTo(BWAPI::Broodwar->self()->getStartLocation());
-	                Micro::SmartMove(zerglingUnit, fleeTo);
+					Micro::SmartMove(zerglingUnit, ourBaseLocation);
 	                flee = true;
 	                break;
 				}
@@ -156,7 +165,7 @@ int HarassZerglingManager::getAttackPriority(BWAPI::Unit zerglingUnit, BWAPI::Un
 	//low hp
 	priority = (int)((1 - hpRatio) * 10);
 
-	if (zerglingUnit->getHitPoints() > BWAPI::UnitTypes::Zerg_Zergling.maxHitPoints() * 0.5)
+	if (zerglingUnit->getHitPoints() > BWAPI::UnitTypes::Zerg_Zergling.maxHitPoints() * 0.7)
 	{
 	    //Medic
 	    if (targetType == BWAPI::UnitTypes::Terran_Medic)

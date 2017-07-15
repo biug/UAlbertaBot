@@ -7,10 +7,12 @@ namespace CasiaBot
 {
 class HarassZerglingManager : public MicroManager
 {
+	bool	_isAttackPattern;
 public:
 
 	HarassZerglingManager();
 	void executeMicro(const BWAPI::Unitset & targets);
+	void setPattern(bool newPattern);
 
 	BWAPI::Unit chooseTarget(BWAPI::Unit zerglingUnit, const BWAPI::Unitset & targets, std::map<BWAPI::Unit, int> & numTargeting);
 	BWAPI::Unit closestzerglingUnit(BWAPI::Unit target, const BWAPI::Unitset & zerglingUnitToAssign);

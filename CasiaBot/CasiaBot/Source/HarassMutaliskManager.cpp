@@ -12,6 +12,10 @@ void HarassMutaliskManager::executeMicro(const BWAPI::Unitset & targets)
 	assignTargetsOld(targets);
 }
 
+void HarassMutaliskManager::setPattern(bool newPattern)
+{
+	_isAttackPattern = newPattern;
+}
 
 void HarassMutaliskManager::assignTargetsOld(const BWAPI::Unitset & targets)
 {
@@ -22,17 +26,22 @@ void HarassMutaliskManager::assignTargetsOld(const BWAPI::Unitset & targets)
     std::copy_if(targets.begin(), targets.end(), std::inserter(mutaliskUnitTargets, mutaliskUnitTargets.end()),
      [](BWAPI::Unit u){ return u->isVisible(); });
 
+	BWAPI::Position ourBaseLocation = BWAPI::Position(BWAPI::Broodwar->self()->getStartLocation());
     for (auto & mutaliskUnit : mutaliskUnits)
 	{
         bool flee = false;
-        if (mutaliskUnit->getHitPoints() < BWAPI::UnitTypes::Zerg_Mutalisk.maxHitPoints() * 0.5)
+		if (!_isAttackPattern && mutaliskUnit->getDistance(ourBaseLocation) < 500)
+		{
+			Micro::SmartMove(mutaliskUnit, ourBaseLocation);
+			flee = true;
+		}
+        else if (mutaliskUnit->getHitPoints() < BWAPI::UnitTypes::Zerg_Mutalisk.maxHitPoints() * 0.5)
         {
             for (auto & target : targets)
             {
                 if (target->getType().groundWeapon() != BWAPI::WeaponTypes::None && !target->getType().isWorker())
                 {
-                    BWAPI::Position fleeTo(BWAPI::Broodwar->self()->getStartLocation());
-                    Micro::SmartMove(mutaliskUnit, fleeTo);
+					Micro::SmartMove(mutaliskUnit, ourBaseLocation);
                     flee = true;
                     break;
                 }

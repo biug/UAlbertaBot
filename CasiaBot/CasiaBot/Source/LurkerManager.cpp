@@ -38,6 +38,12 @@ void LurkerManager::executeMicro(const BWAPI::Unitset & targets)
 			// if there are targets
 			if (!lurkerTargets.empty())
 			{
+				bool flee = false;
+				if (lurker->isDetected())
+				{
+					Micro::SmartMove(lurker, BWAPI::Position(BWAPI::Broodwar->self()->getStartLocation()));
+					flee = true;
+				}
 				for (auto & target : targets)
 				{
 					BWAPI::UnitType targetType = target->getType();
@@ -58,38 +64,42 @@ void LurkerManager::executeMicro(const BWAPI::Unitset & targets)
 						BWAPI::Position fleeVector = Micro::GetKiteVector(target, lurker);
 						BWAPI::Position moveToPosition(lurker->getPosition() + fleeVector);
 						Micro::SmartMove(lurker, moveToPosition);
-						return;
+						flee = true;
+						break;
 					}
 				}
-				// find the best target for this lurker
-				BWAPI::Unit target = getTarget(lurker, lurkerTargets);
+				if (!flee)
+				{
+					// find the best target for this lurker
+					BWAPI::Unit target = getTarget(lurker, lurkerTargets);
 
-				if (target && Config::Debug::DrawUnitTargetInfo)
-				{
-					BWAPI::Broodwar->drawLineMap(lurker->getPosition(), lurker->getTargetPosition(), BWAPI::Colors::Purple);
-				}
+					if (target && Config::Debug::DrawUnitTargetInfo)
+					{
+						BWAPI::Broodwar->drawLineMap(lurker->getPosition(), lurker->getTargetPosition(), BWAPI::Colors::Purple);
+					}
 
-				// if we are within attack range, burrow
-				if (lurker->getDistance(target) < lurkerRange && lurker->canBurrow() && !lurkerNearChokepoint)
-				{
-					lurker->burrow();
-				}
-				// otherwise unburrow and move in
-				else if ((!target || lurker->getDistance(target) > lurkerRange) && lurker->canUnburrow())
-				{
-					lurker->unburrow();
-				}
+					// if we are within attack range, burrow
+					if (lurker->getDistance(target) < lurkerRange && lurker->canBurrow() && !lurkerNearChokepoint)
+					{
+						lurker->burrow();
+					}
+					// otherwise unburrow and move in
+					else if ((!target || lurker->getDistance(target) > lurkerRange) && lurker->canUnburrow())
+					{
+						lurker->unburrow();
+					}
 
-				// if we're in siege mode just attack the target
-				if (lurker->isBurrowed())
-				{
-					Micro::SmartAttackUnit(lurker, target);
-				}
-				// if we're not in siege mode kite the target
-				else
-				{
-					// move to it
-					Micro::SmartMove(lurker, target->getPosition());
+					// if we're in siege mode just attack the target
+					if (lurker->isBurrowed())
+					{
+						Micro::SmartAttackUnit(lurker, target);
+					}
+					// if we're not in siege mode kite the target
+					else
+					{
+						// move to it
+						Micro::SmartMove(lurker, target->getPosition());
+					}
 				}
 			}
 			// if there are no targets
