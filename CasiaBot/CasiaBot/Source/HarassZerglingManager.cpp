@@ -37,6 +37,7 @@ void HarassZerglingManager::assignTargetsOld(const BWAPI::Unitset & targets)
 		}
 	}
 	BWAPI::Position ourBaseLocation = BWAPI::Position(BWAPI::Broodwar->self()->getStartLocation());
+	
 	// for each zerglingUnit
 	for (auto & zerglingUnit : zerglingUnits)
 	{

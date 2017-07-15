@@ -45,6 +45,7 @@ void Squad::update()
 	//如果数量对比OK，就是干
 	if (needToRegroup)
 	{
+		/*
 		int numSelf = InformationManager::Instance().getNumUnits(BWAPI::UnitTypes::Zerg_Zergling, BWAPI::Broodwar->self())
 				+ 2 * InformationManager::Instance().getNumUnits(BWAPI::UnitTypes::Zerg_Mutalisk, BWAPI::Broodwar->self())
 				+ 2 * InformationManager::Instance().getNumUnits(BWAPI::UnitTypes::Zerg_Lurker, BWAPI::Broodwar->self());
@@ -70,7 +71,7 @@ void Squad::update()
 			{
 				needToRegroup = false;
 			}
-		}
+		}*/
 	}
 	checkEnemy();
 	// if we do need to regroup, do it
@@ -89,7 +90,6 @@ void Squad::update()
 		_rangedManager.regroup(regroupPosition);
 		_hydraliskManager.regroup(regroupPosition);
 		_zerglingManager.regroup(regroupPosition);
-		checkEnemy();
 		if (_noAirWeapon)
 		{
 			_mutaliskManager.execute(_order);
@@ -147,7 +147,7 @@ void Squad::checkEnemy()
 	{
 		if (unit->getType() == BWAPI::UnitTypes::Zerg_Lurker)
 		{
-			if (unit->isDetected())
+			if (unit->isDetected() && unit->isBurrowed())
 			{
 				_noShowHidden = false;
 				break;
