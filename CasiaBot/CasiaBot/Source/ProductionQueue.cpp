@@ -189,11 +189,36 @@ ProductionItem ProductionQueue::popItem()
 			break;
 		}
 	}
-	if (retItem._unit.type() != MetaTypes::Default)
+	if (retItem._unit.type() != MetaTypes::Default && popCheck(retItem))
 	{
 		_reserveQueue.push_back(std::pair<ProductionItem, int>(retItem, BWAPI::Broodwar->getFrameCount()));
 	}
 	return retItem;
+}
+
+bool ProductionQueue::popCheck(const ProductionItem & item)
+{
+	if (item._unit.isUnit())
+	{
+		// lurker需要刺蛇
+		if (item._unit.getUnitType() == BWAPI::UnitTypes::Zerg_Lurker)
+		{
+			if (InformationManager::Instance().getNumConstructedUnits(BWAPI::UnitTypes::Zerg_Hydralisk, BWAPI::Broodwar->self()) == 0)
+			{
+				return false;
+			}
+		}
+		// 防御塔需要Creep
+		else if (item._unit.getUnitType() == BWAPI::UnitTypes::Zerg_Sunken_Colony
+			|| item._unit.getUnitType() == BWAPI::UnitTypes::Zerg_Spore_Colony)
+		{
+			if (InformationManager::Instance().getNumConstructedUnits(BWAPI::UnitTypes::Zerg_Creep_Colony) == 0)
+			{
+				return false;
+			}
+		}
+	}
+	return true;
 }
 
 void ProductionQueue::clear()
