@@ -193,6 +193,10 @@ ProductionItem ProductionQueue::popItem()
 	{
 		_reserveQueue.push_back(std::pair<ProductionItem, int>(retItem, BWAPI::Broodwar->getFrameCount()));
 	}
+	else
+	{
+		retItem._unit = meta;
+	}
 	return retItem;
 }
 
