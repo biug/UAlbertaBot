@@ -39,7 +39,7 @@ void LurkerManager::executeMicro(const BWAPI::Unitset & targets)
 			if (!lurkerTargets.empty())
 			{
 				bool flee = false;
-				if (lurker->isDetected())
+				if (lurker->isDetected() && lurker->isBurrowed())
 				{
 					Micro::SmartMove(lurker, BWAPI::Position(BWAPI::Broodwar->self()->getStartLocation()));
 					flee = true;

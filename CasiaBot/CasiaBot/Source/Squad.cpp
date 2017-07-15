@@ -90,7 +90,6 @@ void Squad::update()
 		_rangedManager.regroup(regroupPosition);
 		_hydraliskManager.regroup(regroupPosition);
 		_zerglingManager.regroup(regroupPosition);
-		checkEnemy();
 		if (_noAirWeapon)
 		{
 			_mutaliskManager.execute(_order);
@@ -148,7 +147,7 @@ void Squad::checkEnemy()
 	{
 		if (unit->getType() == BWAPI::UnitTypes::Zerg_Lurker)
 		{
-			if (unit->isDetected())
+			if (unit->isDetected() && unit->isBurrowed())
 			{
 				_noShowHidden = false;
 				break;
