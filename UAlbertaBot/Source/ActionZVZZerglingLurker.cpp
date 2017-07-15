@@ -93,11 +93,24 @@ void ActionZVZZerglingLurker::getBuildOrderList(UAlbertaBot::ProductionQueue & q
 		queue.add(MetaType(BWAPI::UnitTypes::Zerg_Hydralisk_Den));
 	}
 
+	//是否需要防御建筑
+	bool isSunkenColonyExist = sunken_colony_count + sunken_colony_being_built + sunken_colony_in_queue > 0;
+	bool isCreepColonyExist = creep_colony_count + creep_colony_being_built + creep_colony_in_queue > 0;
+	if (isCreepColonyExist)
+	{
+		if (creep_colony_count > 0 && spawning_pool_completed && !isSunkenColonyExist)
+			queue.add(MetaType(BWAPI::UnitTypes::Zerg_Sunken_Colony));
+	}
+	else if (!isCreepColonyExist && !isSunkenColonyExist) {
+		if (mineralDequePositive && zergling_count > 0 && zergling_count < 8)
+			queue.add(MetaType(BWAPI::UnitTypes::Zerg_Creep_Colony), true);
+	}
+
 	// 判断是否需要增加母巢
 	if (currentFrameCount % 200 == 0 && base_count + base_in_queue + base_being_built <= 4 && currentFrameCount > 10) {
 		if (base_count + base_in_queue + base_being_built <= 2)
 		{
-			if (mineralDequePositive)
+			if (mineralDequePositive && zergling_count >= 4)
 			{
 				queue.add(MetaType(BWAPI::UnitTypes::Zerg_Hatchery));
 			}
@@ -118,7 +131,7 @@ void ActionZVZZerglingLurker::getBuildOrderList(UAlbertaBot::ProductionQueue & q
 	{
 		if (drone_count + drone_in_queue < 9)
 			queue.add(MetaType(BWAPI::UnitTypes::Zerg_Drone));
-		else if (zergling_count >= 4 && drone_count + drone_in_queue < 15)
+		else if (zergling_count >= 6 && drone_count + drone_in_queue < 15)
 			queue.add(MetaType(BWAPI::UnitTypes::Zerg_Drone));
 		notEnoughDrone = drone_count + drone_in_queue < 12;
 	}
@@ -139,7 +152,7 @@ void ActionZVZZerglingLurker::getBuildOrderList(UAlbertaBot::ProductionQueue & q
 		need_zergling_count = std::max(need_zergling_count, (int)(enemy_zergling_count * 1.5) - zergling_count - zergling_in_queue);
 		if (need_zergling_count < 2) {
 			//保证数量
-			if (zergling_count + zergling_in_queue < 20)
+			if (zergling_count + zergling_in_queue < 30)
 				need_zergling_count = 2;
 			//在资源富余的情况下继续生产
 			if (mineralDequePositive && isExtractorExist && gasDequePositive  && zergling_in_queue < 6)
