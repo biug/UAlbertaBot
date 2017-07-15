@@ -74,11 +74,26 @@ void Squad::update()
         
 		_meleeManager.regroup(regroupPosition);
 		_rangedManager.regroup(regroupPosition);
-		_lurkerManager.regroup(regroupPosition);
+		
 		//_hydraliskManager.regroup(regroupPosition);
 		_zerglingManager.regroup(regroupPosition);
-		
-		_mutaliskManager.regroup(regroupPosition);
+		checkEnemy();
+		if (_noAirWeapon)
+		{
+			_mutaliskManager.execute(_order);
+		}
+		else
+		{
+			_mutaliskManager.regroup(regroupPosition);
+		}
+		if (_noShowHidden)
+		{
+			_lurkerManager.execute(_order);
+		}
+		else
+		{
+			_lurkerManager.regroup(regroupPosition);
+		}
 		_overlordManager.regroup(regroupPosition);
 	}
 	else // otherwise, execute micro
@@ -97,7 +112,42 @@ void Squad::update()
 	_harassZerglingManager.execute(_order);
 	_harassMutaliskManager.execute(_order);
 }
-
+void Squad::checkEnemy()
+{
+	_noAirWeapon = true;
+	_noShowHidden = true;
+	for (auto & unit : BWAPI::Broodwar->enemy()->getUnits())
+	{
+		BWAPI::UnitType unitType = unit->getType();
+		if (_noAirWeapon)
+		{
+			if (unitType.airWeapon() != BWAPI::WeaponTypes::None)
+			{
+				_noAirWeapon = false;
+				if (!_noShowHidden)
+				{
+					return;
+				}
+			}
+		}
+		if (_noShowHidden)
+		{
+			if (unitType == BWAPI::UnitTypes::Terran_Missile_Turret ||
+				unitType == BWAPI::UnitTypes::Terran_Science_Vessel ||
+				unitType == BWAPI::UnitTypes::Protoss_Photon_Cannon ||
+				unitType == BWAPI::UnitTypes::Protoss_Observer ||
+				unitType == BWAPI::UnitTypes::Zerg_Spore_Colony ||
+				unitType == BWAPI::UnitTypes::Zerg_Overlord)
+			{
+				_noShowHidden = false;
+				if (!_noAirWeapon)
+				{
+					return;
+				}
+			}
+		}
+	}
+}
 bool Squad::isEmpty() const
 {
     return _units.empty();
@@ -175,8 +225,24 @@ void Squad::addUnitsToMicroManagers()
 	BWAPI::Unitset overlordUnits;
 	BWAPI::Unitset harassZerglingUnits;
 	BWAPI::Unitset harassMutaliskUnits;
-	int numZergling = 0;
-	int numMutalisk = 0;
+	int numZergling = InformationManager::Instance().getNumUnits(BWAPI::UnitTypes::Zerg_Zergling, BWAPI::Broodwar->self());
+	int numMutalisk = InformationManager::Instance().getNumUnits(BWAPI::UnitTypes::Zerg_Mutalisk, BWAPI::Broodwar->self());
+	if (numZergling > 5)
+	{
+		numZergling = 0;
+	}
+	else
+	{
+		numZergling = 8;
+	}
+	if (numMutalisk > 1)
+	{
+		numMutalisk = 0;
+	}
+	else
+	{
+		numMutalisk = 4;
+	}
 
 	// add _units to micro managers
 	for (auto & unit : _units)

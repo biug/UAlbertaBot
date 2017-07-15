@@ -43,6 +43,8 @@ class Squad
 	OverlordManager		_overlordManager;
 	HarassZerglingManager _harassZerglingManager;
 	HarassMutaliskManager _harassMutaliskManager;
+	bool				_noAirWeapon;
+	bool				_noShowHidden;
 
 	std::map<BWAPI::Unit, bool>	_nearEnemy;
 
@@ -50,6 +52,7 @@ class Squad
 	BWAPI::Unit		getRegroupUnit();
 	BWAPI::Unit		unitClosestToEnemy();
     
+	void						checkEnemy();
 	void                        updateUnits();
 	void                        addUnitsToMicroManagers();
 	void                        setNearEnemyUnits();
