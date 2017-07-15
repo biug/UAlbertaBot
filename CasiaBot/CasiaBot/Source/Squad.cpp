@@ -45,6 +45,7 @@ void Squad::update()
 	//如果数量对比OK，就是干
 	if (needToRegroup)
 	{
+		/*
 		int numSelf = InformationManager::Instance().getNumUnits(BWAPI::UnitTypes::Zerg_Zergling, BWAPI::Broodwar->self())
 				+ 2 * InformationManager::Instance().getNumUnits(BWAPI::UnitTypes::Zerg_Mutalisk, BWAPI::Broodwar->self())
 				+ 2 * InformationManager::Instance().getNumUnits(BWAPI::UnitTypes::Zerg_Lurker, BWAPI::Broodwar->self());
@@ -70,7 +71,7 @@ void Squad::update()
 			{
 				needToRegroup = false;
 			}
-		}
+		}*/
 	}
 	checkEnemy();
 	// if we do need to regroup, do it
