@@ -130,6 +130,17 @@ void Squad::checkEnemy()
 {
 	_noAirWeapon = true;
 	_noShowHidden = true;
+	for (auto & unit : BWAPI::Broodwar->self()->getUnits())
+	{
+		if (unit->getType() == BWAPI::UnitTypes::Zerg_Lurker)
+		{
+			if (unit->isDetected())
+			{
+				_noShowHidden = false;
+				break;
+			}
+		}
+	}
 	for (auto & unit : BWAPI::Broodwar->enemy()->getUnits())
 	{
 		BWAPI::UnitType unitType = unit->getType();
