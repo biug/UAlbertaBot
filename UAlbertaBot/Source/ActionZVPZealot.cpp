@@ -168,7 +168,7 @@ void ActionZVPZealot::getBuildOrderList(UAlbertaBot::ProductionQueue & queue)
 	}
 
 	// 判断需要建造多少部队
-	int need_zergling_count = enemy_zealot_count * 8 + enemy_dragoon_count * 7 - zergling_count;
+	int need_zergling_count = enemy_zealot_count * 8 + enemy_dragoon_count * 7 - zergling_count- zergling_in_queue;
 	if (need_zergling_count <= 0 && zergling_count + zergling_in_queue < 12)
 	{
 		need_zergling_count = 2;
