@@ -167,12 +167,8 @@ void GameCommander::setCombatUnits()
 {
 	for (auto & unit : _validUnits)
 	{
-		if (!isAssigned(unit) && UnitUtil::IsCombatUnit(unit))		
+		if (!isAssigned(unit) && UnitUtil::IsCombatUnit(unit) || unit->getType().isWorker())		
 		{	
-			assignUnit(unit, _combatUnits);
-		}
-		if (unit->getType().isWorker() && BWAPI::Broodwar->getFrameCount() < 4320)
-		{
 			assignUnit(unit, _combatUnits);
 		}
 	}

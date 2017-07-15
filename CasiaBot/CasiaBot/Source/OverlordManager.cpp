@@ -16,6 +16,14 @@ void OverlordManager::executeMove(const SquadOrder & inputOrder)
     const BWAPI::Unitset & overlordUnits = getUnits();
     //different position need to do
     BWTA::BaseLocation * enemyBaseLocation = InformationManager::Instance().getMainBaseLocation(BWAPI::Broodwar->enemy());
+	if (enemyBaseLocation == nullptr) {
+		for (auto &base : BWTA::getStartLocations()) {
+			if (base != BWTA::getStartLocation(BWAPI::Broodwar->self())) {
+				enemyBaseLocation = base;
+				break;
+			}
+		}
+	}
     BWAPI::Position ourBaseLocation = BWAPI::Position(BWAPI::Broodwar->self()->getStartLocation());
 
     size_t numOverlord = UnitUtil::GetAllUnitCount(BWAPI::UnitTypes::Zerg_Overlord);
