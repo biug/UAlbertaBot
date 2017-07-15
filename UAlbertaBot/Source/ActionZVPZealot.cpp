@@ -160,11 +160,11 @@ void ActionZVPZealot::getBuildOrderList(UAlbertaBot::ProductionQueue & queue)
 	}
 	else
 	{
-		if (drone_count + drone_in_queue < hatchery_count * 10)
+		if (drone_count + drone_in_queue < base_count * 10)
 		{
 			queue.add(MetaType(BWAPI::UnitTypes::Zerg_Drone), true);
 		}
-		notEnoughDrone = drone_count + drone_in_queue < 8 * hatchery_count;
+		notEnoughDrone = drone_count + drone_in_queue < 8 * base_count;
 	}
 
 	// 判断需要建造多少部队
