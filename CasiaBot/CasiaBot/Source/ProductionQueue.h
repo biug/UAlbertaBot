@@ -8,7 +8,7 @@ namespace CasiaBot
 
 	class ProductionQueue
 	{
-		enum ProductionTypeID {BUILDING, ARMY, WORKER, TECH, TYPE_MAX};
+		enum ProductionTypeID { BUILDING, ARMY, WORKER, TECH, TYPE_MAX };
 		int						_buildID;
 		// unit
 		std::deque<ProductionItem>	_buildingQueue;
@@ -42,6 +42,7 @@ namespace CasiaBot
 		void add(const ProductionItem & item, bool priority = false);
 		void retreat(bool priority = false);
 		void popReserve();
+		bool popCheck(const ProductionItem & item);
 
 		int unitCount(BWAPI::UnitType type);
 		int techCount(BWAPI::TechType type);

@@ -94,13 +94,13 @@ void ActionZVTFactoriesUnits::getBuildOrderList(CasiaBot::ProductionQueue & queu
 	}
 
 	bool isExtractorExist = extractor_being_built + extractor_count + extractor_in_queue > 0;
-	if (!isExtractorExist && drone_count >= 7 && spawning_pool_count > 0)
+	if (!isExtractorExist && drone_count >= 12 && spawning_pool_count > 0)
 	{
 		queue.add(MetaType(BWAPI::UnitTypes::Zerg_Extractor));
 	}
 
 	bool isDefilerMoundExist = defiler_mound_being_built + defiler_mound_count + defiler_mound_in_queue > 0;
-	bool isSpireExist =spire_being_built + spire_count + spire_in_queue > 0;
+	bool isSpireExist = spire_being_built + spire_count + spire_in_queue > 0;
 	bool isHiveExist = hive_being_built + hive_count + hive_in_queue > 0;
 	bool isQueenNestExist = queens_nest_being_built + queens_nest_count + queens_nest_in_queue > 0;
 	bool isLairExist = lair_being_built + lair_count + lair_in_queue > 0;
@@ -173,19 +173,19 @@ void ActionZVTFactoriesUnits::getBuildOrderList(CasiaBot::ProductionQueue & queu
 	bool notEnoughDrone = false;
 	if (base_count == 1)
 	{
-		if (drone_count < 15)
-		{
+		if (drone_count + drone_in_queue < 9)
 			queue.add(MetaType(BWAPI::UnitTypes::Zerg_Drone));
-		}
-		notEnoughDrone = drone_count < 12;
+		else if (zergling_count >= 6 && drone_count + drone_in_queue < 15)
+			queue.add(MetaType(BWAPI::UnitTypes::Zerg_Drone));
+		notEnoughDrone = drone_count + drone_in_queue < 12;
 	}
 	else
 	{
-		if (drone_count < hatchery_count * 10)
+		if (drone_count + drone_in_queue < base_count * 10)
 		{
 			queue.add(MetaType(BWAPI::UnitTypes::Zerg_Drone));
 		}
-		notEnoughDrone = drone_count < 8 * hatchery_count;
+		notEnoughDrone = drone_count + drone_in_queue < 8 * base_count;
 	}
 
 	if (enemy_army_supply < escalationMark)
@@ -245,7 +245,7 @@ void ActionZVTFactoriesUnits::getBuildOrderList(CasiaBot::ProductionQueue & queu
 		} while (true);
 
 		int extractorUpperBound = std::min(base_count + base_being_built, 3);
-		if (extractor_count + extractor_being_built + extractor_in_queue < extractorUpperBound)
+		if (isExtractorExist && extractor_count + extractor_being_built + extractor_in_queue < extractorUpperBound)
 		{
 			queue.add(MetaType(BWAPI::UnitTypes::Zerg_Extractor));
 		}
@@ -310,7 +310,7 @@ void ActionZVTFactoriesUnits::getBuildOrderList(CasiaBot::ProductionQueue & queu
 			if (ultralisk_cavern_count > 0)
 			{
 				queue.add(MetaType(BWAPI::UnitTypes::Zerg_Ultralisk));
-			}	
+			}
 			if (need_mutalisk_count <= 0 && need_defiler_count <= 0 && need_zergling_count <= 0)
 			{
 				break;
@@ -319,7 +319,7 @@ void ActionZVTFactoriesUnits::getBuildOrderList(CasiaBot::ProductionQueue & queu
 		} while (true);
 
 		int extractorUpperBound = std::min(base_count + base_being_built, 3);
-		if (extractor_count + extractor_being_built + extractor_in_queue < extractorUpperBound)
+		if (isExtractorExist && extractor_count + extractor_being_built + extractor_in_queue < extractorUpperBound)
 		{
 			queue.add(MetaType(BWAPI::UnitTypes::Zerg_Extractor));
 		}

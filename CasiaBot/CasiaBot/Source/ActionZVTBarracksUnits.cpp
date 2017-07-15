@@ -46,7 +46,7 @@ void ActionZVTBarracksUnits::getBuildOrderList(CasiaBot::ProductionQueue & queue
 {
 	// 当前帧数（累计）
 	int currentFrameCount = BWAPI::Broodwar->getFrameCount();
-	
+
 	// 判断是否需要增加母巢
 	if (base_count + base_in_queue + base_being_built <= 4 && currentFrameCount > 10 && currentFrameCount % 200 == 0)
 	{
@@ -94,12 +94,12 @@ void ActionZVTBarracksUnits::getBuildOrderList(CasiaBot::ProductionQueue & queue
 	}
 
 	bool isExtractorExist = extractor_being_built + extractor_count + extractor_in_queue > 0;
-	if (!isExtractorExist && drone_count >= 7 && spawning_pool_count > 0)
+	if (!isExtractorExist && drone_count >= 12 && spawning_pool_count > 0)
 	{
-		queue.add(MetaType(BWAPI::UnitTypes::Zerg_Extractor));
+		queue.add(MetaType(BWAPI::UnitTypes::Zerg_Extractor), true);
 	}
 
-	bool isHydraliskDenExist = hydralisk_den_being_built + hydralisk_den_count +hydralisk_den_in_queue > 0;
+	bool isHydraliskDenExist = hydralisk_den_being_built + hydralisk_den_count + hydralisk_den_in_queue > 0;
 	if (!isHydraliskDenExist && extractor_completed > 0)
 	{
 		queue.add(MetaType(BWAPI::UnitTypes::Zerg_Hydralisk_Den));
@@ -149,15 +149,15 @@ void ActionZVTBarracksUnits::getBuildOrderList(CasiaBot::ProductionQueue & queue
 	bool notEnoughDrone = false;
 	if (base_count == 1)
 	{
-		if (drone_count + drone_in_queue < 15)
-		{
+		if (drone_count + drone_in_queue < 9)
 			queue.add(MetaType(BWAPI::UnitTypes::Zerg_Drone));
-		}
+		else if (zergling_count >= 6 && drone_count + drone_in_queue < 15)
+			queue.add(MetaType(BWAPI::UnitTypes::Zerg_Drone));
 		notEnoughDrone = (drone_count + drone_in_queue) < 10;
 	}
 	else
 	{
-		if (drone_count + drone_in_queue < hatchery_count * 10)
+		if (drone_count + drone_in_queue < base_count * 10)
 		{
 			queue.add(MetaType(BWAPI::UnitTypes::Zerg_Drone));
 		}
@@ -189,7 +189,7 @@ void ActionZVTBarracksUnits::getBuildOrderList(CasiaBot::ProductionQueue & queue
 		if (need_zergling_count > 0)
 		{
 			// 2个Zergling
-			if (BWAPI::Broodwar->self()->isUnitAvailable(BWAPI::UnitTypes::Zerg_Zergling))
+			if (spawning_pool_count > 0)
 			{
 				queue.add(MetaType(BWAPI::UnitTypes::Zerg_Zergling));
 			}
@@ -197,13 +197,12 @@ void ActionZVTBarracksUnits::getBuildOrderList(CasiaBot::ProductionQueue & queue
 		}
 		if (need_lurker_count > 0)
 		{
-			if (BWAPI::Broodwar->self()->isUnitAvailable(BWAPI::UnitTypes::Zerg_Hydralisk)
-				&& (hydralisk_count + hydralisk_in_queue) <= 5
-				&& (hydralisk_count + hydralisk_in_queue - lurker_count - lurker_in_queue <= 1))
+			if (hydralisk_den_count > 0
+				&& (hydralisk_count + hydralisk_in_queue) <= 5)
 			{
 				queue.add(MetaType(BWAPI::UnitTypes::Zerg_Hydralisk));
 			}
-			if (BWAPI::Broodwar->self()->isUnitAvailable(BWAPI::UnitTypes::Zerg_Lurker)
+			if (BWAPI::Broodwar->self()->hasResearched(BWAPI::TechTypes::Lurker_Aspect)
 				&& lurker_count + lurker_in_queue < hydralisk_completed)
 			{
 				queue.add(MetaType(BWAPI::UnitTypes::Zerg_Lurker));
@@ -218,7 +217,7 @@ void ActionZVTBarracksUnits::getBuildOrderList(CasiaBot::ProductionQueue & queue
 	} while (true);
 
 	int extractorUpperBound = std::min(base_completed, 3);
-	if (extractor_count + extractor_being_built + extractor_in_queue < extractorUpperBound)
+	if (isExtractorExist && extractor_count + extractor_being_built + extractor_in_queue < extractorUpperBound)
 	{
 		queue.add(MetaType(BWAPI::UnitTypes::Zerg_Extractor));
 	}
@@ -234,4 +233,3 @@ void ActionZVTBarracksUnits::updateCurrentState(ProductionQueue &queue)
 	enemyTerranMechanizationRate = enemyTerranBarrackUnitsAmount == 0 ? 10 : (double)enemyTerranFactoryUnitsAmount / (double)enemyTerranBarrackUnitsAmount;
 	if (enemyTerranFactoryUnitsAmount == 0) enemyTerranMechanizationRate = 0;
 }
-

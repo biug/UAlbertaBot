@@ -93,16 +93,16 @@ void ActionZVPZealot::getBuildOrderList(CasiaBot::ProductionQueue & queue)
 	}
 
 	// 判断前提建筑是否存在
-	bool isExtractorExist = extractor_being_built + extractor_count + extractor_in_queue > 0;
-	if (!isExtractorExist && drone_count >= 7 && spawning_pool_count > 0)
-	{
-		queue.add(MetaType(BWAPI::UnitTypes::Zerg_Extractor), true);
-	}
-
 	bool isSpawningPoolExist = spawning_pool_being_built + spawning_pool_count + spawning_pool_in_queue > 0;
 	if (!isSpawningPoolExist)
 	{
 		queue.add(MetaType(BWAPI::UnitTypes::Zerg_Spawning_Pool), true);
+	}
+
+	bool isExtractorExist = extractor_being_built + extractor_count + extractor_in_queue > 0;
+	if (!isExtractorExist && drone_count >= 7 && spawning_pool_count > 0)
+	{
+		queue.add(MetaType(BWAPI::UnitTypes::Zerg_Extractor), true);
 	}
 
 	bool isHiveExist = hive_being_built + hive_count + hive_in_queue > 0;
@@ -139,15 +139,6 @@ void ActionZVPZealot::getBuildOrderList(CasiaBot::ProductionQueue & queue)
 		queue.add(MetaType(BWAPI::UnitTypes::Zerg_Spire));
 	}
 
-	if (spawning_pool_count > 0 && queue.upgradeCount(BWAPI::UpgradeTypes::Metabolic_Boost) == 0)
-	{
-		queue.add(MetaType(BWAPI::UpgradeTypes::Metabolic_Boost));
-	}
-	if (hive_count > 0 && queue.upgradeCount(BWAPI::UpgradeTypes::Adrenal_Glands) == 0)
-	{
-		queue.add(MetaType(BWAPI::UpgradeTypes::Adrenal_Glands));
-	}
-
 	bool notEnoughDrone = false;
 	if (base_count == 1)
 	{
@@ -159,11 +150,11 @@ void ActionZVPZealot::getBuildOrderList(CasiaBot::ProductionQueue & queue)
 	}
 	else
 	{
-		if (drone_count + drone_in_queue < hatchery_count * 10)
+		if (drone_count + drone_in_queue < base_count * 10)
 		{
 			queue.add(MetaType(BWAPI::UnitTypes::Zerg_Drone), true);
 		}
-		notEnoughDrone = drone_count + drone_in_queue < 8 * hatchery_count;
+		notEnoughDrone = drone_count + drone_in_queue < 8 * base_count;
 	}
 
 	// 判断需要建造多少部队
@@ -210,6 +201,15 @@ void ActionZVPZealot::getBuildOrderList(CasiaBot::ProductionQueue & queue)
 		}
 
 	} while (true);
+
+	if (spawning_pool_count > 0 && queue.upgradeCount(BWAPI::UpgradeTypes::Metabolic_Boost) == 0)
+	{
+		queue.add(MetaType(BWAPI::UpgradeTypes::Metabolic_Boost));
+	}
+	if (hive_count > 0 && queue.upgradeCount(BWAPI::UpgradeTypes::Adrenal_Glands) == 0)
+	{
+		queue.add(MetaType(BWAPI::UpgradeTypes::Adrenal_Glands));
+	}
 
 	int extractorUpperBound = std::min(base_count + base_being_built, 3);
 	if (extractor_count + extractor_being_built + extractor_in_queue < extractorUpperBound)

@@ -50,25 +50,24 @@ void ActionZVZZerglingLurker::getBuildOrderList(CasiaBot::ProductionQueue & queu
 {
 	// 当前帧数（累计）
 	int currentFrameCount = BWAPI::Broodwar->getFrameCount();
-	int currentFrameMineralAmount = BWAPI::Broodwar->self()->minerals();
-	int currentFrameGasAmount = BWAPI::Broodwar->self()->gas();
-	int diffMineralAmount = currentFrameMineralAmount - lastFrameMineralAmount;
-	int diffGasAmount = currentFrameGasAmount - lastFrameGasAmount;
-
-	mineralNetIncrease.pop_front();
-	mineralNetIncrease.push_back(diffMineralAmount);
-	gasNetIncrease.pop_front();
-	gasNetIncrease.push_back(diffGasAmount);
-
-	bool mineralDequePositive = IsDequeAllPositive(mineralNetIncrease);
-	bool gasDequePositive = IsDequeNoneNegative(gasNetIncrease);
 
 	if (currentFrameCount % 200 == 0)
 	{
+		int currentFrameMineralAmount = BWAPI::Broodwar->self()->minerals();
+		int currentFrameGasAmount = BWAPI::Broodwar->self()->gas();
+		int diffMineralAmount = currentFrameMineralAmount - lastFrameMineralAmount;
+		int diffGasAmount = currentFrameGasAmount - lastFrameGasAmount;
+
+		mineralNetIncrease.pop_front();
+		mineralNetIncrease.push_back(diffMineralAmount);
+		gasNetIncrease.pop_front();
+		gasNetIncrease.push_back(diffGasAmount);
 		lastFrameCount = currentFrameCount;
 		lastFrameMineralAmount = currentFrameMineralAmount;
 		lastFrameGasAmount = currentFrameGasAmount;
 	}
+	bool mineralDequePositive = IsDequeAllPositive(mineralNetIncrease);
+	bool gasDequePositive = IsDequeNoneNegative(gasNetIncrease);
 
 	// 判断前提建筑是否存在
 	bool isHiveExist = hive_being_built + hive_count + hive_in_queue > 0;
@@ -92,11 +91,24 @@ void ActionZVZZerglingLurker::getBuildOrderList(CasiaBot::ProductionQueue & queu
 		queue.add(MetaType(BWAPI::UnitTypes::Zerg_Hydralisk_Den));
 	}
 
+	//是否需要防御建筑
+	bool isSunkenColonyExist = sunken_colony_count + sunken_colony_being_built + sunken_colony_in_queue > 0;
+	bool isCreepColonyExist = creep_colony_count + creep_colony_being_built + creep_colony_in_queue > 0;
+	if (isCreepColonyExist)
+	{
+		if (creep_colony_count > 0 && spawning_pool_completed && !isSunkenColonyExist)
+			queue.add(MetaType(BWAPI::UnitTypes::Zerg_Sunken_Colony));
+	}
+	else if (!isCreepColonyExist && !isSunkenColonyExist) {
+		if (mineralDequePositive && zergling_count > 0 && zergling_count < 8)
+			queue.add(MetaType(BWAPI::UnitTypes::Zerg_Creep_Colony), true);
+	}
+
 	// 判断是否需要增加母巢
 	if (currentFrameCount % 200 == 0 && base_count + base_in_queue + base_being_built <= 4 && currentFrameCount > 10) {
 		if (base_count + base_in_queue + base_being_built <= 2)
 		{
-			if (mineralDequePositive)
+			if (mineralDequePositive && zergling_count >= 4)
 			{
 				queue.add(MetaType(BWAPI::UnitTypes::Zerg_Hatchery));
 			}
@@ -117,7 +129,7 @@ void ActionZVZZerglingLurker::getBuildOrderList(CasiaBot::ProductionQueue & queu
 	{
 		if (drone_count + drone_in_queue < 9)
 			queue.add(MetaType(BWAPI::UnitTypes::Zerg_Drone));
-		else if (zergling_count >= 4 && drone_count + drone_in_queue < 15)
+		else if (zergling_count >= 6 && drone_count + drone_in_queue < 15)
 			queue.add(MetaType(BWAPI::UnitTypes::Zerg_Drone));
 		notEnoughDrone = drone_count + drone_in_queue < 12;
 	}
@@ -138,7 +150,7 @@ void ActionZVZZerglingLurker::getBuildOrderList(CasiaBot::ProductionQueue & queu
 		need_zergling_count = std::max(need_zergling_count, (int)(enemy_zergling_count * 1.5) - zergling_count - zergling_in_queue);
 		if (need_zergling_count < 2) {
 			//保证数量
-			if (zergling_count + zergling_in_queue < 20)
+			if (zergling_count + zergling_in_queue < 30)
 				need_zergling_count = 2;
 			//在资源富余的情况下继续生产
 			if (mineralDequePositive && isExtractorExist && gasDequePositive  && zergling_in_queue < 6)
@@ -188,11 +200,13 @@ void ActionZVZZerglingLurker::getBuildOrderList(CasiaBot::ProductionQueue & queu
 		}
 		if (need_lurker_count > 0)
 		{
-			if (hydralisk_den_count > 0 && hydralisk_count + hydralisk_in_queue < 5)
+			if (hydralisk_den_count > 0
+				&& hydralisk_count + hydralisk_in_queue <= 5)
 			{
 				queue.add(MetaType(BWAPI::UnitTypes::Zerg_Hydralisk));
 			}
-			if (BWAPI::Broodwar->self()->hasResearched(BWAPI::TechTypes::Lurker_Aspect) && hydralisk_count > 0)
+			if (BWAPI::Broodwar->self()->hasResearched(BWAPI::TechTypes::Lurker_Aspect)
+				&& lurker_count + lurker_in_queue < hydralisk_completed)
 			{
 				queue.add(MetaType(BWAPI::UnitTypes::Zerg_Lurker));
 			}
