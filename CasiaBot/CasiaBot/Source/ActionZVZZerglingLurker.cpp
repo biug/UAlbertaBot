@@ -134,8 +134,12 @@ void ActionZVZZerglingLurker::getBuildOrderList(CasiaBot::ProductionQueue & queu
 	bool notEnoughDrone = false;
 	if (base_count == 1)
 	{
-		if (drone_count + drone_in_queue < 9)
-			queue.add(MetaType(BWAPI::UnitTypes::Zerg_Drone));
+		if (drone_count + drone_in_queue < 9) {
+			if (currentFrameCount < 2000 && spawning_pool_count > 0 && spawning_pool_completed <= 0)
+				queue.add(MetaType(BWAPI::UnitTypes::Zerg_Drone), true);
+			else
+				queue.add(MetaType(BWAPI::UnitTypes::Zerg_Drone));
+		}
 		else if (zergling_count >= 6 && drone_count + drone_in_queue < 15)
 			queue.add(MetaType(BWAPI::UnitTypes::Zerg_Drone));
 		notEnoughDrone = drone_count + drone_in_queue < 12;
@@ -198,7 +202,7 @@ void ActionZVZZerglingLurker::getBuildOrderList(CasiaBot::ProductionQueue & queu
 			// 2¸öZergling
 			if (spawning_pool_count > 0)
 			{
-				if (currentFrameCount < 1500 && zergling_count + zergling_in_queue < 8)
+				if (currentFrameCount < 4800 && zergling_count + zergling_in_queue < 8)
 					queue.add(MetaType(BWAPI::UnitTypes::Zerg_Zergling), true);
 				else
 					queue.add(MetaType(BWAPI::UnitTypes::Zerg_Zergling));

@@ -16,7 +16,7 @@ void ProductionManager::setBuildOrder(const BuildOrder & buildOrder)
 
 	for (size_t i(0); i<buildOrder.size(); ++i)
 	{
-		_queue.add(ProductionItem(buildOrder[i]));
+		_queue.add(ProductionItem(buildOrder[i]), true);
 	}
 }
 
