@@ -51,8 +51,7 @@ void ActionZVPZealot::getBuildOrderList(CasiaBot::ProductionQueue & queue)
 	// 当前帧数（累计）
 	int currentFrameCount = BWAPI::Broodwar->getFrameCount();
 
-	// 判断是否需要增加母巢
-	if (base_count + base_in_queue + base_being_built <= 4 && currentFrameCount > 10 && currentFrameCount % 200 == 0)
+	if (currentFrameCount % 200 == 0)
 	{
 		int currentFrameMineralAmount = BWAPI::Broodwar->self()->minerals();
 		int currentFrameGasAmount = BWAPI::Broodwar->self()->gas();
@@ -63,10 +62,35 @@ void ActionZVPZealot::getBuildOrderList(CasiaBot::ProductionQueue & queue)
 		mineralNetIncrease.push_back(diffMineralAmount);
 		gasNetIncrease.pop_front();
 		gasNetIncrease.push_back(diffGasAmount);
+		lastFrameCount = currentFrameCount;
+		lastFrameMineralAmount = currentFrameMineralAmount;
+		lastFrameGasAmount = currentFrameGasAmount;
+	}
+	bool mineralDequePositive = IsDequeAllPositive(mineralNetIncrease);
+	bool gasDequePositive = IsDequeNoneNegative(gasNetIncrease);
 
-		bool mineralDequePositive;
-		bool gasDequePositive;
+	//是否需要防御建筑
 
+	// 判断前提建筑是否存在
+	bool isHiveExist = hive_being_built + hive_count + hive_in_queue > 0;
+	bool isQueenNestExist = queens_nest_being_built + queens_nest_count + queens_nest_in_queue > 0;
+	bool isLairExist = lair_being_built + lair_count + lair_in_queue > 0;
+	bool isSpireExist = spire_count + spire_in_queue + spire_being_built > 0;
+	bool isSpawningPoolExist = spawning_pool_being_built + spawning_pool_count + spawning_pool_in_queue > 0;
+	if (!isSpawningPoolExist)
+	{
+		queue.add(MetaType(BWAPI::UnitTypes::Zerg_Spawning_Pool), true);
+	}
+
+	bool isExtractorExist = extractor_being_built + extractor_count + extractor_in_queue > 0;
+	if (!isExtractorExist && drone_count >= 7 && spawning_pool_count > 0)
+	{
+		queue.add(MetaType(BWAPI::UnitTypes::Zerg_Extractor), true);
+	}
+
+	// 判断是否需要增加母巢
+	if (currentFrameCount % 200 == 0 && base_count + base_in_queue + base_being_built <= 4 && currentFrameCount > 10)
+	{
 		if (base_count + base_in_queue + base_being_built <= 2)
 		{
 			mineralDequePositive = IsDequeAllPositive(mineralNetIncrease);
@@ -86,57 +110,6 @@ void ActionZVPZealot::getBuildOrderList(CasiaBot::ProductionQueue & queue)
 				queue.add(MetaType(BWAPI::UnitTypes::Zerg_Hatchery), true);
 			}
 		}
-
-		lastFrameCount = currentFrameCount;
-		lastFrameMineralAmount = currentFrameMineralAmount;
-		lastFrameGasAmount = currentFrameGasAmount;
-	}
-
-	// 判断前提建筑是否存在
-	bool isSpawningPoolExist = spawning_pool_being_built + spawning_pool_count + spawning_pool_in_queue > 0;
-	if (!isSpawningPoolExist)
-	{
-		queue.add(MetaType(BWAPI::UnitTypes::Zerg_Spawning_Pool), true);
-	}
-
-	bool isExtractorExist = extractor_being_built + extractor_count + extractor_in_queue > 0;
-	if (!isExtractorExist && drone_count >= 7 && spawning_pool_count > 0)
-	{
-		queue.add(MetaType(BWAPI::UnitTypes::Zerg_Extractor), true);
-	}
-
-	bool isHiveExist = hive_being_built + hive_count + hive_in_queue > 0;
-	bool isQueenNestExist = queens_nest_being_built + queens_nest_count + queens_nest_in_queue > 0;
-	bool isLairExist = lair_being_built + lair_count + lair_in_queue > 0;
-	if (!isHiveExist)	// 若蜂巢不存在
-	{
-		if (isQueenNestExist)	// 若皇后巢存在
-		{
-			if (currentFrameCount > 10800)
-			{
-				queue.add(MetaType(BWAPI::UnitTypes::Zerg_Hive));
-			}
-		}
-		else	// 若皇后巢不存在
-		{
-			if (isLairExist)	// 若兽穴存在
-			{
-				if (currentFrameCount > 9000)
-				{
-					queue.add(MetaType(BWAPI::UnitTypes::Zerg_Queens_Nest));
-				}
-			}
-			else if (currentFrameCount > 4800)	// 若兽穴不存在
-			{
-				queue.add(MetaType(BWAPI::UnitTypes::Zerg_Lair));
-			}
-		}
-	}
-
-	bool isSpireExist = spire_count + spire_in_queue + spire_being_built > 0;
-	if (!isSpireExist && currentFrameCount > 6000)	// 若飞龙塔不存在
-	{
-		queue.add(MetaType(BWAPI::UnitTypes::Zerg_Spire));
 	}
 
 	bool notEnoughDrone = false;
@@ -202,6 +175,36 @@ void ActionZVPZealot::getBuildOrderList(CasiaBot::ProductionQueue & queue)
 
 	} while (true);
 
+	if (!isHiveExist)	// 若蜂巢不存在
+	{
+		if (isQueenNestExist)	// 若皇后巢存在
+		{
+			if (currentFrameCount > 10800)
+			{
+				queue.add(MetaType(BWAPI::UnitTypes::Zerg_Hive));
+			}
+		}
+		else	// 若皇后巢不存在
+		{
+			if (isLairExist)	// 若兽穴存在
+			{
+				if (currentFrameCount > 9000)
+				{
+					queue.add(MetaType(BWAPI::UnitTypes::Zerg_Queens_Nest));
+				}
+			}
+			else if (currentFrameCount > 4800)	// 若兽穴不存在
+			{
+				queue.add(MetaType(BWAPI::UnitTypes::Zerg_Lair));
+			}
+		}
+	}
+
+	if (!isSpireExist && currentFrameCount > 6000)	// 若飞龙塔不存在
+	{
+		queue.add(MetaType(BWAPI::UnitTypes::Zerg_Spire));
+	}
+
 	if (spawning_pool_count > 0 && queue.upgradeCount(BWAPI::UpgradeTypes::Metabolic_Boost) == 0)
 	{
 		queue.add(MetaType(BWAPI::UpgradeTypes::Metabolic_Boost));
@@ -211,6 +214,7 @@ void ActionZVPZealot::getBuildOrderList(CasiaBot::ProductionQueue & queue)
 		queue.add(MetaType(BWAPI::UpgradeTypes::Adrenal_Glands));
 	}
 
+	//补气矿
 	int extractorUpperBound = std::min(base_count + base_being_built, 3);
 	if (extractor_count + extractor_being_built + extractor_in_queue < extractorUpperBound)
 	{
