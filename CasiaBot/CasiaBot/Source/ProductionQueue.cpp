@@ -185,6 +185,12 @@ ProductionItem ProductionQueue::popItem()
 		case ProductionTypeID::ARMY:
 			if (!_armyQueue.empty())
 			{
+				++_straightArmyCount;
+				if (_straightArmyCount > 2 && !_workerQueue.empty())
+				{
+					break;
+				}
+				_straightWorkerCount = 0;
 				if (larva_count == 0 && _unitCount[BWAPI::UnitTypes::Zerg_Lurker.getID()] > 0)
 				{
 					std::deque<ProductionItem> items;
@@ -227,6 +233,12 @@ ProductionItem ProductionQueue::popItem()
 		case ProductionTypeID::WORKER:
 			if (!_workerQueue.empty())
 			{
+				++_straightWorkerCount;
+				if (_straightWorkerCount > 2 && !_armyQueue.empty())
+				{
+					break;
+				}
+				_straightArmyCount = 0;
 				retItem = _workerQueue.front();
 				_workerQueue.pop_front();
 			}
@@ -286,6 +298,8 @@ void ProductionQueue::clear()
 	_overlordQueue.clear();
 	_techUpgradeQueue.clear();
 	_priorityQueue.clear();
+	_straightArmyCount = 0;
+	_straightWorkerCount = 0;
 
 	// unit count vector
 	int maxTypeID(0);
