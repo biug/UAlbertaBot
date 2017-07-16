@@ -120,24 +120,24 @@ void Squad::update()
 		_detectorManager.execute(_order);
 	}
 	_overlordManager.executeMove(_order);
-	if (_numHarassZergling > 5)
+	/*if (_numHarassZergling > 5)
 	{
-		_harassZerglingManager.setPattern(true);
+	_harassZerglingManager.setPattern(true);
 	}
 	else
 	{
-		_harassZerglingManager.setPattern(false);
-	}
-	if (_numHarassMutalisk > 1 || _noAirWeapon)
+	_harassZerglingManager.setPattern(false);
+	}*/
+	/*if (_numHarassMutalisk > 1 || _noAirWeapon)
 	{
-		_harassMutaliskManager.setPattern(true);
+	_harassMutaliskManager.setPattern(true);
 	}
 	else
 	{
-		_harassMutaliskManager.setPattern(false);
+	_harassMutaliskManager.setPattern(false);
 	}
 	_harassZerglingManager.execute(_order);
-	_harassMutaliskManager.execute(_order);
+	_harassMutaliskManager.execute(_order);*/
 }
 void Squad::checkEnemy()
 {
@@ -282,28 +282,21 @@ void Squad::addUnitsToMicroManagers()
 			}
 			else if (unit->getType() == BWAPI::UnitTypes::Zerg_Zergling)
 			{
-				if (_numHarassZergling < 8)
-				{
-					harassZerglingUnits.insert(unit);
-					_numHarassZergling++;
-				}
-				else
-				{
-					zerglingUnits.insert(unit);
-					_numZergling++;
-				}
+
+				zerglingUnits.insert(unit);
+				//_numZergling++;
 			}
 			else if (unit->getType() == BWAPI::UnitTypes::Zerg_Mutalisk)
 			{
-				if (_numHarassMutalisk < 4)
+				/*if (_numHarassMutalisk < 4)
 				{
-					harassMutaliskUnits.insert(unit);
-					_numHarassMutalisk++;
+				harassMutaliskUnits.insert(unit);
+				_numHarassMutalisk++;
 				}
 				else
-				{
-					mutaliskUnits.insert(unit);
-				}
+				{*/
+				mutaliskUnits.insert(unit);
+				//}
 			}
 			else if (unit->getType() == BWAPI::UnitTypes::Zerg_Overlord)
 			{
@@ -333,8 +326,8 @@ void Squad::addUnitsToMicroManagers()
 	_zerglingManager.setUnits(zerglingUnits);
 	_mutaliskManager.setUnits(mutaliskUnits);
 	_overlordManager.setUnits(overlordUnits);
-	_harassZerglingManager.setUnits(harassZerglingUnits);
-	_harassMutaliskManager.setUnits(harassMutaliskUnits);
+	//_harassZerglingManager.setUnits(harassZerglingUnits);
+	//_harassMutaliskManager.setUnits(harassMutaliskUnits);
 }
 
 // calculates whether or not to regroup
