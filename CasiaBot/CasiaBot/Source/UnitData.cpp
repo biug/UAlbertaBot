@@ -44,6 +44,11 @@ void UnitData::updateUnit(BWAPI::Unit unit)
 			{
 				numConstructingUnits[unit->getType().getID()] -= 1;
 				numConstructedUnits[unit->getType().getID()] += 1;
+				if (unit->getType() == BWAPI::UnitTypes::Zerg_Zergling
+					|| unit->getType() == BWAPI::UnitTypes::Zerg_Scourge)
+				{
+					numConstructedUnits[unit->getType().getID()] += 1;
+				}
 			}
 			// morphing lurker complete
 			if (lastType == BWAPI::UnitTypes::Zerg_Lurker_Egg)
@@ -56,6 +61,11 @@ void UnitData::updateUnit(BWAPI::Unit unit)
 			if (unit->getType() == BWAPI::UnitTypes::Zerg_Egg)
 			{
 				numConstructingUnits[unit->getBuildType().getID()] += 1;
+				if (unit->getType() == BWAPI::UnitTypes::Zerg_Zergling
+					|| unit->getType() == BWAPI::UnitTypes::Zerg_Scourge)
+				{
+					numConstructingUnits[unit->getBuildType().getID()] += 1;
+				}
 			}
 			// start morphing lurker
 			if (unit->getType() == BWAPI::UnitTypes::Zerg_Lurker_Egg)

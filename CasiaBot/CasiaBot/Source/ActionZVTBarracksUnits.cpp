@@ -138,8 +138,8 @@ void ActionZVTBarracksUnits::getBuildOrderList(CasiaBot::ProductionQueue & queue
 	if (base_count == 1)
 	{
 		if (drone_count + drone_in_queue < 15)
-			queue.add(MetaType(BWAPI::UnitTypes::Zerg_Drone));
-		notEnoughDrone = (drone_count + drone_in_queue) < 12;
+			queue.add(MetaType(BWAPI::UnitTypes::Zerg_Drone), drone_count + drone_in_queue < 12);
+		notEnoughDrone = (drone_count + drone_in_queue) < 10;
 	}
 	else
 	{
@@ -147,11 +147,11 @@ void ActionZVTBarracksUnits::getBuildOrderList(CasiaBot::ProductionQueue & queue
 		{
 			queue.add(MetaType(BWAPI::UnitTypes::Zerg_Drone));
 		}
-		notEnoughDrone = ((drone_count + drone_in_queue) < 7 * base_count);
+		notEnoughDrone = ((drone_count + drone_in_queue) < 6 * base_count);
 	}
 
 	// 判断需要建造多少部队
-	int need_zergling_count = zergling_count + zergling_in_queue < 12 ? 2 : 0;
+	int need_zergling_count = zergling_count + zergling_in_queue < 24 ? 2 : 0;
 
 	int need_lurker_count = (int)(enemyTerranBarrackUnitsAmount * 0.75) - lurker_count - lurker_in_queue;
 	if (need_lurker_count <= 0 && lurker_count + lurker_in_queue < 5)
@@ -161,7 +161,7 @@ void ActionZVTBarracksUnits::getBuildOrderList(CasiaBot::ProductionQueue & queue
 
 	if (notEnoughDrone)
 	{
-		need_lurker_count = lurker_count + lurker_in_queue < 1 ? 1 : 0;
+		need_lurker_count = lurker_count + lurker_in_queue < 3 ? 1 : 0;
 		need_zergling_count = zergling_count + zergling_in_queue < 6 ? 2 : 0;
 	}
 
@@ -179,7 +179,7 @@ void ActionZVTBarracksUnits::getBuildOrderList(CasiaBot::ProductionQueue & queue
 		}
 		if (need_lurker_count > 0)
 		{
-			if (hydralisk_den_count > 0
+			if (hydralisk_den_completed > 0
 				&& (hydralisk_count + hydralisk_in_queue) <= 5)
 			{
 				queue.add(MetaType(BWAPI::UnitTypes::Zerg_Hydralisk), enemyTerranBarrackUnitsAmount > 15);

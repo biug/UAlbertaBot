@@ -79,7 +79,7 @@ void LurkerManager::executeMicro(const BWAPI::Unitset & targets)
 						lurker->burrow();
 					}
 					// otherwise unburrow and move in
-					else if ((!target || lurker->getDistance(target) > lurkerRange) && lurker->canUnburrow())
+					else if ((!target || lurker->getDistance(target) > lurkerRange + 32) && lurker->canUnburrow())
 					{
 						lurker->unburrow();
 					}
@@ -190,6 +190,11 @@ int LurkerManager::getAttackPriority(BWAPI::Unit rangedUnit, BWAPI::Unit target)
 	}
 	// if the target is building something near our base something is fishy
 	BWAPI::Position ourBasePosition = BWAPI::Position(BWAPI::Broodwar->self()->getStartLocation());
+	if (target->getType() == BWAPI::UnitTypes::Terran_Marine || target->getType() == BWAPI::UnitTypes::Terran_Medic
+		|| target->getType() == BWAPI::UnitTypes::Terran_Firebat)
+	{
+		return 300;
+	}
 	if (target->getType().isWorker() && (target->isConstructing() || target->isRepairing()) && target->getDistance(ourBasePosition) < 1200)
 	{
 		return 100;
@@ -212,8 +217,7 @@ int LurkerManager::getAttackPriority(BWAPI::Unit rangedUnit, BWAPI::Unit target)
         return priority + 15;
     }
 	//Tank, Reaver, High Templar, Bunker
-	else if (targetType == BWAPI::UnitTypes::Terran_Siege_Tank_Siege_Mode || 
-			targetType == BWAPI::UnitTypes::Terran_Siege_Tank_Tank_Mode ||
+	else if (targetType == BWAPI::UnitTypes::Terran_Siege_Tank_Tank_Mode ||
 			targetType == BWAPI::UnitTypes::Protoss_Reaver ||
 			targetType == BWAPI::UnitTypes::Protoss_High_Templar ||
 			targetType == BWAPI::UnitTypes::Terran_Bunker)

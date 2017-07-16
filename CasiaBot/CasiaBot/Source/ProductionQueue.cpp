@@ -48,12 +48,15 @@ void ProductionQueue::checkSupply()
 	}
 	supplyUsed /= 2;
 
-	int overlordInQueue = unitCount(BWAPI::UnitTypes::Zerg_Overlord.getID());
+	int overlordInQueue = unitCount(BWAPI::UnitTypes::Zerg_Overlord);
 	int overlordInConstructing =
 		InformationManager::Instance().getNumConstructingUnits(BWAPI::UnitTypes::Zerg_Overlord, BWAPI::Broodwar->self());
 	int overlordReady = overlordInQueue + overlordInConstructing;
-	//std::string info = std::to_string(supplyUsed) + " / " + std::to_string(supply);
+	std::string info = std::to_string(supplyUsed) + " / " + std::to_string(supply);
+	std::string overlord = std::to_string(overlordInQueue) + " + " + std::to_string(overlordInConstructing);
 	//CAB_ASSERT(false, info.c_str());
+	CAB_ASSERT(false, info.c_str());
+	CAB_ASSERT(false, overlord.c_str());
 	if (supply - supplyUsed <= 7)
 	{
 		if (supply <= 9)
@@ -69,7 +72,6 @@ void ProductionQueue::checkSupply()
 			{
 				add(MetaType(BWAPI::UnitTypes::Zerg_Overlord));
 			}
-			//CAB_ASSERT(false, "I'm here");
 		}
 		else if (supply <= 33)
 		{
@@ -101,13 +103,13 @@ void ProductionQueue::add(const ProductionItem & item, bool priority)
 	CAB_ASSERT(_armyQueue.size() < 1000, "army queue overflow");
 	CAB_ASSERT(_techUpgradeQueue.size() < 1000, "tech queue overflow");
 
-	if (priority)
-	{
-		_priorityQueue.push_back(item);
-	}
-	else if (unit.getUnitType() == BWAPI::UnitTypes::Zerg_Overlord)
+	if (unit.getUnitType() == BWAPI::UnitTypes::Zerg_Overlord)
 	{
 		_overlordQueue.push_back(item);
+	}
+	else if (priority)
+	{
+		_priorityQueue.push_back(item);
 	}
 	else if (unit.isBuilding())
 	{
@@ -134,13 +136,13 @@ void ProductionQueue::retreat()
 	const MetaType & unit = item._unit;
 	_reserveQueue.pop_back();
 
-	if (priority)
-	{
-		_priorityQueue.push_front(item);
-	}
-	else if (unit.getUnitType() == BWAPI::UnitTypes::Zerg_Overlord)
+	if (unit.getUnitType() == BWAPI::UnitTypes::Zerg_Overlord)
 	{
 		_overlordQueue.push_front(item);
+	}
+	else if (priority)
+	{
+		_priorityQueue.push_front(item);
 	}
 	else if (unit.isBuilding())
 	{

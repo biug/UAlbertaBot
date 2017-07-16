@@ -255,7 +255,6 @@ bool ProductionManager::canMakeNow(BWAPI::Unit producer, MetaType t)
 				if (canMake)
 				{
 					CAB_ASSERT(producer && producer->getType() == BWAPI::UnitTypes::Zerg_Hydralisk, "bad producer");
-					CAB_ASSERT(BWAPI::Broodwar->canMake(t.getUnitType(), producer), "bad morph");
 				}
 			}
 			canMake = BWAPI::Broodwar->canMake(t.getUnitType(), producer);
