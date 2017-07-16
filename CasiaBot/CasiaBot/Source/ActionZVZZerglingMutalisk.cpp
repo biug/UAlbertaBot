@@ -50,25 +50,24 @@ void ActionZVZZerglingMutalisk::getBuildOrderList(CasiaBot::ProductionQueue & qu
 {
 	// 当前帧数（累计）
 	int currentFrameCount = BWAPI::Broodwar->getFrameCount();
-	int currentFrameMineralAmount = BWAPI::Broodwar->self()->minerals();
-	int currentFrameGasAmount = BWAPI::Broodwar->self()->gas();
-	int diffMineralAmount = currentFrameMineralAmount - lastFrameMineralAmount;
-	int diffGasAmount = currentFrameGasAmount - lastFrameGasAmount;
-
-	mineralNetIncrease.pop_front();
-	mineralNetIncrease.push_back(diffMineralAmount);
-	gasNetIncrease.pop_front();
-	gasNetIncrease.push_back(diffGasAmount);
-
-	bool mineralDequePositive = IsDequeAllPositive(mineralNetIncrease);
-	bool gasDequePositive = IsDequeNoneNegative(gasNetIncrease);;
-
+	
 	if (currentFrameCount % 200 == 0)
 	{
+		int currentFrameMineralAmount = BWAPI::Broodwar->self()->minerals();
+		int currentFrameGasAmount = BWAPI::Broodwar->self()->gas();
+		int diffMineralAmount = currentFrameMineralAmount - lastFrameMineralAmount;
+		int diffGasAmount = currentFrameGasAmount - lastFrameGasAmount;
+
+		mineralNetIncrease.pop_front();
+		mineralNetIncrease.push_back(diffMineralAmount);
+		gasNetIncrease.pop_front();
+		gasNetIncrease.push_back(diffGasAmount);
 		lastFrameCount = currentFrameCount;
 		lastFrameMineralAmount = currentFrameMineralAmount;
 		lastFrameGasAmount = currentFrameGasAmount;
 	}
+	bool mineralDequePositive = IsDequeAllPositive(mineralNetIncrease);
+	bool gasDequePositive = IsDequeNoneNegative(gasNetIncrease);
 
 	// 判断前提建筑是否存在
 	bool isHiveExist = hive_being_built + hive_count + hive_in_queue > 0;
@@ -97,11 +96,11 @@ void ActionZVZZerglingMutalisk::getBuildOrderList(CasiaBot::ProductionQueue & qu
 	bool isCreepColonyExist = creep_colony_count + creep_colony_being_built + creep_colony_in_queue > 0;
 	if (isCreepColonyExist)
 	{
-		if (creep_colony_count > 0 && spawning_pool_completed && !isSunkenColonyExist)
-			queue.add(MetaType(BWAPI::UnitTypes::Zerg_Sunken_Colony));
+		if (creep_colony_count > 0)
+			queue.add(MetaType(BWAPI::UnitTypes::Zerg_Sunken_Colony), true);
 	}
 	else if (!isCreepColonyExist && !isSunkenColonyExist) {
-		if (mineralDequePositive && zergling_count > 0 && zergling_count < 8)
+		if (zergling_completed > 0)
 			queue.add(MetaType(BWAPI::UnitTypes::Zerg_Creep_Colony), true);
 	}
 
@@ -109,7 +108,14 @@ void ActionZVZZerglingMutalisk::getBuildOrderList(CasiaBot::ProductionQueue & qu
 	if (currentFrameCount % 200 == 0 && base_count + base_in_queue + base_being_built <= 4 && currentFrameCount > 10) {
 		if (base_count + base_in_queue + base_being_built <= 2)
 		{
-			if (mineralDequePositive && zergling_count >= 4)
+			if (zergling_count >= 4)
+			{
+				queue.add(MetaType(BWAPI::UnitTypes::Zerg_Hatchery));
+			}
+		}
+		else if (base_count + base_in_queue + base_being_built <= 2)
+		{
+			if (mineralDequePositive)
 			{
 				queue.add(MetaType(BWAPI::UnitTypes::Zerg_Hatchery));
 			}

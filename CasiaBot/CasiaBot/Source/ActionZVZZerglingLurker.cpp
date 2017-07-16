@@ -96,11 +96,11 @@ void ActionZVZZerglingLurker::getBuildOrderList(CasiaBot::ProductionQueue & queu
 	bool isCreepColonyExist = creep_colony_count + creep_colony_being_built + creep_colony_in_queue > 0;
 	if (isCreepColonyExist)
 	{
-		if (creep_colony_count > 0 && spawning_pool_completed && !isSunkenColonyExist)
+		if (creep_colony_count > 0)
 			queue.add(MetaType(BWAPI::UnitTypes::Zerg_Sunken_Colony));
 	}
 	else if (!isCreepColonyExist && !isSunkenColonyExist) {
-		if (mineralDequePositive && zergling_count > 0 && zergling_count < 8)
+		if (zergling_completed > 0)
 			queue.add(MetaType(BWAPI::UnitTypes::Zerg_Creep_Colony), true);
 	}
 
@@ -108,7 +108,14 @@ void ActionZVZZerglingLurker::getBuildOrderList(CasiaBot::ProductionQueue & queu
 	if (currentFrameCount % 200 == 0 && base_count + base_in_queue + base_being_built <= 4 && currentFrameCount > 10) {
 		if (base_count + base_in_queue + base_being_built <= 2)
 		{
-			if (mineralDequePositive && zergling_count >= 4)
+			if (zergling_count >= 4)
+			{
+				queue.add(MetaType(BWAPI::UnitTypes::Zerg_Hatchery));
+			}
+		}
+		else if (base_count + base_in_queue + base_being_built <= 2)
+		{
+			if (mineralDequePositive)
 			{
 				queue.add(MetaType(BWAPI::UnitTypes::Zerg_Hatchery));
 			}
