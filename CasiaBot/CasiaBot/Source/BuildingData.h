@@ -23,6 +23,7 @@ public:
     size_t                  status;
 	int                     lastOrderFrame;
     bool                    isGasSteal;
+	bool					nexpHatchery;
 	bool                    buildCommandGiven;
 	bool                    underConstruction;
 
@@ -38,6 +39,7 @@ public:
         , buildCommandGiven (false)
         , underConstruction (false) 
         , isGasSteal        (false)
+		, nexpHatchery		(false)
     {} 
 
 	// constructor we use most often
@@ -53,6 +55,7 @@ public:
         , buildCommandGiven (false)
         , underConstruction (false) 
         , isGasSteal        (false)
+		, nexpHatchery		(false)
     {}
 
 	// equals operator

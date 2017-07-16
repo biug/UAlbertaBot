@@ -30,7 +30,7 @@ class ProductionManager
     bool                hasNumCompletedUnitType(BWAPI::UnitType type,int num);
     bool                meetsReservedResources(MetaType type);
     void                setBuildOrder(const BuildOrder & buildOrder);
-	void				create(BWAPI::Unit producer, MetaType & unit);
+	void				create(BWAPI::Unit producer, ProductionItem & unit);
     void                manageBuildOrderQueue();
     void                performCommand(BWAPI::UnitCommandType t);
     bool                canMakeNow(BWAPI::Unit producer,MetaType t);

@@ -40,6 +40,7 @@ namespace CasiaBot
 
 		void checkSupply();
 		void add(const ProductionItem & item, bool priority = false);
+		void add(const ProductionItem & item, BWAPI::Position desiredPosition, bool priority = false);
 		void retreat(bool priority = false);
 		void popReserve();
 		bool popCheck(const ProductionItem & item);

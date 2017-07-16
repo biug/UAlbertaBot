@@ -249,6 +249,20 @@ void BuildingManager::addBuildingTask(BWAPI::UnitType type, BWAPI::TilePosition 
 	_numBuildings[b.type.getID()] += 1;
 }
 
+void BuildingManager::addBuildingTask(BWAPI::UnitType type, BWAPI::TilePosition desiredLocation, bool isGasSteal, bool nexpHatchery)
+{
+	_reservedMinerals += type.mineralPrice();
+	_reservedGas += type.gasPrice();
+
+	Building b(type, desiredLocation);
+	b.isGasSteal = isGasSteal;
+	b.nexpHatchery = nexpHatchery;
+	b.status = BuildingStatus::Unassigned;
+
+	_buildings.push_back(b);
+	_numBuildings[b.type.getID()] += 1;
+}
+
 bool BuildingManager::isBuildingPositionExplored(const Building & b) const
 {
     BWAPI::TilePosition tile = b.finalPosition;
@@ -372,7 +386,7 @@ BWAPI::TilePosition BuildingManager::getBuildingLocation(const Building & b)
         return BuildingPlacer::Instance().getRefineryPosition();
     }
 
-    if (b.type.isResourceDepot())
+    if (b.type.isResourceDepot() && !b.nexpHatchery)
     {
         // get the location 
         BWAPI::TilePosition tile = MapTools::Instance().getNextExpansion();

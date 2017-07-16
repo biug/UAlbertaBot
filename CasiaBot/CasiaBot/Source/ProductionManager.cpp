@@ -100,7 +100,7 @@ void ProductionManager::manageBuildOrderQueue()
     if (unit.isBuilding() && !(producer && canMake) && unit.whatBuilds().isWorker() && !item._assigned)
 	{
 		// construct a temporary building object
-		Building b(unit.getUnitType(), BWAPI::Broodwar->self()->getStartLocation());
+		Building b(unit.getUnitType(), item._desiredPosition);
         b.isGasSteal = false;
 
 		// set the producer as the closest worker, but do not set its job yet
@@ -115,7 +115,7 @@ void ProductionManager::manageBuildOrderQueue()
 	if (producer && canMake) 
 	{
 		// create it
-		create(producer, unit);
+		create(producer, item);
 		_assignedWorkerForThisBuilding = false;
 		_haveLocationForThisBuilding = false;
 	}
@@ -199,39 +199,41 @@ BWAPI::Unit ProductionManager::getClosestUnitToPosition(const BWAPI::Unitset & u
 }
 
 // this function will check to see if all preconditions are met and then create a unit
-void ProductionManager::create(BWAPI::Unit producer, MetaType & item) 
+void ProductionManager::create(BWAPI::Unit producer, ProductionItem & item)
 {
     if (!producer)
     {
         return;
     }
 
+	MetaType & unit = item._unit;
+
     // if we're dealing with a building
-	if (item.isUnit() && item.getUnitType().isBuilding()
-		&& item.getUnitType() != BWAPI::UnitTypes::Zerg_Lair
-		&& item.getUnitType() != BWAPI::UnitTypes::Zerg_Hive
-		&& item.getUnitType() != BWAPI::UnitTypes::Zerg_Greater_Spire
-		&& item.getUnitType() != BWAPI::UnitTypes::Zerg_Sunken_Colony
-		&& item.getUnitType() != BWAPI::UnitTypes::Zerg_Spore_Colony)
+	if (unit.isUnit() && unit.getUnitType().isBuilding()
+		&& unit.getUnitType() != BWAPI::UnitTypes::Zerg_Lair
+		&& unit.getUnitType() != BWAPI::UnitTypes::Zerg_Hive
+		&& unit.getUnitType() != BWAPI::UnitTypes::Zerg_Greater_Spire
+		&& unit.getUnitType() != BWAPI::UnitTypes::Zerg_Sunken_Colony
+		&& unit.getUnitType() != BWAPI::UnitTypes::Zerg_Spore_Colony)
     {
         // send the building task to the building manager
-        BuildingManager::Instance().addBuildingTask(item.getUnitType(), BWAPI::Broodwar->self()->getStartLocation(), false);
+        BuildingManager::Instance().addBuildingTask(unit.getUnitType(), item._desiredPosition, false, item._nexpHatchery);
     }
     // if we're dealing with a non-building unit
-	else if (item.isUnit())
+	else if (unit.isUnit())
     {
         // if the race is zerg, morph the unit
-		producer->morph(item.getUnitType());
+		producer->morph(unit.getUnitType());
     }
     // if we're dealing with a tech research
-	else if (item.isTech())
+	else if (unit.isTech())
     {
-		producer->research(item.getTechType());
+		producer->research(unit.getTechType());
     }
-	else if (item.isUpgrade())
+	else if (unit.isUpgrade())
     {
         //Logger::Instance().log("Produce Upgrade: " + t.getName() + "\n");
-		producer->upgrade(item.getUpgradeType());
+		producer->upgrade(unit.getUpgradeType());
     }
     else
     {	

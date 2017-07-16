@@ -40,6 +40,7 @@ public:
     void                onUnitMorph(BWAPI::Unit unit);
     void                onUnitDestroy(BWAPI::Unit unit);
     void                addBuildingTask(BWAPI::UnitType type,BWAPI::TilePosition desiredLocation,bool isGasSteal);
+	void				addBuildingTask(BWAPI::UnitType type, BWAPI::TilePosition desiredLocation, bool isGasSteal, bool nexpHatchery);
     void                drawBuildingInformation(int x,int y);
     BWAPI::TilePosition getBuildingLocation(const Building & b);
 
