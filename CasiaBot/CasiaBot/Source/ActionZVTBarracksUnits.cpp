@@ -48,13 +48,13 @@ void ActionZVTBarracksUnits::getBuildOrderList(CasiaBot::ProductionQueue & queue
 	int minerals = BWAPI::Broodwar->self()->minerals();
 	int currentFrameCount = BWAPI::Broodwar->getFrameCount();
 
-	if (base_count + base_in_queue + base_being_built <= 1)
-	{
-		if ((spawning_pool_count > 0 && drone_count >= 12) || minerals > 320)
-		{
-			queue.add(MetaType(BWAPI::UnitTypes::Zerg_Hatchery), true);
-		}
-	}
+	//if (base_count + base_in_queue + base_being_built <= 1)
+	//{
+	//	if ((spawning_pool_count > 0 && drone_count >= 12) || minerals > 320)
+	//	{
+	//		queue.add(MetaType(BWAPI::UnitTypes::Zerg_Hatchery), true);
+	//	}
+	//}
 
 	if (BWAPI::Broodwar->self()->minerals() > 500 && base_in_queue < 1
 		&& base_count + base_in_queue + base_being_built < 5)
@@ -71,18 +71,19 @@ void ActionZVTBarracksUnits::getBuildOrderList(CasiaBot::ProductionQueue & queue
 
 	if (spawning_pool_count > 0 &&
 		creep_colony_count + creep_colony_being_built + creep_colony_in_queue +
-		sunken_colony_count + sunken_colony_being_built + sunken_colony_in_queue < 2)
+		sunken_colony_count + sunken_colony_being_built + sunken_colony_in_queue < 1)
 	{
 		queue.add(MetaType(BWAPI::UnitTypes::Zerg_Creep_Colony));
 	}
 
-	if (creep_colony_completed > 0 && spawning_pool_completed > 0)
+	if (creep_colony_completed > 0 && spawning_pool_completed > 0 &&
+		sunken_colony_count + sunken_colony_being_built + sunken_colony_in_queue < 1)
 	{
 		queue.add(MetaType(BWAPI::UnitTypes::Zerg_Sunken_Colony));
 	}
 
 	bool isExtractorExist = extractor_being_built + extractor_count + extractor_in_queue > 0;
-	if (!isExtractorExist && drone_count >= 12 && spawning_pool_count > 0)
+	if (!isExtractorExist && drone_count >= 10 && spawning_pool_count > 0)
 	{
 		queue.add(MetaType(BWAPI::UnitTypes::Zerg_Extractor));
 	}
@@ -90,15 +91,14 @@ void ActionZVTBarracksUnits::getBuildOrderList(CasiaBot::ProductionQueue & queue
 	bool isHydraliskDenExist = hydralisk_den_being_built + hydralisk_den_count + hydralisk_den_in_queue > 0;
 	if (!isHydraliskDenExist && extractor_completed > 0 && lair_count > 0)
 	{
-		queue.add(MetaType(BWAPI::UnitTypes::Zerg_Hydralisk_Den));
+		queue.add(MetaType(BWAPI::UnitTypes::Zerg_Hydralisk_Den), true);
 	}
 
-	if (lair_count + lair_being_built + lair_in_queue == 0)
+	if (lair_count + lair_being_built + lair_in_queue == 0
+		&& spawning_pool_completed > 0 && extractor_completed > 0
+		&& currentFrameCount > 3600)
 	{
-		if (currentFrameCount > 4320)
-		{
-			queue.add(MetaType(BWAPI::UnitTypes::Zerg_Lair));
-		}
+			queue.add(MetaType(BWAPI::UnitTypes::Zerg_Lair), true);
 	}
 	if (lair_completed > 0)
 	{
