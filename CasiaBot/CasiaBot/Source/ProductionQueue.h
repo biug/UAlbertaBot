@@ -29,6 +29,7 @@ namespace CasiaBot
 		std::vector<int>	_straightCount;
 		int					_straightArmyCount;
 		int					_straightWorkerCount;
+		int					_straightCheckOverlord;
 
 		void updateCount(const MetaType & unit, int offset);
 

@@ -51,12 +51,32 @@ void ProductionQueue::checkSupply()
 	int overlordInQueue = unitCount(BWAPI::UnitTypes::Zerg_Overlord);
 	int overlordInConstructing =
 		InformationManager::Instance().getNumConstructingUnits(BWAPI::UnitTypes::Zerg_Overlord, BWAPI::Broodwar->self());
+	int constructing = 0;
+	for (auto & unit : BWAPI::Broodwar->self()->getUnits())
+	{
+		if (unit->isMorphing() &&
+			unit->getBuildType() == BWAPI::UnitTypes::Zerg_Overlord)
+		{
+			++constructing;
+		}
+	}
+	if (constructing != overlordInConstructing)
+	{
+		++_straightCheckOverlord;
+		if (_straightCheckOverlord >= 10)
+		{
+			_straightCheckOverlord = 0;
+			overlordInConstructing = constructing;
+		}
+	}
+	else
+	{
+		_straightCheckOverlord = 0;
+	}
 	int overlordReady = overlordInQueue + overlordInConstructing;
 	std::string info = std::to_string(supplyUsed) + " / " + std::to_string(supply);
 	std::string overlord = std::to_string(overlordInQueue) + " + " + std::to_string(overlordInConstructing);
 	//CAB_ASSERT(false, info.c_str());
-	//CAB_ASSERT(false, info.c_str());
-	//CAB_ASSERT(false, overlord.c_str());
 	if (supply - supplyUsed <= 7)
 	{
 		if (supply <= 9)
@@ -313,6 +333,7 @@ void ProductionQueue::clear()
 	_priorityQueue.clear();
 	_straightArmyCount = 0;
 	_straightWorkerCount = 0;
+	_straightCheckOverlord = 0;
 
 	// unit count vector
 	int maxTypeID(0);

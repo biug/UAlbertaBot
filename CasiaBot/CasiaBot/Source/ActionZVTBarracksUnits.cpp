@@ -45,6 +45,7 @@ bool ActionZVTBarracksUnits::tick()
 void ActionZVTBarracksUnits::getBuildOrderList(CasiaBot::ProductionQueue & queue)
 {
 	// 当前帧数（累计）
+	int gas = BWAPI::Broodwar->self()->gas();
 	int minerals = BWAPI::Broodwar->self()->minerals();
 	int currentFrameCount = BWAPI::Broodwar->getFrameCount();
 
@@ -95,7 +96,7 @@ void ActionZVTBarracksUnits::getBuildOrderList(CasiaBot::ProductionQueue & queue
 	}
 
 	if (lair_count + lair_being_built + lair_in_queue == 0
-		&& spawning_pool_completed > 0 && extractor_completed > 0
+		&& spawning_pool_completed > 0 && gas >= 100
 		&& currentFrameCount > 3600)
 	{
 			queue.add(MetaType(BWAPI::UnitTypes::Zerg_Lair), true);
