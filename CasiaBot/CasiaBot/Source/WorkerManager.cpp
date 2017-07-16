@@ -98,11 +98,11 @@ void WorkerManager::updateWorkerStatus()
 			if (worker->getType().isWorker())
 			{
 				workersPos[worker].push_back(worker->getPosition());
-				if (workersPos[worker].size() >= 7)
+				if (workersPos[worker].size() >= 12)
 				{
 					auto job = workerData.getWorkerJob(worker);
-					// 如果非采矿农民连续70帧没有位移，说明它闲置了，应该设置为Idle
-					if (workersPos[worker].front() == workersPos[worker].back() && job != WorkerData::Minerals && job != WorkerData::Gas)
+					// 如果非采矿农民连续120帧没有位移，说明它闲置了，应该设置为Idle
+					if (isWorkerIdle(worker))
 					{
 						workerData.setWorkerJob(worker, WorkerData::Idle, nullptr);
 					}
@@ -130,6 +130,12 @@ void WorkerManager::updateWorkerStatus()
 			{
 				workerData.setWorkerJob(worker, WorkerData::Idle, nullptr);
 			}
+		}
+
+		// 清空Idle农民的位置信息，重新结算
+		if (workerData.getWorkerJob(worker) == WorkerData::Idle)
+		{
+			workersPos[worker].clear();
 		}
 	}
 }
@@ -166,7 +172,7 @@ void WorkerManager::handleGasWorkers()
 				// get the number of workers currently assigned to it
 				int workersNeeded = Config::Macro::WorkersPerRefinery
 					- workerData.getNumAssignedWorkers(unit);
-				if (!firstRefinery && !needMoreGas) --workersNeeded;
+				if (!firstRefinery && !needMoreGas) workersNeeded = 0;
 
 				// if it's less than we want it to be, fill 'er up
 				for (int i = 0; i < workersNeeded; ++i)
@@ -375,6 +381,23 @@ void WorkerManager::handleMoveWorkers()
 			Micro::SmartMove(worker, data.position);
 		}
 	}
+}
+
+bool WorkerManager::isWorkerIdle(BWAPI::Unit unit)
+{
+	if (unit && workersPos.find(unit) == workersPos.end())
+	{
+		auto & poses = workersPos[unit];
+		for (size_t i = 1; i < poses.size(); ++i)
+		{
+			if (poses[i - 1] != poses[i])
+			{
+				return false;
+			}
+		}
+		return true;
+	}
+	return false;
 }
 
 // set a worker to mine minerals

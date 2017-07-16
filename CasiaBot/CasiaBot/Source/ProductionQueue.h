@@ -21,15 +21,12 @@ namespace CasiaBot
 		std::deque<ProductionItem>	_priorityQueue;
 		// reserve for some frame
 		const int									_reserveFrame = 10;
-		std::deque<std::pair<ProductionItem, int>>	_reserveQueue;
+		std::deque<std::pair<ProductionItem, std::pair<int, bool>>>	_reserveQueue;
 
 		std::vector<int>	_unitCount;
 		std::vector<int>	_techCount;
 		std::vector<int>	_upgradeCount;
 		std::vector<int>	_straightCount;
-		BWAPI::Unit			_lastUnit;
-		int					_straightUnitCount;
-		int					_straightBuildingCount;
 		int					_straightArmyCount;
 		int					_straightWorkerCount;
 
@@ -40,8 +37,7 @@ namespace CasiaBot
 
 		void checkSupply();
 		void add(const ProductionItem & item, bool priority = false);
-		void add(const ProductionItem & item, BWAPI::Position desiredPosition, bool priority = false);
-		void retreat(bool priority = false);
+		void retreat();
 		void popReserve();
 		bool popCheck(const ProductionItem & item);
 

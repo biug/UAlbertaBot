@@ -118,6 +118,7 @@
     <ClCompile Include="..\Source\ActionZergBase.cpp" />
     <ClCompile Include="..\Source\ActionZVPDragoon.cpp" />
     <ClCompile Include="..\Source\ActionZVPZealot.cpp" />
+    <ClCompile Include="..\Source\ActionZVPZerglingRush.cpp" />
     <ClCompile Include="..\Source\ActionZVTBarracksUnits.cpp" />
     <ClCompile Include="..\Source\ActionZVTFactoriesUnits.cpp" />
     <ClCompile Include="..\Source\ActionZVZZerglingLurker.cpp" />
@@ -176,6 +177,7 @@
     <ClInclude Include="..\Source\ActionZergBase.h" />
     <ClInclude Include="..\Source\ActionZVPDragoon.h" />
     <ClInclude Include="..\Source\ActionZVPZealot.h" />
+    <ClInclude Include="..\Source\ActionZVPZerglingRush.h" />
     <ClInclude Include="..\Source\ActionZVTBarracksUnits.h" />
     <ClInclude Include="..\Source\ActionZVTFactoriesUnits.h" />
     <ClInclude Include="..\Source\ActionZVZZerglingLurker.h" />

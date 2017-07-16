@@ -18,6 +18,7 @@ StrategyManager::StrategyManager()
 	_actionZVZMutalisk.init();
 	_actionZVPZealot.init();
 	_actionZVPDragoon.init();
+	_actionZVPZerglingRush.init();
 }
 
 // get an instance of this
@@ -155,10 +156,11 @@ void StrategyManager::updateProductionQueue(ProductionQueue & queue)
 	else if (_enemyRace == BWAPI::Races::Protoss) {
 		_actionZVPZealot.updateCurrentState(queue);
 		_actionZVPDragoon.updateCurrentState(queue);
+		_actionZVPZerglingRush.updateCurrentState(queue);
 
 		//to do
 		if (_action == nullptr) {
-			_action = &_actionZVPZealot;
+			_action = &_actionZVPZerglingRush;
 		}
 		if (currentFrame - _lastChangeFrame >= 1000 || queue.empty()) {
 			_lastChangeFrame = currentFrame;

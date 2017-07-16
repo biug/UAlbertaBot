@@ -250,6 +250,14 @@ bool ProductionManager::canMakeNow(BWAPI::Unit producer, MetaType t)
 	{
 		if (t.isUnit())
 		{
+			if (t.getUnitType() == BWAPI::UnitTypes::Zerg_Lurker)
+			{
+				if (canMake)
+				{
+					CAB_ASSERT(producer && producer->getType() == BWAPI::UnitTypes::Zerg_Hydralisk, "bad producer");
+					CAB_ASSERT(BWAPI::Broodwar->canMake(t.getUnitType(), producer), "bad morph");
+				}
+			}
 			canMake = BWAPI::Broodwar->canMake(t.getUnitType(), producer);
 		}
 		else if (t.isTech())
@@ -352,7 +360,9 @@ void ProductionManager::performCommand(BWAPI::UnitCommandType t)
 
 int ProductionManager::getFreeMinerals()
 {
-	return BWAPI::Broodwar->self()->minerals() - BuildingManager::Instance().getReservedMinerals();
+	int minerals = BWAPI::Broodwar->self()->minerals();
+	int reservedMinerals = BuildingManager::Instance().getReservedMinerals();
+	return minerals - reservedMinerals;
 }
 
 int ProductionManager::getFreeGas()
