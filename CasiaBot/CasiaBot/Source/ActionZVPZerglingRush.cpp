@@ -37,13 +37,7 @@ void ActionZVPZerglingRush::getBuildOrderList(ProductionQueue & queue)
 	// 当前帧数（累计）
 	int currentFrameCount = BWAPI::Broodwar->getFrameCount();
 
-	if (drone_count + drone_in_queue < 9) {
-		if (currentFrameCount < 2000 && spawning_pool_count > 0 && spawning_pool_completed <= 0)
-			queue.add(MetaType(BWAPI::UnitTypes::Zerg_Drone), true);
-		else
-			queue.add(MetaType(BWAPI::UnitTypes::Zerg_Drone));
-	}
-	else if (zergling_count >= 6 && drone_count + drone_in_queue < 12)
+	if (zergling_count >= 6 && drone_count + drone_in_queue < 12)
 		queue.add(MetaType(BWAPI::UnitTypes::Zerg_Drone));
 
 	// 判断前提建筑是否存在
@@ -58,7 +52,7 @@ void ActionZVPZerglingRush::getBuildOrderList(ProductionQueue & queue)
 	int need_zergling_count = total_zergling_count - zergling_count - zergling_in_queue;
 	if (spawning_pool_count > 0 && need_zergling_count > 0)
 	{
-		if (currentFrameCount < 4800 && zergling_count + zergling_in_queue < 8)
+		if (zergling_count + zergling_in_queue < 8)
 			queue.add(MetaType(BWAPI::UnitTypes::Zerg_Zergling), true);
 		else
 			queue.add(MetaType(BWAPI::UnitTypes::Zerg_Zergling));

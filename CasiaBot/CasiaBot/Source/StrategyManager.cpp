@@ -161,6 +161,8 @@ void StrategyManager::updateProductionQueue(ProductionQueue & queue)
 		//to do
 		if (_action == nullptr) {
 			_action = &_actionZVPZerglingRush;
+			queue.clear();
+			//queue.add(MetaType(BWAPI::UnitTypes::Zerg_Drone), true);
 		}
 		if (currentFrame - _lastChangeFrame >= 1000 || queue.empty()) {
 			_lastChangeFrame = currentFrame;
