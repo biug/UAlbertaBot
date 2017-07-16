@@ -22,30 +22,36 @@ void ProductionQueue::checkSupply()
 		+ InformationManager::Instance().getNumConstructedUnits(BWAPI::UnitTypes::Zerg_Hatchery, BWAPI::Broodwar->self())
 		+ InformationManager::Instance().getNumConstructedUnits(BWAPI::UnitTypes::Zerg_Lair, BWAPI::Broodwar->self())
 		+ InformationManager::Instance().getNumConstructedUnits(BWAPI::UnitTypes::Zerg_Hive, BWAPI::Broodwar->self());
-	int supplyUsed = (BWAPI::Broodwar->self()->supplyUsed() + 1) / 2;
+
+	int supplyUsed = 1;
+	for (BWAPI::Unit unit : BWAPI::Broodwar->self()->getUnits()) {
+		supplyUsed += unit->getType().supplyRequired();
+	}
+	supplyUsed /= 2;
+
 	int overlordInQueue = unitCount(BWAPI::UnitTypes::Zerg_Overlord.getID());
 	int overlordInConstructing =
 		InformationManager::Instance().getNumConstructingUnits(BWAPI::UnitTypes::Zerg_Overlord, BWAPI::Broodwar->self());
 	int overlordReady = overlordInQueue + overlordInConstructing;
-	if (supply - supplyUsed <= 6)
+	if (supply - supplyUsed <= 7)
 	{
-		if (supply <= 18)
+		if (supply <= 9)
 		{
 			if (supply - supplyUsed <= 0 && overlordReady == 0 && (!_armyQueue.empty() || !_workerQueue.empty()))
 			{
-				//BWAPI在UDP的局域网模式下supplyUsed会算错
-				int checkSupply = 1;
-				for (BWAPI::Unit unit : BWAPI::Broodwar->self()->getUnits()) {
-					checkSupply += unit->getType().supplyRequired();
-				}
-				checkSupply /= 2;
-				if (supplyUsed == checkSupply)
-					add(MetaType(BWAPI::UnitTypes::Zerg_Overlord));
+				add(MetaType(BWAPI::UnitTypes::Zerg_Overlord));
 			}
 		}
-		else if (supply <= 36)
+		else if (supply <= 17)
 		{
-			if (supply - supplyUsed <= 3 && overlordReady == 0)
+			if (supply - supplyUsed <= 2 && overlordReady == 0)
+			{
+				add(MetaType(BWAPI::UnitTypes::Zerg_Overlord));
+			}
+		}
+		else if (supply <= 33)
+		{
+			if (supply - supplyUsed <= 4 && overlordReady == 0)
 			{
 				add(MetaType(BWAPI::UnitTypes::Zerg_Overlord));
 			}
@@ -99,9 +105,10 @@ void ProductionQueue::add(const ProductionItem & item, bool priority)
 	}
 }
 
-void ProductionQueue::retreat(bool priority)
+void ProductionQueue::retreat()
 {
 	ProductionItem item = _reserveQueue.back().first;
+	bool priority = _reserveQueue.back().second.second;
 	const MetaType & unit = item._unit;
 	_reserveQueue.pop_back();
 
@@ -136,7 +143,7 @@ void ProductionQueue::popReserve()
 	int frame = BWAPI::Broodwar->getFrameCount();
 	while (!_reserveQueue.empty())
 	{
-		if (frame - _reserveQueue.front().second < _reserveFrame)
+		if (frame - _reserveQueue.front().second.first < _reserveFrame)
 		{
 			break;
 		}
@@ -149,6 +156,8 @@ ProductionItem ProductionQueue::popItem()
 {
 	MetaType meta;
 	ProductionItem retItem(meta);
+	bool isPriority = false;
+	int larva_count = InformationManager::Instance().getNumUnits(BWAPI::UnitTypes::Zerg_Larva, BWAPI::Broodwar->self());
 	if (!_overlordQueue.empty())
 	{
 		retItem = _overlordQueue.front();
@@ -158,6 +167,7 @@ ProductionItem ProductionQueue::popItem()
 	{
 		retItem = _priorityQueue.front();
 		_priorityQueue.pop_front();
+		isPriority = true;
 	}
 	else
 	{
@@ -169,15 +179,49 @@ ProductionItem ProductionQueue::popItem()
 			if (!_buildingQueue.empty())
 			{
 				retItem = _buildingQueue.front();
-				std::string name = retItem._unit.getName();
 				_buildingQueue.pop_front();
 			}
 			break;
 		case ProductionTypeID::ARMY:
 			if (!_armyQueue.empty())
 			{
-				retItem = _armyQueue.front();
-				_armyQueue.pop_front();
+				if (larva_count == 0 && _unitCount[BWAPI::UnitTypes::Zerg_Lurker.getID()] > 0)
+				{
+					std::deque<ProductionItem> items;
+					while (!_armyQueue.empty())
+					{
+						retItem = _armyQueue.front();
+						if (retItem._unit.getUnitType() == BWAPI::UnitTypes::Zerg_Lurker)
+						{
+							break;
+						}
+						items.push_back(retItem);
+						_armyQueue.pop_front();
+					}
+					if (_armyQueue.empty())
+					{
+						retItem = items.front();
+						items.pop_front();
+					}
+					else
+					{
+						retItem = _armyQueue.front();
+						_armyQueue.pop_front();
+						std::string info = "bad type is " + retItem._unit.getUnitType().getName();
+						CAB_ASSERT(retItem._unit.getUnitType() == BWAPI::UnitTypes::Zerg_Lurker,
+							info.c_str());
+					}
+					while (!items.empty())
+					{
+						_armyQueue.push_front(items.back());
+						items.pop_back();
+					}
+				}
+				else
+				{
+					retItem = _armyQueue.front();
+					_armyQueue.pop_front();
+				}
 			}
 			break;
 		case ProductionTypeID::WORKER:
@@ -198,7 +242,8 @@ ProductionItem ProductionQueue::popItem()
 	}
 	if (retItem._unit.type() != MetaTypes::Default && popCheck(retItem))
 	{
-		_reserveQueue.push_back(std::pair<ProductionItem, int>(retItem, BWAPI::Broodwar->getFrameCount()));
+		_reserveQueue.push_back(std::pair<ProductionItem, std::pair<int, bool>>
+			(retItem, std::pair<int, bool>(BWAPI::Broodwar->getFrameCount(), isPriority)));
 	}
 	else
 	{
@@ -241,8 +286,6 @@ void ProductionQueue::clear()
 	_overlordQueue.clear();
 	_techUpgradeQueue.clear();
 	_priorityQueue.clear();
-	_lastUnit = nullptr;
-	_straightUnitCount = 0;
 
 	// unit count vector
 	int maxTypeID(0);
