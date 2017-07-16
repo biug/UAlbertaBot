@@ -184,10 +184,10 @@ void StrategyManager::updateProductionQueue(ProductionQueue & queue)
 		_action->getBuildOrderList(queue);
 	}
 	else {
-		_actionZVZLurker.updateCurrentState(queue);
+		_actionZVZMutalisk.updateCurrentState(queue);
 		if (_action == nullptr)
 		{
-			_action = &_actionZVZLurker;
+			_action = &_actionZVZMutalisk;
 		}
 		_action->getBuildOrderList(queue);
 	}
