@@ -73,13 +73,13 @@ void ActionZVTBarracksUnits::getBuildOrderList(CasiaBot::ProductionQueue & queue
 
 	if (spawning_pool_count > 0 &&
 		creep_colony_count + creep_colony_being_built + creep_colony_in_queue +
-		sunken_colony_count + sunken_colony_being_built + sunken_colony_in_queue < (being_rushed ? 3 : 0))
+		sunken_colony_count + sunken_colony_being_built + sunken_colony_in_queue < (being_rushed ? 2 : 0))
 	{
 		queue.add(MetaType(BWAPI::UnitTypes::Zerg_Creep_Colony), being_rushed);
 	}
 
 	if (creep_colony_completed > 0 && spawning_pool_completed > 0 &&
-		sunken_colony_count + sunken_colony_being_built + sunken_colony_in_queue < (being_rushed ? 3 : 0))
+		sunken_colony_count + sunken_colony_being_built + sunken_colony_in_queue < (being_rushed ? 2 : 0))
 	{
 		queue.add(MetaType(BWAPI::UnitTypes::Zerg_Sunken_Colony), being_rushed);
 	}
@@ -153,7 +153,7 @@ void ActionZVTBarracksUnits::getBuildOrderList(CasiaBot::ProductionQueue & queue
 	}
 
 	// 判断需要建造多少部队
-	int need_zergling_count = zergling_count + zergling_in_queue < 24 ? 2 : 0;
+	int need_zergling_count = zergling_count + zergling_in_queue < 18 ? 2 : 0;
 
 	int need_lurker_count = (int)(enemyTerranBarrackUnitsAmount * 0.75) - lurker_count - lurker_in_queue;
 	if (need_lurker_count <= 0 && lurker_count + lurker_in_queue < 5)
