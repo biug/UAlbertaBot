@@ -96,8 +96,8 @@ void ActionZVZZerglingLurker::getBuildOrderList(CasiaBot::ProductionQueue & queu
 	bool isCreepColonyExist = creep_colony_count + creep_colony_being_built + creep_colony_in_queue > 0;
 	if (isCreepColonyExist)
 	{
-		if (creep_colony_count > 0)
-			queue.add(MetaType(BWAPI::UnitTypes::Zerg_Sunken_Colony));
+		if (sunken_colony_in_queue < creep_colony_completed)
+			queue.add(MetaType(BWAPI::UnitTypes::Zerg_Sunken_Colony), true);
 	}
 	else if (!isCreepColonyExist && !isSunkenColonyExist) {
 		if (zergling_completed > 0)

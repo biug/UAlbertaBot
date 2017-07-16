@@ -96,12 +96,15 @@ void ActionZVZZerglingMutalisk::getBuildOrderList(CasiaBot::ProductionQueue & qu
 	bool isCreepColonyExist = creep_colony_count + creep_colony_being_built + creep_colony_in_queue > 0;
 	if (isCreepColonyExist)
 	{
-		if (creep_colony_count > 0)
+		if (sunken_colony_in_queue < creep_colony_completed)
 			queue.add(MetaType(BWAPI::UnitTypes::Zerg_Sunken_Colony), true);
 	}
 	else if (!isCreepColonyExist && !isSunkenColonyExist) {
-		if (zergling_completed > 0)
+		if (zergling_completed > 0) {
+			//int distance = Config::Macro::BuildingSpacing;
+			//BuildingPlacer::Instance().getBuildLocationNear(b, distance, false);
 			queue.add(MetaType(BWAPI::UnitTypes::Zerg_Creep_Colony), true);
+		}
 	}
 
 	// 判断是否需要增加母巢
