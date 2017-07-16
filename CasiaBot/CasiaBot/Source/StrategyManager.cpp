@@ -187,9 +187,11 @@ void StrategyManager::updateProductionQueue(ProductionQueue & queue)
 	}
 	else {
 		_actionZVZMutalisk.updateCurrentState(queue);
+		_actionZVPZerglingRush.updateCurrentState(queue);
 		if (_action == nullptr)
 		{
-			_action = &_actionZVZMutalisk;
+			_action = &_actionZVPZerglingRush;
+			queue.clear();
 		}
 		_action->getBuildOrderList(queue);
 	}
