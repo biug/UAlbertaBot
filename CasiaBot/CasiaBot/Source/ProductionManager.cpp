@@ -146,19 +146,6 @@ BWAPI::Unit ProductionManager::getProducer(MetaType t, BWAPI::Position closestTo
 	}
     // get the type of unit that builds this
     BWAPI::UnitType producerType = t.whatBuilds();
-	if (t.isUnit() && t.getUnitType() == BWAPI::UnitTypes::Zerg_Lurker)
-	{
-		std::string tinfo = t.getName();
-		std::string pinfo = producerType.getName();
-		if (producerType == BWAPI::UnitTypes::Zerg_Hydralisk)
-		{
-			int hydra_num = InformationManager::Instance().getNumConstructedUnits(BWAPI::UnitTypes::Zerg_Hydralisk, BWAPI::Broodwar->self());
-			if (hydra_num == 0)
-			{
-				assert(false, "fuck hydra");
-			}
-		}
-	}
 
     // make a set of all candidate producers
     BWAPI::Unitset candidateProducers;

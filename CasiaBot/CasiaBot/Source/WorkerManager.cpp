@@ -172,7 +172,7 @@ void WorkerManager::handleGasWorkers()
 				// get the number of workers currently assigned to it
 				int workersNeeded = Config::Macro::WorkersPerRefinery
 					- workerData.getNumAssignedWorkers(unit);
-				if (!firstRefinery && !needMoreGas) workersNeeded == 0;
+				if (!firstRefinery && !needMoreGas) workersNeeded = 0;
 
 				// if it's less than we want it to be, fill 'er up
 				for (int i = 0; i < workersNeeded; ++i)
@@ -388,7 +388,7 @@ bool WorkerManager::isWorkerIdle(BWAPI::Unit unit)
 	if (unit && workersPos.find(unit) == workersPos.end())
 	{
 		auto & poses = workersPos[unit];
-		for (int i = 1; i < poses.size(); ++i)
+		for (size_t i = 1; i < poses.size(); ++i)
 		{
 			if (poses[i - 1] != poses[i])
 			{
