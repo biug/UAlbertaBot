@@ -55,8 +55,8 @@ void ProductionQueue::checkSupply()
 	std::string info = std::to_string(supplyUsed) + " / " + std::to_string(supply);
 	std::string overlord = std::to_string(overlordInQueue) + " + " + std::to_string(overlordInConstructing);
 	//CAB_ASSERT(false, info.c_str());
-	CAB_ASSERT(false, info.c_str());
-	CAB_ASSERT(false, overlord.c_str());
+	//CAB_ASSERT(false, info.c_str());
+	//CAB_ASSERT(false, overlord.c_str());
 	if (supply - supplyUsed <= 7)
 	{
 		if (supply <= 9)
@@ -209,11 +209,6 @@ ProductionItem ProductionQueue::popItem()
 		case ProductionTypeID::ARMY:
 			if (!_armyQueue.empty())
 			{
-				++_straightArmyCount;
-				if (_straightArmyCount > 2 && !_workerQueue.empty())
-				{
-					break;
-				}
 				_straightWorkerCount = 0;
 				if (larva_count == 0 && _unitCount[BWAPI::UnitTypes::Zerg_Lurker.getID()] > 0)
 				{
@@ -257,12 +252,6 @@ ProductionItem ProductionQueue::popItem()
 		case ProductionTypeID::WORKER:
 			if (!_workerQueue.empty())
 			{
-				++_straightWorkerCount;
-				if (_straightWorkerCount > 2 && !_armyQueue.empty())
-				{
-					break;
-				}
-				_straightArmyCount = 0;
 				retItem = _workerQueue.front();
 				_workerQueue.pop_front();
 			}
