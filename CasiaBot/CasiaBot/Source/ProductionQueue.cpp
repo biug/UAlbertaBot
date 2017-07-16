@@ -20,12 +20,31 @@ void ProductionQueue::checkSupply()
 	int supply =
 		InformationManager::Instance().getNumConstructedUnits(BWAPI::UnitTypes::Zerg_Overlord, BWAPI::Broodwar->self()) * 8
 		+ InformationManager::Instance().getNumConstructedUnits(BWAPI::UnitTypes::Zerg_Hatchery, BWAPI::Broodwar->self())
-		+ InformationManager::Instance().getNumConstructedUnits(BWAPI::UnitTypes::Zerg_Lair, BWAPI::Broodwar->self())
-		+ InformationManager::Instance().getNumConstructedUnits(BWAPI::UnitTypes::Zerg_Hive, BWAPI::Broodwar->self());
+		+ InformationManager::Instance().getNumUnits(BWAPI::UnitTypes::Zerg_Lair, BWAPI::Broodwar->self())
+		+ InformationManager::Instance().getNumUnits(BWAPI::UnitTypes::Zerg_Hive, BWAPI::Broodwar->self());
 
 	int supplyUsed = 1;
 	for (BWAPI::Unit unit : BWAPI::Broodwar->self()->getUnits()) {
-		supplyUsed += unit->getType().supplyRequired();
+		if (unit->getType() == BWAPI::UnitTypes::Zerg_Egg)
+		{
+			if (unit->getBuildType() == BWAPI::UnitTypes::Zerg_Zergling
+				|| unit->getBuildType() == BWAPI::UnitTypes::Zerg_Scourge)
+			{
+				supplyUsed += 2;
+			}
+			else
+			{
+				supplyUsed += unit->getBuildType().supplyRequired();
+			}
+		}
+		else if (unit->getType() == BWAPI::UnitTypes::Zerg_Lurker_Egg)
+		{
+			supplyUsed += unit->getBuildType().supplyRequired();
+		}
+		else
+		{
+			supplyUsed += unit->getType().supplyRequired();
+		}
 	}
 	supplyUsed /= 2;
 
@@ -33,6 +52,8 @@ void ProductionQueue::checkSupply()
 	int overlordInConstructing =
 		InformationManager::Instance().getNumConstructingUnits(BWAPI::UnitTypes::Zerg_Overlord, BWAPI::Broodwar->self());
 	int overlordReady = overlordInQueue + overlordInConstructing;
+	//std::string info = std::to_string(supplyUsed) + " / " + std::to_string(supply);
+	//CAB_ASSERT(false, info.c_str());
 	if (supply - supplyUsed <= 7)
 	{
 		if (supply <= 9)
@@ -48,6 +69,7 @@ void ProductionQueue::checkSupply()
 			{
 				add(MetaType(BWAPI::UnitTypes::Zerg_Overlord));
 			}
+			//CAB_ASSERT(false, "I'm here");
 		}
 		else if (supply <= 33)
 		{
