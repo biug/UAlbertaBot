@@ -168,6 +168,7 @@ void StrategyManager::updateProductionQueue(ProductionQueue & queue)
 				queue.clear();
 				bool useZealot = _actionZVPZealot.canDeployAction();
 				bool useDragoon = _actionZVPDragoon.canDeployAction();
+				bool useZergling = _actionZVPZerglingRush.canDeployAction();
 				_action = &_actionZVPZealot;
 				if (useZealot) {
 					_action = &_actionZVPZealot;
@@ -175,12 +176,20 @@ void StrategyManager::updateProductionQueue(ProductionQueue & queue)
 				else if (useDragoon) {
 					_action = &_actionZVPDragoon;
 				}
+				else if (useZergling) {
+					_action = &_actionZVPZerglingRush;
+				}
 			}
 		}
 		_action->getBuildOrderList(queue);
 	}
 	else {
-
+		_actionZVZLurker.updateCurrentState(queue);
+		if (_action == nullptr)
+		{
+			_action = &_actionZVZLurker;
+		}
+		_action->getBuildOrderList(queue);
 	}
 }
 
