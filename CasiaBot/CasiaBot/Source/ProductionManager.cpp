@@ -146,6 +146,19 @@ BWAPI::Unit ProductionManager::getProducer(MetaType t, BWAPI::Position closestTo
 	}
     // get the type of unit that builds this
     BWAPI::UnitType producerType = t.whatBuilds();
+	if (t.isUnit() && t.getUnitType() == BWAPI::UnitTypes::Zerg_Lurker)
+	{
+		std::string tinfo = t.getName();
+		std::string pinfo = producerType.getName();
+		if (producerType == BWAPI::UnitTypes::Zerg_Hydralisk)
+		{
+			int hydra_num = InformationManager::Instance().getNumConstructedUnits(BWAPI::UnitTypes::Zerg_Hydralisk, BWAPI::Broodwar->self());
+			if (hydra_num == 0)
+			{
+				assert(false, "fuck hydra");
+			}
+		}
+	}
 
     // make a set of all candidate producers
     BWAPI::Unitset candidateProducers;
@@ -248,6 +261,14 @@ bool ProductionManager::canMakeNow(BWAPI::Unit producer, MetaType t)
 	{
 		if (t.isUnit())
 		{
+			if (t.getUnitType() == BWAPI::UnitTypes::Zerg_Lurker)
+			{
+				if (canMake)
+				{
+					CAB_ASSERT(producer && producer->getType() == BWAPI::UnitTypes::Zerg_Hydralisk, "bad producer");
+					CAB_ASSERT(BWAPI::Broodwar->canMake(t.getUnitType(), producer), "bad morph");
+				}
+			}
 			canMake = BWAPI::Broodwar->canMake(t.getUnitType(), producer);
 		}
 		else if (t.isTech())
@@ -350,7 +371,9 @@ void ProductionManager::performCommand(BWAPI::UnitCommandType t)
 
 int ProductionManager::getFreeMinerals()
 {
-	return BWAPI::Broodwar->self()->minerals() - BuildingManager::Instance().getReservedMinerals();
+	int minerals = BWAPI::Broodwar->self()->minerals();
+	int reservedMinerals = BuildingManager::Instance().getReservedMinerals();
+	return minerals - reservedMinerals;
 }
 
 int ProductionManager::getFreeGas()

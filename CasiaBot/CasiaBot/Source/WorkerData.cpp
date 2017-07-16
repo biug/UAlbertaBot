@@ -448,8 +448,9 @@ BWAPI::Unit WorkerData::getMineralToMine(BWAPI::Unit worker)
 
 	// get the depot associated with this unit
 	BWAPI::Unit bestMineral = nullptr;
+	BWAPI::Unit closestMineral = nullptr;
 	double bestDist = 100000;
-    double bestNumAssigned = 10000;
+	double minDist = 100000;
 
 	BWAPI::Unitset bases;
 	for (auto & unit : BWAPI::Broodwar->self()->getUnits())
@@ -468,22 +469,28 @@ BWAPI::Unit WorkerData::getMineralToMine(BWAPI::Unit worker)
 		double dist = mineral->getDistance(worker);
         double numAssigned = workersOnMineralPatch[mineral];
 
-        if (numAssigned < bestNumAssigned)
-        {
-            bestMineral = mineral;
-            bestDist = dist;
-            bestNumAssigned = numAssigned;
-        }
-		else if (numAssigned == bestNumAssigned)
+		if (dist < minDist)
+		{
+			closestMineral = mineral;
+			minDist = dist;
+		}
+
+        if (numAssigned < 2)
 		{
 			if (dist < bestDist)
-            {
-                bestMineral = mineral;
-                bestDist = dist;
-                bestNumAssigned = numAssigned;
-            }
-		}
+			{
+				bestMineral = mineral;
+				bestDist = dist;
+			}
+			else if (bestMineral == nullptr)
+			{
+				bestMineral = mineral;
+				bestDist = dist;
+			}
+        }
 	}
+
+	if (bestMineral == nullptr) bestMineral = closestMineral;
 
 	return bestMineral;
 }

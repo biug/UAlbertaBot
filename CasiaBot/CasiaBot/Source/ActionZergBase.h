@@ -82,6 +82,8 @@ namespace CasiaBot
 		int hatchery_completed;
 		int lair_completed;
 		int hive_completed;
+		int spire_complete;
+		int creep_colony_completed;
 		int extractor_completed;
 		int spawning_pool_completed;
 		int hydralisk_den_completed;

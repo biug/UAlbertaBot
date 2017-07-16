@@ -22,6 +22,7 @@ class WorkerManager
 	std::map<BWAPI::Unit, std::deque<BWAPI::Position>>	workersPos;
 
     void        setMineralWorker(BWAPI::Unit unit);
+	bool		isWorkerIdle(BWAPI::Unit unit);
     bool        isGasStealRefinery(BWAPI::Unit unit);
     
     void        handleIdleWorkers();
