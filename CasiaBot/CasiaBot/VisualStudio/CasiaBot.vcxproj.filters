@@ -207,6 +207,9 @@
     <ClCompile Include="..\Source\HarassZerglingManager.cpp">
       <Filter>game\combat\micro</Filter>
     </ClCompile>
+    <ClCompile Include="..\Source\ActionZVPZerglingRush.cpp">
+      <Filter>game\action</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\Source\CombatCommander.h">
@@ -382,6 +385,9 @@
     </ClInclude>
     <ClInclude Include="..\Source\HarassZerglingManager.h">
       <Filter>game\combat\micro</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Source\ActionZVPZerglingRush.h">
+      <Filter>game\action</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
