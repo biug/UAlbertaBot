@@ -108,7 +108,7 @@ void StrategyManager::updateProductionQueue(ProductionQueue & queue)
 			if (queue.empty())
 				_action = &_actionZVTBarracks;
 		}
-		if (currentFrame - _lastChangeFrame >= 1000 || queue.empty())
+		else if (currentFrame - _lastChangeFrame >= 1000 || queue.empty())
 		{
 			_lastChangeFrame = currentFrame;
 			if (_action->tick())
@@ -170,7 +170,7 @@ void StrategyManager::updateProductionQueue(ProductionQueue & queue)
 			
 			//queue.add(MetaType(BWAPI::UnitTypes::Zerg_Drone), true);
 		}
-		if (currentFrame - _lastChangeFrame >= 1000 || queue.empty()) {
+		else if (currentFrame - _lastChangeFrame >= 1000 || queue.empty()) {
 			_lastChangeFrame = currentFrame;
 			if (_action->tick()) {
 				queue.clear();
