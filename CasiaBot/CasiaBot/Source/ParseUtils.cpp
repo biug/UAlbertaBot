@@ -10,7 +10,7 @@ void ParseUtils::ParseConfigFile(const std::string & filename)
 {
     rapidjson::Document doc;
     BWAPI::Race race = BWAPI::Broodwar->self()->getRace();
-    const char * ourRace = race.getName().c_str();
+	BWAPI::Race erace = BWAPI::Broodwar->enemy()->getRace();
 
     std::string config = FileUtils::ReadFile(filename);
 
@@ -145,9 +145,11 @@ void ParseUtils::ParseConfigFile(const std::string & filename)
         JSONTools::ReadString("WriteDirectory", strategy, Config::Strategy::WriteDir);
 
         // if we have set a strategy for the current race, use it
-        if (strategy.HasMember(race.c_str()) && strategy[race.c_str()].IsString())
+        if (strategy.HasMember(race.c_str()) && strategy[race.c_str()].IsObject())
         {
-            Config::Strategy::StrategyName = strategy[race.c_str()].GetString();
+			const rapidjson::Value & specific = strategy[race.c_str()];
+			if (specific.HasMember(erace.c_str()) && specific[erace.c_str()].IsString())
+				Config::Strategy::StrategyName = specific[erace.c_str()].GetString();
         }
 
         // check if we are using an enemy specific strategy
@@ -163,9 +165,9 @@ void ParseUtils::ParseConfigFile(const std::string & filename)
                 const rapidjson::Value & enemyStrategies = specific[enemyName.c_str()];
 
                 // if that enemy has a strategy listed for our current race, use it
-                if (enemyStrategies.HasMember(ourRace) && enemyStrategies[ourRace].IsString())
+                if (enemyStrategies.HasMember(race.c_str()) && enemyStrategies[race.c_str()].IsString())
                 {
-                    Config::Strategy::StrategyName = enemyStrategies[ourRace].GetString();
+                    Config::Strategy::StrategyName = enemyStrategies[race.c_str()].GetString();
                     Config::Strategy::FoundEnemySpecificStrategy = true;
                 }
             }
