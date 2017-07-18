@@ -164,7 +164,6 @@ void StrategyManager::updateProductionQueue(ProductionQueue & queue)
 
 		//to do
 		if (_action == nullptr) {
-			queue.clear();
 			if (queue.empty())
 				_action = &_actionZVPZerglingRush;
 			
@@ -197,7 +196,6 @@ void StrategyManager::updateProductionQueue(ProductionQueue & queue)
 		_actionZVPZerglingRush.updateCurrentState(queue);
 		if (_action == nullptr)
 		{
-			queue.clear();
 			if (queue.empty())
 				_action = &_actionZVPZerglingRush;
 		}

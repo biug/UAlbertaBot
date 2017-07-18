@@ -116,7 +116,9 @@ void GameCommander::handleUnitAssignments()
 	setValidUnits();
 
 	// set each type of unit
-	setScoutUnits();
+	// zerg_5d不需要侦查
+	if (Config::Strategy::StrategyName != "Zerg_5D")
+		setScoutUnits();
 	setCombatUnits();
 }
 
