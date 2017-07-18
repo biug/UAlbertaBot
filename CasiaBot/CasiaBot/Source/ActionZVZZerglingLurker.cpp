@@ -105,15 +105,24 @@ void ActionZVZZerglingLurker::getBuildOrderList(CasiaBot::ProductionQueue & queu
 	}
 
 	// 判断是否需要增加母巢
-	if (currentFrameCount % 200 == 0 && base_count + base_in_queue + base_being_built <= 4 && currentFrameCount > 10) {
-		if (base_count + base_in_queue + base_being_built <= 2)
+	if (currentFrameCount % 200 == 0 && base_count + base_in_queue + base_being_built <= 5 && currentFrameCount > 10) {
+		if (base_count + base_in_queue + base_being_built <= 1)
 		{
 			if (zergling_count >= 4)
+			{
+				ProductionItem item = MetaType(BWAPI::UnitTypes::Zerg_Hatchery);
+				item.setNExpHatchery();
+				queue.add(item);
+			}
+		}
+		else if (base_count + base_in_queue + base_being_built <= 2)
+		{
+			if (zergling_count >= 8)
 			{
 				queue.add(MetaType(BWAPI::UnitTypes::Zerg_Hatchery));
 			}
 		}
-		else if (base_count + base_in_queue + base_being_built <= 2)
+		else if (base_count + base_in_queue + base_being_built <= 3)
 		{
 			if (mineralDequePositive)
 			{
@@ -132,25 +141,21 @@ void ActionZVZZerglingLurker::getBuildOrderList(CasiaBot::ProductionQueue & queu
 
 
 	bool notEnoughDrone = false;
-	if (base_count == 1)
+	if (real_base_count == 1)
 	{
-		if (drone_count + drone_in_queue < 9) {
-			if (currentFrameCount < 2000 && spawning_pool_count > 0 && spawning_pool_completed <= 0)
-				queue.add(MetaType(BWAPI::UnitTypes::Zerg_Drone), true);
-			else
-				queue.add(MetaType(BWAPI::UnitTypes::Zerg_Drone));
-		}
+		if (drone_count + drone_in_queue < 9)
+			queue.add(MetaType(BWAPI::UnitTypes::Zerg_Drone));
 		else if (zergling_count >= 6 && drone_count + drone_in_queue < 15)
 			queue.add(MetaType(BWAPI::UnitTypes::Zerg_Drone));
 		notEnoughDrone = drone_count + drone_in_queue < 12;
 	}
 	else
 	{
-		if (drone_count + drone_in_queue < base_count * 10)
+		if (drone_count + drone_in_queue < real_base_count * 10)
 		{
 			queue.add(MetaType(BWAPI::UnitTypes::Zerg_Drone));
 		}
-		notEnoughDrone = drone_count + drone_in_queue < 8 * base_count;
+		notEnoughDrone = drone_count + drone_in_queue < 8 * real_base_count;
 	}
 
 	// 判断需要建造多少部队

@@ -105,7 +105,8 @@ void StrategyManager::updateProductionQueue(ProductionQueue & queue)
 		// need to be update
 		if (_action == nullptr)
 		{
-			_action = &_actionZVTBarracks;
+			if (queue.empty())
+				_action = &_actionZVTBarracks;
 		}
 		if (currentFrame - _lastChangeFrame >= 1000 || queue.empty())
 		{
@@ -126,7 +127,8 @@ void StrategyManager::updateProductionQueue(ProductionQueue & queue)
 				}
 			}
 		}
-		_action->getBuildOrderList(queue);
+		if (_action != nullptr)
+			_action->getBuildOrderList(queue);
 	}
 	else if (_enemyRace == BWAPI::Races::Zerg) {
 		_actionZVZLurker.updateCurrentState(queue);
@@ -134,9 +136,10 @@ void StrategyManager::updateProductionQueue(ProductionQueue & queue)
 
 		// to do
 		if (_action == nullptr) {
-			_action = &_actionZVZLurker;
+			if (queue.empty())
+				_action = &_actionZVZLurker;
 		}
-		if (currentFrame - _lastChangeFrame >= 1000 || queue.empty()) {
+		else if (currentFrame - _lastChangeFrame >= 1000 || queue.empty()) {
 			_lastChangeFrame = currentFrame;
 			if (_action->tick()) {
 				queue.clear();
@@ -151,7 +154,8 @@ void StrategyManager::updateProductionQueue(ProductionQueue & queue)
 				}
 			}
 		}
-		_action->getBuildOrderList(queue);
+		if (_action != nullptr)
+			_action->getBuildOrderList(queue);
 	}
 	else if (_enemyRace == BWAPI::Races::Protoss) {
 		_actionZVPZealot.updateCurrentState(queue);
@@ -160,8 +164,10 @@ void StrategyManager::updateProductionQueue(ProductionQueue & queue)
 
 		//to do
 		if (_action == nullptr) {
-			_action = &_actionZVPZerglingRush;
 			queue.clear();
+			if (queue.empty())
+				_action = &_actionZVPZerglingRush;
+			
 			//queue.add(MetaType(BWAPI::UnitTypes::Zerg_Drone), true);
 		}
 		if (currentFrame - _lastChangeFrame >= 1000 || queue.empty()) {
@@ -183,17 +189,20 @@ void StrategyManager::updateProductionQueue(ProductionQueue & queue)
 				}
 			}
 		}
-		_action->getBuildOrderList(queue);
+		if (_action != nullptr)
+			_action->getBuildOrderList(queue);
 	}
 	else {
 		_actionZVZMutalisk.updateCurrentState(queue);
 		_actionZVPZerglingRush.updateCurrentState(queue);
 		if (_action == nullptr)
 		{
-			_action = &_actionZVPZerglingRush;
 			queue.clear();
+			if (queue.empty())
+				_action = &_actionZVPZerglingRush;
 		}
-		_action->getBuildOrderList(queue);
+		if (_action != nullptr)
+			_action->getBuildOrderList(queue);
 	}
 }
 

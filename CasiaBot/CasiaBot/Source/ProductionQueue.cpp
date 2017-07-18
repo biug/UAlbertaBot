@@ -81,7 +81,7 @@ void ProductionQueue::checkSupply()
 	{
 		if (supply <= 9)
 		{
-			if (supply - supplyUsed <= 0 && overlordReady == 0 && (!_armyQueue.empty() || !_workerQueue.empty()))
+			if (supply - supplyUsed <= 0 && overlordReady == 0)
 			{
 				add(MetaType(BWAPI::UnitTypes::Zerg_Overlord));
 			}
@@ -110,12 +110,25 @@ void ProductionQueue::checkSupply()
 	}
 }
 
+void ProductionQueue::addOpenning(const ProductionItem & item)
+{
+	const MetaType & unit = item._unit;
+
+	updateCount(unit, 1);
+
+	
+	CAB_ASSERT(_openningQueue.size() < 1000, "openning queue overflow");
+
+	_openningQueue.push_back(item);
+}
+
 void ProductionQueue::add(const ProductionItem & item, bool priority)
 {
 	const MetaType & unit = item._unit;
 
 	updateCount(unit, 1);
 
+	
 	CAB_ASSERT(_priorityQueue.size() < 1000, "priority queue overflow");
 	CAB_ASSERT(_overlordQueue.size() < 1000, "overlord queue overflow");
 	CAB_ASSERT(_buildingQueue.size() < 1000, "building queue overflow");
@@ -152,15 +165,19 @@ void ProductionQueue::add(const ProductionItem & item, bool priority)
 void ProductionQueue::retreat()
 {
 	ProductionItem item = _reserveQueue.back().first;
-	bool priority = _reserveQueue.back().second.second;
+	ProductionPriority ptype = _reserveQueue.back().second.second;
 	const MetaType & unit = item._unit;
 	_reserveQueue.pop_back();
 
-	if (unit.getUnitType() == BWAPI::UnitTypes::Zerg_Overlord)
+	if (ptype == Openning)
+	{
+		_openningQueue.push_front(item);
+	}
+	else if (unit.getUnitType() == BWAPI::UnitTypes::Zerg_Overlord)
 	{
 		_overlordQueue.push_front(item);
 	}
-	else if (priority)
+	else if (ptype == Priority)
 	{
 		_priorityQueue.push_front(item);
 	}
@@ -200,9 +217,15 @@ ProductionItem ProductionQueue::popItem()
 {
 	MetaType meta;
 	ProductionItem retItem(meta);
-	bool isPriority = false;
+	ProductionPriority ptype = Normal;
 	int larva_count = InformationManager::Instance().getNumUnits(BWAPI::UnitTypes::Zerg_Larva, BWAPI::Broodwar->self());
-	if (!_overlordQueue.empty())
+	if (!_openningQueue.empty())
+	{
+		retItem = _openningQueue.front();
+		_openningQueue.pop_front();
+		ptype = Openning;
+	}
+	else if (!_overlordQueue.empty())
 	{
 		retItem = _overlordQueue.front();
 		_overlordQueue.pop_front();
@@ -211,7 +234,7 @@ ProductionItem ProductionQueue::popItem()
 	{
 		retItem = _priorityQueue.front();
 		_priorityQueue.pop_front();
-		isPriority = true;
+		ptype = Priority;
 	}
 	else
 	{
@@ -287,8 +310,8 @@ ProductionItem ProductionQueue::popItem()
 	}
 	if (retItem._unit.type() != MetaTypes::Default && popCheck(retItem))
 	{
-		_reserveQueue.push_back(std::pair<ProductionItem, std::pair<int, bool>>
-			(retItem, std::pair<int, bool>(BWAPI::Broodwar->getFrameCount(), isPriority)));
+		_reserveQueue.push_back(std::pair<ProductionItem, std::pair<int, ProductionPriority>>
+			(retItem, std::pair<int, ProductionPriority>(BWAPI::Broodwar->getFrameCount(), ptype)));
 	}
 	else
 	{
@@ -331,6 +354,7 @@ void ProductionQueue::clear()
 	_overlordQueue.clear();
 	_techUpgradeQueue.clear();
 	_priorityQueue.clear();
+	_openningQueue.clear();
 	_straightArmyCount = 0;
 	_straightWorkerCount = 0;
 	_straightCheckOverlord = 0;
@@ -359,6 +383,11 @@ void ProductionQueue::clear()
 		maxTypeID = maxTypeID > t.getID() ? maxTypeID : t.getID();
 	}
 	_upgradeCount = std::vector<int>(maxTypeID + 1, 0);
+	
+	//处理reserveQueue的情况
+	for (auto &i : _reserveQueue) {
+		updateCount(i.first._unit, 1);
+	}
 }
 
 int ProductionQueue::unitCount(BWAPI::UnitType type)
@@ -380,7 +409,9 @@ bool ProductionQueue::empty()
 {
 	return _buildingQueue.empty()
 		&& _armyQueue.empty()
+		&& _overlordQueue.empty()
 		&& _priorityQueue.empty()
+		&& _openningQueue.empty()
 		&& _workerQueue.empty()
 		&& _techUpgradeQueue.empty();
 }

@@ -217,6 +217,8 @@ void ActionZergBase::updateCurrentState(ProductionQueue &queue)
 	enemy_gas_count = 0;
 
 	//ÎÒ·½
+	std::set<BWTA::BaseLocation *> base_set;
+
 	for (auto &unit : BWAPI::Broodwar->self()->getUnits()) {
 		if (!unit->getType().isWorker() && !unit->getType().isBuilding()) {
 			if (unit->getType().isFlyer()) {
@@ -227,7 +229,23 @@ void ActionZergBase::updateCurrentState(ProductionQueue &queue)
 			}
 			army_supply += unit->getType().supplyRequired();
 		}
+		
+		if (unit->getType() == BWAPI::UnitTypes::Zerg_Hatchery
+			|| unit->getType() == BWAPI::UnitTypes::Zerg_Lair
+			|| unit->getType() == BWAPI::UnitTypes::Zerg_Hive) {
+			BWTA::BaseLocation *nearest;
+			double dis = -1.0, curl;
+			for (auto &base : BWTA::getBaseLocations()) {
+				curl = (unit->getPosition() - base->getPosition()).getLength();
+				if (dis < 0 || curl < dis) {
+					dis = curl;
+					nearest = base;
+				}
+			}
+			base_set.insert(nearest);
+		}
 	}
+	real_base_count = base_set.size();
 
 	//µÐ·½
 	for (auto &unit : BWAPI::Broodwar->enemy()->getUnits()) {

@@ -100,7 +100,7 @@
         {
 			"Zerg_Lurker_Test": { "Race" : "Zerg",    "OpeningBuildOrder" : ["Drone", "Drone", "Drone", "Drone", "Drone", "Extractor", "Spawning Pool", "Drone", "Drone", "Lair", "Hydralisk Den", "Lurker_Aspect", "Hydralisk", "Hydralisk", "Lurker", "Lurker"]},
             "Zerg_9D_Lurker"     : { "Race" : "Zerg",    "OpeningBuildOrder" : ["Drone", "Drone", "Drone", "Drone", "Drone", "Extractor", "Spawning Pool", "Drone", "Drone", "Zergling", "Zergling", "Zergling", "Lair", "Hydralisk Den"] },
-            "Zerg_9D"     : { "Race" : "Zerg",    "OpeningBuildOrder" : ["Drone", "Drone", "Drone", "Drone", "Drone"] }
+            "Zerg_9D"     : { "Race" : "Zerg",    "OpeningBuildOrder" : ["Drone", "Drone", "Drone", "Drone", "Drone", "Spawning Pool", "Drone"] }
         }
     }
 }

@@ -7,7 +7,17 @@ ProductionManager::ProductionManager()
 	, _haveLocationForThisBuilding   (false)
 	, _enemyCloakedDetected          (false)
 {
-    setBuildOrder(StrategyManager::Instance().getOpeningBookBuildOrder());
+    setOpenningBuildOrder(StrategyManager::Instance().getOpeningBookBuildOrder());
+}
+
+void ProductionManager::setOpenningBuildOrder(const BuildOrder & buildOrder)
+{
+	_queue.clear();
+
+	for (size_t i(0); i<buildOrder.size(); ++i)
+	{
+		_queue.addOpenning(ProductionItem(buildOrder[i]));
+	}
 }
 
 void ProductionManager::setBuildOrder(const BuildOrder & buildOrder)
@@ -102,6 +112,7 @@ void ProductionManager::manageBuildOrderQueue()
 		// construct a temporary building object
 		Building b(unit.getUnitType(), item._desiredPosition);
         b.isGasSteal = false;
+		b.nexpHatchery = item._nexpHatchery;
 
 		// set the producer as the closest worker, but do not set its job yet
 		producer = WorkerManager::Instance().getBuilder(b, false);

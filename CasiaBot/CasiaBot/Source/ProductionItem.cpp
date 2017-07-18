@@ -14,7 +14,7 @@ ProductionItem::ProductionItem(const ProductionItem & item)
 {
 	_unit = item._unit;
 	_assigned = item._assigned;
-	_nexpHatchery = false;
+	_nexpHatchery = item._nexpHatchery;
 	_desiredPosition = BWAPI::Broodwar->self()->getStartLocation();
 }
 
@@ -30,7 +30,7 @@ ProductionItem::ProductionItem(const ProductionItem & item, BWAPI::TilePosition 
 {
 	_unit = item._unit;
 	_assigned = item._assigned;
-	_nexpHatchery = false;
+	_nexpHatchery = item._nexpHatchery;
 	_desiredPosition = desiredPosition;
 }
 

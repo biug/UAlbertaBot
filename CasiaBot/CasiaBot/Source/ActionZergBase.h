@@ -61,6 +61,7 @@ namespace CasiaBot
 		int adrenal_glands_count;
 
 		//己方已建成建筑
+		int real_base_count;				//实际意义上的基地
 		int base_count;						//基地
 		int hatchery_count;					//母巢
 		int lair_count;						//蜂房
