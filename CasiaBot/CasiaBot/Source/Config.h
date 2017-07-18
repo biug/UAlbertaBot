@@ -102,6 +102,7 @@ namespace Config
     {
         extern int BOSSFrameLimit;
         extern int WorkersPerRefinery;
+		extern int WorkersPerMineralPatch;
         extern int BuildingSpacing;
         extern int PylonSpacing;
     }

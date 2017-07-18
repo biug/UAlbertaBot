@@ -21,7 +21,8 @@ class WorkerManager
 	std::deque<int>										gasUsed;
 	std::map<BWAPI::Unit, std::deque<BWAPI::Position>>	workersPos;
 
-    void        setMineralWorker(BWAPI::Unit unit);
+    void        setWorkerGatheringMineral(BWAPI::Unit unit);
+	void		setWorkerGatheringGas(BWAPI::Unit unit);
 	bool		isWorkerIdle(BWAPI::Unit unit);
     bool        isGasStealRefinery(BWAPI::Unit unit);
     
@@ -67,14 +68,14 @@ public:
     BWAPI::Unit getWorkerScout();
 	BWAPI::Unit getLarvaDepot();
 
-    void        setBuildingWorker(BWAPI::Unit worker,Building & b);
-    void        setRepairWorker(BWAPI::Unit worker,BWAPI::Unit unitToRepair);
+	void        setWorkerBuilding(BWAPI::Unit worker, Building & b);
+    void        setWorkerRepairing(BWAPI::Unit worker,BWAPI::Unit unitToRepair);
     void        stopRepairing(BWAPI::Unit worker);
-    void        setMoveWorker(int m,int g,BWAPI::Position p);
-    void        setCombatWorker(BWAPI::Unit worker);
+    void        setWorkerMoving(int m,int g,BWAPI::Position p);
+    void        setWorkerCombating(BWAPI::Unit worker);
 
     bool        willHaveResources(int mineralsRequired,int gasRequired,double distance);
-    void        rebalanceWorkers();
+    void        rebalanceMineralWorkers();
 
     static WorkerManager &  Instance();
 };

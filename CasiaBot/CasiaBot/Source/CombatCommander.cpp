@@ -205,7 +205,7 @@ void CombatCommander::updateScoutDefenseSquad()
 			// grab it from the worker manager and put it in the squad
             if (_squadData.canAssignUnitToSquad(workerDefender, scoutDefenseSquad))
             {
-			    WorkerManager::Instance().setCombatWorker(workerDefender);
+			    WorkerManager::Instance().setWorkerCombating(workerDefender);
                 _squadData.assignUnitToSquad(workerDefender, scoutDefenseSquad);
             }
 		}

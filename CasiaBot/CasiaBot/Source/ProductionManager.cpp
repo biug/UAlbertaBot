@@ -265,7 +265,8 @@ bool ProductionManager::canMakeNow(BWAPI::Unit producer, MetaType t)
 			{
 				if (canMake)
 				{
-					CAB_ASSERT(producer && producer->getType() == BWAPI::UnitTypes::Zerg_Hydralisk, "bad producer");
+					std::string info = "bad producer " + producer->getType().getName();
+					CAB_ASSERT(producer && producer->getType() == BWAPI::UnitTypes::Zerg_Hydralisk, info.c_str());
 				}
 			}
 			canMake = BWAPI::Broodwar->canMake(t.getUnitType(), producer);
@@ -343,7 +344,7 @@ void ProductionManager::predictWorkerMovement(const Building & b)
 		_assignedWorkerForThisBuilding = true;
 
 		// tell the worker manager to move this worker
-		WorkerManager::Instance().setMoveWorker(mineralsRequired, gasRequired, walkToPosition);
+		WorkerManager::Instance().setWorkerMoving(mineralsRequired, gasRequired, walkToPosition);
 	}
 }
 

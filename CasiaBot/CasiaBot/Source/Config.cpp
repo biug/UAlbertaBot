@@ -107,6 +107,7 @@ namespace Config
     {
         int BOSSFrameLimit                  = 160;
         int WorkersPerRefinery              = 3;
+        int WorkersPerMineralPatch          = 3;
         int BuildingSpacing                 = 1;
         int PylonSpacing                    = 3;
     }
