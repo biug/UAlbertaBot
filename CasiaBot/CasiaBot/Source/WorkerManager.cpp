@@ -136,37 +136,37 @@ void WorkerManager::updateWorkerStatus()
 		if (workerData.getWorkerJob(worker) == WorkerData::Idle)
 		{
 			workersPos[worker].clear();
-			BWAPI::Broodwar->drawCircleMap(worker->getPosition().x, worker->getPosition().y, 12, BWAPI::Colors::Orange, true);
+			BWAPI::Broodwar->drawTextMap(worker->getPosition().x, worker->getPosition().y, "Idle");
 		}
 
 		if (workerData.getWorkerJob(worker) == WorkerData::Minerals)
 		{
-			BWAPI::Broodwar->drawCircleMap(worker->getPosition().x, worker->getPosition().y, 12, BWAPI::Colors::Blue, true);
+			BWAPI::Broodwar->drawTextMap(worker->getPosition().x, worker->getPosition().y, "Minerals");
 		}
 
 		if (workerData.getWorkerJob(worker) == WorkerData::Gas)
 		{
-			BWAPI::Broodwar->drawCircleMap(worker->getPosition().x, worker->getPosition().y, 12, BWAPI::Colors::Brown, true);
+			BWAPI::Broodwar->drawTextMap(worker->getPosition().x, worker->getPosition().y, "Gas");
 		}
 
 		if (workerData.getWorkerJob(worker) == WorkerData::Scout)
 		{
-			BWAPI::Broodwar->drawCircleMap(worker->getPosition().x, worker->getPosition().y, 12, BWAPI::Colors::Yellow, true);
+			BWAPI::Broodwar->drawTextMap(worker->getPosition().x, worker->getPosition().y, "Scout");
 		}
 
 		if (workerData.getWorkerJob(worker) == WorkerData::Combat)
 		{
-			BWAPI::Broodwar->drawCircleMap(worker->getPosition().x, worker->getPosition().y, 12, BWAPI::Colors::White, true);
+			BWAPI::Broodwar->drawTextMap(worker->getPosition().x, worker->getPosition().y, "Combat");
 		}
 
 		if (workerData.getWorkerJob(worker) == WorkerData::Build)
 		{
-			BWAPI::Broodwar->drawCircleMap(worker->getPosition().x, worker->getPosition().y, 12, BWAPI::Colors::Purple, true);
+			BWAPI::Broodwar->drawTextMap(worker->getPosition().x, worker->getPosition().y, "Build");
 		}
 
 		if (workerData.getWorkerJob(worker) == WorkerData::Move)
 		{
-			BWAPI::Broodwar->drawCircleMap(worker->getPosition().x, worker->getPosition().y, 12, BWAPI::Colors::Green, true);
+			BWAPI::Broodwar->drawTextMap(worker->getPosition().x, worker->getPosition().y, "Move");
 		}
 	}
 }

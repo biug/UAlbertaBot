@@ -256,19 +256,11 @@ bool ProductionManager::canMakeNow(BWAPI::Unit producer, MetaType t)
 {
     //CAB_ASSERT(producer != nullptr, "Producer was null");
 
-	bool canMake = meetsReservedResources(t);
+	bool canMake = producer && meetsReservedResources(t);
 	if (canMake)
 	{
 		if (t.isUnit())
 		{
-			if (t.getUnitType() == BWAPI::UnitTypes::Zerg_Lurker)
-			{
-				if (canMake)
-				{
-					std::string info = "bad producer " + producer->getType().getName();
-					CAB_ASSERT(producer && producer->getType() == BWAPI::UnitTypes::Zerg_Hydralisk, info.c_str());
-				}
-			}
 			canMake = BWAPI::Broodwar->canMake(t.getUnitType(), producer);
 		}
 		else if (t.isTech())
