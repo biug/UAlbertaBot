@@ -43,11 +43,11 @@ private:
 
 	std::hash_map<BWAPI::Unit, BWAPI::Unit>					workerMineralBaseMap;
 	std::hash_map<BWAPI::Unit, std::hash_set<BWAPI::Unit>>	mineralBaseWorkersMap;
-	std::hash_map<BWAPI::Unit, BWAPI::Unit>					mineralPatchMineralBaseMap;
 	std::hash_map<BWAPI::Unit, std::hash_set<BWAPI::Unit>>	mineralBaseMineralPatchMap;
 
 	std::hash_map<BWAPI::Unit, BWAPI::Unit>					workerMineralPatchMap;
 	std::hash_map<BWAPI::Unit, std::hash_set<BWAPI::Unit>>	mineralPatchWorkersMap;
+	std::hash_map<BWAPI::Unit, BWAPI::Unit>					mineralPatchMineralBaseMap;
 	std::hash_map<BWAPI::Unit, int>							mineralPatchWorkersCountMap;
 
 	std::hash_map<BWAPI::Unit, BWAPI::Unit>					workerRefineryMap;
@@ -68,6 +68,7 @@ public:
 	void					addMineralBase(BWAPI::Unit mineralBase);
 	void					addRefinery(BWAPI::Unit refinery);
 	void					removeMineralBase(BWAPI::Unit mineralBase);
+	void					removeMineralPatch(BWAPI::Unit mineralPatch);
 	void					removeRefinery(BWAPI::Unit refinery);
 	void					addWorker(BWAPI::Unit unit);
 	void					addGatheringWorker(BWAPI::Unit worker, WorkerJob job);
@@ -88,6 +89,7 @@ public:
 	int						getNumMineralPatchWorkers(BWAPI::Unit mineralPatch) const;
 	int						getNumRefineryWorkers(BWAPI::Unit refinery) const;
 	char					getJobCode(BWAPI::Unit unit) const;
+	std::string				getJobString(BWAPI::Unit unit) const;
 	
 	bool					isMineralBase(BWAPI::Unit base) const;
 	bool					isRefinery(BWAPI::Unit refinery) const;
@@ -106,8 +108,8 @@ public:
 	BWAPI::UnitType	getWorkerBuildingType(BWAPI::Unit unit) const;
 	WorkerMoveData	getWorkerMoveData(BWAPI::Unit unit) const;
 
-    void                    updateMineralPatchWorkersCount(BWAPI::Unit mineralPatch, int offset);
-	void					drawMineralDebugInfo();
+	void					drawWorkerDebugInfo() const;
+	void					drawResourceDebugInfo(int x, int y) const;
 
 	const BWAPI::Unitset & getWorkers() const { return workers; }
 

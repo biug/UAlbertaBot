@@ -26,10 +26,8 @@ void WorkerManager::update()
 	handleMoveWorkers();
 	handleCombatWorkers();
 
-	drawResourceDebugInfo();
-	drawWorkerInformation(450,20);
-
-	workerData.drawMineralDebugInfo();
+	workerData.drawWorkerDebugInfo();
+	workerData.drawResourceDebugInfo(480, 20);
 }
 
 void WorkerManager::updateResourceStatus()
@@ -136,37 +134,6 @@ void WorkerManager::updateWorkerStatus()
 		if (workerData.getWorkerJob(worker) == WorkerData::Idle)
 		{
 			workersPos[worker].clear();
-			BWAPI::Broodwar->drawTextMap(worker->getPosition().x, worker->getPosition().y, "Idle");
-		}
-
-		if (workerData.getWorkerJob(worker) == WorkerData::Minerals)
-		{
-			BWAPI::Broodwar->drawTextMap(worker->getPosition().x, worker->getPosition().y, "Minerals");
-		}
-
-		if (workerData.getWorkerJob(worker) == WorkerData::Gas)
-		{
-			BWAPI::Broodwar->drawTextMap(worker->getPosition().x, worker->getPosition().y, "Gas");
-		}
-
-		if (workerData.getWorkerJob(worker) == WorkerData::Scout)
-		{
-			BWAPI::Broodwar->drawTextMap(worker->getPosition().x, worker->getPosition().y, "Scout");
-		}
-
-		if (workerData.getWorkerJob(worker) == WorkerData::Combat)
-		{
-			BWAPI::Broodwar->drawTextMap(worker->getPosition().x, worker->getPosition().y, "Combat");
-		}
-
-		if (workerData.getWorkerJob(worker) == WorkerData::Build)
-		{
-			BWAPI::Broodwar->drawTextMap(worker->getPosition().x, worker->getPosition().y, "Build");
-		}
-
-		if (workerData.getWorkerJob(worker) == WorkerData::Move)
-		{
-			BWAPI::Broodwar->drawTextMap(worker->getPosition().x, worker->getPosition().y, "Move");
 		}
 	}
 }
@@ -274,7 +241,6 @@ void WorkerManager::handleCombatWorkers()
 
 		if (workerData.getWorkerJob(worker) == WorkerData::Combat)
 		{
-			BWAPI::Broodwar->drawCircleMap(worker->getPosition().x, worker->getPosition().y, 4, BWAPI::Colors::Yellow, true);
 			BWAPI::Unit target = getClosestEnemyUnit(worker);
 
 			if (target)
@@ -763,56 +729,7 @@ void WorkerManager::onUnitDestroy(BWAPI::Unit unit)
 
 	if (unit->getType() == BWAPI::UnitTypes::Resource_Mineral_Field)
 	{
-		rebalanceMineralWorkers();
-	}
-}
-
-void WorkerManager::drawResourceDebugInfo() 
-{
-    if (!Config::Debug::DrawResourceInfo)
-    {
-        return;
-    }
-
-	for (auto & worker : workerData.getWorkers()) 
-    {
-        CAB_ASSERT(worker != nullptr, "Worker was null");
-
-		char job = workerData.getJobCode(worker);
-
-		BWAPI::Position pos = worker->getTargetPosition();
-
-		BWAPI::Broodwar->drawTextMap(worker->getPosition().x, worker->getPosition().y - 5, "\x07%c", job);
-
-		BWAPI::Broodwar->drawLineMap(worker->getPosition().x, worker->getPosition().y, pos.x, pos.y, BWAPI::Colors::Cyan);
-
-		BWAPI::Unit mineralBase = workerData.getWorkerMineralBase(worker);
-		if (mineralBase)
-		{
-			BWAPI::Broodwar->drawLineMap(worker->getPosition().x, worker->getPosition().y, mineralBase->getPosition().x, mineralBase->getPosition().y, BWAPI::Colors::Orange);
-		}
-	}
-}
-
-void WorkerManager::drawWorkerInformation(int x, int y) 
-{
-    if (!Config::Debug::DrawWorkerInfo)
-    {
-        return;
-    }
-
-	BWAPI::Broodwar->drawTextScreen(x, y, "\x04 Workers %d", workerData.getNumMineralWorkers());
-	BWAPI::Broodwar->drawTextScreen(x, y+20, "\x04 UnitID");
-	BWAPI::Broodwar->drawTextScreen(x+50, y+20, "\x04 State");
-
-	int yspace = 0;
-
-	for (auto & unit : workerData.getWorkers())
-	{
-        CAB_ASSERT(unit != nullptr, "Worker was null");
-
-		BWAPI::Broodwar->drawTextScreen(x, y+40+((yspace)*10), "\x03 %d", unit->getID());
-		BWAPI::Broodwar->drawTextScreen(x+50, y+40+((yspace++)*10), "\x03 %c", workerData.getJobCode(unit));
+		workerData.removeMineralPatch(unit);
 	}
 }
 

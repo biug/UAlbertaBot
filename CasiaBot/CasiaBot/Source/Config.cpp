@@ -66,8 +66,8 @@ namespace Config
         bool DrawProductionInfo             = true;
         bool DrawBuildOrderSearchInfo       = false;
         bool DrawScoutInfo                  = false;
-        bool DrawResourceInfo               = false;
-        bool DrawWorkerInfo                 = false;
+        bool DrawResourceInfo               = true;
+        bool DrawWorkerInfo                 = true;
         bool DrawModuleTimers               = false;
         bool DrawReservedBuildingTiles      = false;
         bool DrawCombatSimulationInfo       = false;
