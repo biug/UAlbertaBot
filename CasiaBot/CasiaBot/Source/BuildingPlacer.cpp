@@ -80,105 +80,122 @@ bool BuildingPlacer::canBuildHere(BWAPI::TilePosition position,const Building & 
     for (int x = position.x; x < position.x + b.type.tileWidth(); x++)
     {
         for (int y = position.y; y < position.y + b.type.tileHeight(); y++)
-        {
-            if (_reserveMap[x][y])
-            {
-                return false;
-            }
-        }
-    }
+		{
+		if (_reserveMap[x][y])
+		{
+			return false;
+		}
+		}
+	}
 
-    // if it overlaps a base location return false
-    if (tileOverlapsBaseLocation(position,b.type))
-    {
-        return false;
-    }
+	// if it overlaps a base location return false
+	if (tileOverlapsBaseLocation(position, b.type))
+	{
+		return false;
+	}
 
-    return true;
+	return true;
 }
 
 //returns true if we can build this type of unit here with the specified amount of space.
 //space value is stored in this->buildDistance.
-bool BuildingPlacer::canBuildHereWithSpace(BWAPI::TilePosition position,const Building & b,int buildDist,bool horizontalOnly) const
+bool BuildingPlacer::canBuildHereWithSpace(BWAPI::TilePosition position, const Building & b, int buildDist, bool horizontalOnly) const
 {
-    BWAPI::UnitType type = b.type;
+	BWAPI::UnitType type = b.type;
 
-    //if we can't build here, we of course can't build here with space
-    if (!canBuildHere(position,b))
-    {
-        return false;
-    }
+	//if we can't build here, we of course can't build here with space
+	if (!canBuildHere(position, b))
+	{
+		return false;
+	}
 
-    // height and width of the building
-    int width(b.type.tileWidth());
-    int height(b.type.tileHeight());
+	// height and width of the building
+	int width(b.type.tileWidth());
+	int height(b.type.tileHeight());
 
-    // define the rectangle of the building spot
-    int startx = position.x - buildDist;
-    int starty = position.y - buildDist;
-    int endx   = position.x + width + buildDist;
-    int endy   = position.y + height + buildDist;
+	// define the rectangle of the building spot
+	int startx = position.x - buildDist;
+	int starty = position.y - buildDist;
+	int endx = position.x + width + buildDist;
+	int endy = position.y + height + buildDist;
 
-    if (horizontalOnly)
-    {
-        starty += buildDist;
-        endy -= buildDist;
-    }
+	if (horizontalOnly)
+	{
+		starty += buildDist;
+		endy -= buildDist;
+	}
 
-    // if this rectangle doesn't fit on the map we can't build here
-    if (startx < 0 || starty < 0 || endx > BWAPI::Broodwar->mapWidth() || endx < position.x + width || endy > BWAPI::Broodwar->mapHeight())
-    {
-        return false;
-    }
+	// if this rectangle doesn't fit on the map we can't build here
+	if (startx < 0 || starty < 0 || endx > BWAPI::Broodwar->mapWidth() || endx < position.x + width || endy > BWAPI::Broodwar->mapHeight())
+	{
+		return false;
+	}
 
-    // if we can't build here, or space is reserved, or it's in the resource box, we can't build here
-    for (int x = startx; x < endx; x++)
-    {
-        for (int y = starty; y < endy; y++)
-        {
-            if (!b.type.isRefinery())
-            {
-                if (!buildable(b,x,y) || _reserveMap[x][y] || ((b.type != BWAPI::UnitTypes::Protoss_Photon_Cannon) && isInResourceBox(x,y)))
-                {
-                    return false;
-                }
-            }
-        }
-    }
+	// if we can't build here, or space is reserved, or it's in the resource box, we can't build here
+	for (int x = startx; x < endx; x++)
+	{
+		for (int y = starty; y < endy; y++)
+		{
+			if (!b.type.isRefinery())
+			{
+				if (!buildable(b, x, y) || _reserveMap[x][y] || ((b.type != BWAPI::UnitTypes::Protoss_Photon_Cannon) && isInResourceBox(x, y)))
+				{
+					return false;
+				}
+			}
+		}
+	}
 
-    return true;
+	return true;
 }
 
-BWAPI::TilePosition BuildingPlacer::GetBuildLocation(const Building & b,int padding) const
+BWAPI::TilePosition BuildingPlacer::GetBuildLocation(const Building & b, int padding) const
 {
-    return BWAPI::TilePosition(0,0);
+	return BWAPI::TilePosition(0, 0);
 }
 
-BWAPI::TilePosition BuildingPlacer::getBuildLocationNear(const Building & b,int buildDist,bool horizontalOnly) const
+BWAPI::TilePosition BuildingPlacer::getBuildLocationNear(const Building & b, int buildDist, bool horizontalOnly) const
 {
-    SparCraft::Timer t;
-    t.start();
+	SparCraft::Timer t;
+	t.start();
 
-    // get the precomputed vector of tile positions which are sorted closes to this location
-    const std::vector<BWAPI::TilePosition> & closestToBuilding = MapTools::Instance().getClosestTilesTo(BWAPI::Position(b.desiredPosition));
+	// get the precomputed vector of tile positions which are sorted closes to this location
+	const std::vector<BWAPI::TilePosition> & closestToBuilding = MapTools::Instance().getClosestTilesTo(BWAPI::Position(b.desiredPosition));
 
-    double ms1 = t.getElapsedTimeInMilliSec();
+	double ms1 = t.getElapsedTimeInMilliSec();
 
-    // special easy case of having no pylons
-    int numPylons = BWAPI::Broodwar->self()->completedUnitCount(BWAPI::UnitTypes::Protoss_Pylon);
-    if (b.type.requiresPsi() && numPylons == 0)
-    {
-        return BWAPI::TilePositions::None;
-    }
+	// special easy case of having no pylons
+	int numPylons = BWAPI::Broodwar->self()->completedUnitCount(BWAPI::UnitTypes::Protoss_Pylon);
+	if (b.type.requiresPsi() && numPylons == 0)
+	{
+		return BWAPI::TilePositions::None;
+	}
 
-    // iterate through the list until we've found a suitable location
-    for (size_t i(0); i < closestToBuilding.size(); ++i)
-    {
-        if (canBuildHereWithSpace(closestToBuilding[i],b,buildDist,horizontalOnly))
-        {
-            double ms = t.getElapsedTimeInMilliSec();
-            //BWAPI::Broodwar->printf("Building Placer Took %d iterations, lasting %lf ms @ %lf iterations/ms, %lf setup ms", i, ms, (i / ms), ms1);
+	// desire toward
+	BWTA::Region *region = BWTA::getRegion(b.desiredPosition);
+	BWTA::BaseLocation *ebase = InformationManager::Instance().getMainBaseLocation(BWAPI::Broodwar->enemy());
+	if (ebase == nullptr)
+		ebase = (*BWTA::getStartLocations().begin());
+	BWAPI::Position toward = ebase->getPosition();
+	std::list<BWTA::Chokepoint *> cpp = BWTA::getShortestPath2(b.desiredPosition, ebase->getTilePosition());
+	if (!cpp.empty())
+		toward = BWTA::getRegion(cpp.front()->getSides().first) == region ? cpp.front()->getSides().first : cpp.front()->getSides().second;
 
+	// iterate through the list until we've found a suitable location
+	for (size_t i(0); i < closestToBuilding.size(); ++i)
+	{
+		if (canBuildHereWithSpace(closestToBuilding[i], b, buildDist, horizontalOnly))
+		{
+			double ms = t.getElapsedTimeInMilliSec();
+			//BWAPI::Broodwar->printf("Building Placer Took %d iterations, lasting %lf ms @ %lf iterations/ms, %lf setup ms", i, ms, (i / ms), ms1);
+
+			if (b.type == BWAPI::UnitTypes::Zerg_Creep_Colony)
+			{
+				int d1 = MapTools::Instance().getGroundDistance(BWAPI::Position(closestToBuilding[i]), toward),
+					d2 = MapTools::Instance().getGroundDistance(BWAPI::Position(b.desiredPosition), toward);
+				if (d1 + 9 > d2)
+					continue;
+			}
             return closestToBuilding[i];
         }
     }
