@@ -18,6 +18,7 @@ MapTools::MapTools()
     _fringe = std::vector<int>(_rows*_cols,0);
 
     setBWAPIMapData();
+	BWTA::buildChokeNodes();
 }
 
 // return the index of the 1D array from (row,col)
